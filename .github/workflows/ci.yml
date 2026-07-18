@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: waraqa
+          POSTGRES_PASSWORD: waraqa_ci_only
+          POSTGRES_DB: waraqa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U waraqa -d waraqa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://waraqa:waraqa_ci_only@localhost:5432/waraqa
+      DATABASE_URL_DIRECT: postgresql://waraqa:waraqa_ci_only@localhost:5432/waraqa
+      PAYLOAD_SECRET: ci-only-payload-secret-not-for-production-use-32
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Enable Corepack pnpm 11.14.0
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.14.0 --activate
+          pnpm --version
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit / integration tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      # Playwright E2E is deferred in CI until browser install + long-running webServer
+      # is verified stable in this repo. Run locally with: pnpm test:e2e
+      - name: Note E2E limitation
+        run: echo "Playwright E2E runs locally in Phase 1; CI E2E deferred (documented limitation)."

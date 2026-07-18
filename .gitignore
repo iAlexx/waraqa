@@ -1,0 +1,77 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules/
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing / coverage
+/coverage/
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc / OS
+.DS_Store
+Thumbs.db
+*.pem
+*.log
+.start-*.log
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local env files — never commit secrets
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# uploads / media (local disk — not used in production MVP)
+/media
+/uploads
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# local database dumps / volumes (never commit)
+*.sql
+*.sql.gz
+*.dump
+*.dump.gz
+pgdata/
+postgres-data/
+**/pgdata/
+
+# local tooling / editors / OS
+.cursor/
+.idea/
+*.swp
+*.swo
+*~
+
+# VS Code — keep shared recommendations if present; ignore local workspace state
+.vscode/*.code-workspace
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
