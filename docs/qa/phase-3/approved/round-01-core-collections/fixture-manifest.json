@@ -1,0 +1,39 @@
+{
+  "createdAt": "2026-07-18T16:57:15.314Z",
+  "policy": "fictional local QA only — delete via db:reset or Admin",
+  "passwordEnvHint": "Password written only to gitignored .local-credentials",
+  "users": {
+    "admin": {
+      "email": "qa-admin-1784393821380@example.test",
+      "id": 3
+    },
+    "reviewer": {
+      "email": "qa-reviewer-1784393821380@example.test",
+      "id": 4
+    },
+    "researcher": {
+      "email": "qa-researcher-1784393821380@example.test",
+      "id": 5
+    },
+    "viewer": {
+      "email": "qa-viewer-1784393821380@example.test",
+      "id": 6
+    }
+  },
+  "ids": {
+    "category": 3,
+    "agency": 2,
+    "center": 2,
+    "document": 2,
+    "source": 2,
+    "draftTransaction": 3,
+    "publishedTransaction": 4,
+    "inactiveTransaction": 5
+  },
+  "slugs": {
+    "draft": "tx-draft-qa-1784393821380",
+    "published": "tx-pub-qa-1784393821380",
+    "inactive": "tx-inactive-qa-1784393821380"
+  },
+  "password": "[redacted — see .local-credentials]"
+}

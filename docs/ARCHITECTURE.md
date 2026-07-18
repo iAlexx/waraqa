@@ -1,8 +1,12 @@
-# Waraqa Architecture
+﻿# Waraqa Architecture
 
-**Status:** Phase 1 bootstrap complete (Phase 2 NOT STARTED)  
-**Source of truth:** [WARAQA_MASTER_ROADMAP_EN.md](./WARAQA_MASTER_ROADMAP_EN.md)  
+**Status:** Phase 3 — COMPLETE — OWNER APPROVED (Phase 4 NOT STARTED)
+
+**Source of truth:** [WARAQA_MASTER_ROADMAP_EN.md](./WARAQA_MASTER_ROADMAP_EN.md)
+
 **Last updated:** 2026-07-18
+
+**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md)
 
 ## 1. System context
 
@@ -48,16 +52,24 @@ Primary public route families (from roadmap): home, search, categories, transact
 
 - Payload runs **inside** the same Next.js application (`(payload)` App Router segment).
 - Admin UI at `/admin` (not linked from public navigation).
-- Collections and workflow defined in later phases (Users, Categories, Agencies, Documents, Transactions, Sources, Reports, Audit).
-- Roles (roadmap): `admin`, `reviewer`, `researcher`, `viewer`. Researchers cannot publish.
-- Access control is enforced in Payload and re-checked in any custom server routes.
+- **Phase 3 collections (implemented):** `users`, `categories`, `agencies`, `service-centers`, `documents`, `sources`, `transactions`.
+- **Phase 3 global (minimal):** `site-settings` — fields: `siteName`, `tagline`, `independenceDisclaimer`, `footerDisclaimer`, `contactEmail`, `supportPhone`, `verificationPolicyDays`, `maintenanceMode`, `featuredTransactions`. Public UI consumption = **Phase 5**.
+- **Outcome A (2026-07-18):** Owner authorized retaining the full `transactions` content model in Phase 3 (**COMPLETE — OWNER APPROVED**). Original roadmap conflict: Phase 3 tasks had no Transaction collection; Phase 4 said “implement Transaction collection.” Phase 4 is **NOT STARTED** and must **not** rebuild/duplicate that schema — it extends workflow only (blocks, audit events, scheduled review, preview, approval invalidation). See [CONTENT_MODEL.md](./CONTENT_MODEL.md).
+- **Phase 4 Admin UI polish debt (non-blocking):** mixed EN/AR Admin chrome; empty parent category display; boolean نعم/لا badges; Admin login branding — documented in [PHASE_CHECKLIST.md](./PHASE_CHECKLIST.md); not implemented in Phase 3.
+- **Naming:** collection slug is `transactions` (Arabic معاملة/المعاملات); owner brief preferred `procedures` — roadmap wins.
+- Roles (roadmap): `admin`, `reviewer`, `researcher`, `viewer`. Researchers cannot publish. See [RBAC.md](./RBAC.md).
+- Access control is enforced in Payload (collection access + publish hook) and re-checked in any custom server routes.
+- **GraphQL:** disabled (`graphQL.disable: true`).
+- **Localization:** locales `ar` / `en`, **default `ar`**, `fallback: true`.
+- **Migrations directory:** repo-root `migrations/` (Payload `migrationDir`), not app runtime.
 
 ## 4. PostgreSQL data store
 
 - Adapter: `@payloadcms/db-postgres` **3.86.0** (Drizzle + **node-postgres**).
 - Hosted: Supabase PostgreSQL with **separate projects/databases and credentials** for development, preview, and production.
 - Local: Docker Postgres **or** a dedicated non-production Supabase project.
-- Schema changes: Payload migrations for non-local environments; Drizzle `push` only in local development.
+- Schema changes: Payload migrations for non-local environments; Drizzle `push` only when `PAYLOAD_DATABASE_PUSH=1` on a disposable local DB.
+- Phase 3 migrations: `20260718_052746_phase_3_core_collections`, `20260718_163635_phase_3_site_settings` (short `dbName` values for Postgres 63-char limits).
 
 ### Connection roles
 
@@ -82,7 +94,7 @@ Citizen accounts, national IDs, and identity-document uploads are **out of MVP s
 
 ## 6. Public vs protected data
 
-**Public (published only):**
+**Public (published + active only):**
 
 - Categories, transactions, documents metadata, fees, steps, sources citations as designed for public display, service-center guidance.
 
@@ -92,7 +104,7 @@ Citizen accounts, national IDs, and identity-document uploads are **out of MVP s
 - Admin users and credentials
 - Change reports and reporter contact details
 - Audit events
-- Internal verification notes
+- Internal verification notes (`internalNotes`, source editorial `notes`)
 
 ## 7. Deployment topology
 
@@ -127,36 +139,32 @@ Rules:
 
 **Procedure**
 
-1. **Local:** develop with `push: true` (default) against a disposable DB.
-2. **Create migration:** `pnpm payload migrate:create` when a feature is ready.
-3. **Preview:** if migrations are needed, run them only against the **preview** database using that environment’s `DATABASE_URL_DIRECT`.
-4. **Production:** after manual export, run `payload migrate` in the production CI/deploy pipeline with production `DATABASE_URL_DIRECT`, then build/deploy the app. Runtime uses `DATABASE_URL` (transaction pooler) only.
+1. **Local:** develop with disposable DB; optional `PAYLOAD_DATABASE_PUSH=1` for push-only local iteration.
+2. **Create migration:** `pnpm db:migrate:create` when a feature is ready.
+3. **Apply / status:** `pnpm db:migrate` / `pnpm db:migrate:status` (uses Payload migrate against `DATABASE_URL_DIRECT` as configured).
+4. **Preview:** if migrations are needed, run them only against the **preview** database using that environment’s `DATABASE_URL_DIRECT`.
+5. **Production:** after manual export, run migrate in the production CI/deploy pipeline with production `DATABASE_URL_DIRECT`, then build/deploy the app. Runtime uses `DATABASE_URL` (transaction pooler) only.
 
 ## 9. Local development workflow
 
-Recommended (Phase 1+):
+Recommended:
 
 1. Use Node **`24.18.0`** via `.nvmrc` / `.node-version`; Vercel/runtime policy is `engines.node: "24.x"`.
 2. Use **`pnpm@11.14.0`** (`packageManager` field).
-3. Bootstrap with the audited CLI only:
-
-   ```bash
-   pnpx create-payload-app@3.86.0 --use-pnpm
-   ```
-
-   Do **not** use `create-payload-app@latest`.
+3. Bootstrap was with the audited CLI only: `pnpx create-payload-app@3.86.0 --use-pnpm` (do not use `@latest`).
 4. Copy `.env.example` → `.env.local` and fill placeholders (separate non-prod DB).
 5. `pnpm install` → `pnpm dev` (include Payload’s Next 16.2+ HMR workaround when required: `--no-server-fast-refresh`).
 6. Open public site at `http://localhost:3000` and admin at `http://localhost:3000/admin`.
-7. Quality gate: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (and `pnpm test:e2e` when E2E exists).
+7. Quality gate: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (and `pnpm test:e2e` / `pnpm test:collections` as applicable).
 
 ## 10. Arabic RTL
 
 - Public UI is Arabic-first (`ar-SY`).
 - Prefer **logical CSS** (`ms`/`me`, `ps`/`pe`, `start`/`end`) over physical left/right.
 - Use shadcn/ui with RTL mode enabled ([shadcn RTL docs](https://ui.shadcn.com/docs/rtl)).
-- Fonts: IBM Plex Sans Arabic (preferred) or Noto Sans Arabic per roadmap.
+- Fonts: IBM Plex Sans Arabic (preferred) or Noto Sans Arabic per roadmap; Phase 2 brand system uses Aref Ruqaa for the wordmark.
 - Payload admin language may remain English initially; public copy must remain Arabic.
+- CMS field localization: Arabic default + English fallback at the Payload layer.
 
 ## 11. Future scaling (without premature microservices)
 

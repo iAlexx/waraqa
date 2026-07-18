@@ -73,6 +73,10 @@ postgres-data/
 # Owner-supplied licensed fonts (temporary input — never commit)
 private-font-input/
 
+# Phase 3 local QA credentials (never commit)
+docs/qa/phase-3/.local-credentials
+docs/qa/phase-3/**/*.local.*
+
 # VS Code — keep shared recommendations if present; ignore local workspace state
 .vscode/*.code-workspace
 !.vscode/extensions.json

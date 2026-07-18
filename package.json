@@ -21,7 +21,13 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "db:reset": "docker compose down -v && docker compose up -d postgres"
+    "db:reset": "docker compose down -v && docker compose up -d postgres",
+    "db:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "db:migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "db:migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
+    "test:collections": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.int.config.mts tests/int/collections.int.spec.ts",
+    "qa:phase3:fixture": "cross-env ALLOW_QA_FIXTURE=1 NODE_OPTIONS=--no-deprecation tsx scripts/phase3-qa-fixture.ts",
+    "qa:phase3:capture": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/capture-phase3-qa.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.86.0",

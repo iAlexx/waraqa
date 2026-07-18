@@ -1,8 +1,10 @@
-# Waraqa Security Baseline
+﻿# Waraqa Security Baseline
 
-**Status:** Phase 0 (amended after owner CONDITIONAL PASS)  
-**Last updated:** 2026-07-18  
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [.env.example](../.env.example)
+**Status:** Phase 3 — COMPLETE — OWNER APPROVED (RBAC + public API access controls)
+
+**Last updated:** 2026-07-18
+
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [.env.example](../.env.example)
 
 ## 1. Secret management
 
@@ -32,27 +34,31 @@
 
 - Admin access only via Payload `/admin`.
 - Strong passwords; create production admins manually (no shared demo passwords in public docs).
+- First user bootstrap becomes admin; subsequent users are not silent admins (see [RBAC.md](./RBAC.md)).
 - Use secure cookies in production (`secure`, `httpOnly`, appropriate `sameSite`) per Payload production guidance: https://payloadcms.com/docs/production/deployment
 - Prefer account lockout / failure throttling as provided by Payload anti-abuse features.
 - Do not link `/admin` from public navigation.
 
-## 4. RBAC
+## 4. RBAC (Phase 3 implemented)
 
-Enforce in Payload access control (and any custom server routes):
+Full matrix, bootstrap rules, publish hook, and private-field stripping: **[RBAC.md](./RBAC.md)**.
+
+Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 
 | Role | Publish | Manage users | Draft content |
 | --- | --- | --- | --- |
 | admin | Yes | Yes | Yes |
-| reviewer | Per policy | No | Review / approve |
+| reviewer | Yes (per policy) | No | Review / approve |
 | researcher | **No** | No | Yes (draft / submit) |
-| viewer | No | No | Read-only |
+| viewer | No | No | Read-only (published + active) |
 
-Researchers must not be able to publish via API manipulation. Cover with automated access-control tests in later phases.
+**Researchers cannot publish via API** — collection update access blocks published docs for researchers, and `enforcePublishAuthorization` rejects publish/unpublish transitions unless the actor is an active `admin` or `reviewer`. Covered by `pnpm test:collections` integration tests (fictional data only).
 
 ## 5. Published-content-only public APIs
 
-- Public queries filter to published (and non-archived) records only.
+- Public queries filter to published **and** `active` records only.
 - Draft preview requires authenticated admin session or a signed preview secret **after** preview is implemented.
+- `internalNotes` (transactions) and editorial source `notes` are never returned to anonymous/viewer reads.
 - Errors returned to clients must be safe (no stack traces, no secrets).
 
 ## 6. Web application hardening

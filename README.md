@@ -5,7 +5,7 @@ Independent Syrian administrative-procedure guidance platform.
 > **ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً.**  
 > Waraqa is an independent guidance platform and is not a government website.
 
-**Current phase:** Phase 1 — Project Bootstrap (IN PROGRESS until gates pass)
+**Current phase:** Phase 3 — Core Payload Collections (**COMPLETE — OWNER APPROVED**). Phase 4 not started.
 
 ## Requirements
 
@@ -39,18 +39,35 @@ Copy-Item .env.example .env.local
 # - NEXT_PUBLIC_SERVER_URL=http://localhost:3000
 
 corepack pnpm@11.14.0 install
+corepack pnpm@11.14.0 db:migrate
 corepack pnpm@11.14.0 dev
 ```
 
 Open:
 
 - Public site: http://localhost:3000
-- Admin: http://localhost:3000/admin (create first user on first visit)
+- Admin: http://localhost:3000/admin (create first user on first visit — becomes admin)
 - Health: http://localhost:3000/api/health
+
+## Phase 3 collections
+
+Payload collections (Arabic admin labels; slug `transactions` per roadmap):
+
+| Slug | Purpose |
+| --- | --- |
+| `users` | Auth + RBAC (`admin` \| `reviewer` \| `researcher` \| `viewer`) |
+| `categories` | Taxonomy |
+| `agencies` | Official bodies |
+| `service-centers` | Service locations |
+| `documents` | Document *types* (metadata only — no uploads) |
+| `sources` | Citable official sources |
+| `transactions` | Administrative procedures (full field model) |
+
+Localization: `ar` (default) + `en`. GraphQL disabled. Site Settings minimal global in Phase 3 (public consumption = Phase 5). Details: [CONTENT_MODEL.md](./docs/CONTENT_MODEL.md), [RBAC.md](./docs/RBAC.md).
 
 ## Environment variables
 
-See [`.env.example`](./.env.example). Required for Phase 1:
+See [`.env.example`](./.env.example). Required:
 
 - `DATABASE_URL` (server-only)
 - `DATABASE_URL_DIRECT` (server-only, migrations/tooling)
@@ -100,20 +117,31 @@ corepack pnpm@11.14.0 lint
 corepack pnpm@11.14.0 typecheck
 corepack pnpm@11.14.0 test
 corepack pnpm@11.14.0 test:e2e
+corepack pnpm@11.14.0 test:collections   # Phase 3 collection/RBAC integration tests
 corepack pnpm@11.14.0 build
 corepack pnpm@11.14.0 check
+
+# Migrations (Payload; repo-root migrations/)
+corepack pnpm@11.14.0 db:migrate
+corepack pnpm@11.14.0 db:migrate:create
+corepack pnpm@11.14.0 db:migrate:status
 ```
+
+Phase 3 migrations: `20260718_052746_phase_3_core_collections`, `20260718_163635_phase_3_site_settings`.
 
 ## Security notes
 
 - No citizen accounts, national IDs, or identity-document uploads.
 - `/admin` is not linked from the public placeholder page.
-- Do not invent official procedure data in this phase.
+- Researchers cannot publish via API; see [SECURITY.md](./docs/SECURITY.md) and [RBAC.md](./docs/RBAC.md).
+- Do not invent official procedure data; label any demo content clearly.
 
 ## Documentation
 
 - [Master roadmap](./docs/WARAQA_MASTER_ROADMAP_EN.md)
 - [Architecture](./docs/ARCHITECTURE.md)
+- [Content model](./docs/CONTENT_MODEL.md)
+- [RBAC](./docs/RBAC.md)
 - [Stack ADR](./docs/ADR/0001-stack.md)
 - [Security](./docs/SECURITY.md)
 - [Phase checklist](./docs/PHASE_CHECKLIST.md)

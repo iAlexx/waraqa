@@ -5,7 +5,14 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { Agencies } from './collections/Agencies'
+import { Categories } from './collections/Categories'
+import { Documents } from './collections/Documents'
+import { ServiceCenters } from './collections/ServiceCenters'
+import { Sources } from './collections/Sources'
+import { Transactions } from './collections/Transactions'
 import { Users } from './collections/Users'
+import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -17,12 +24,26 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  // Phase 1: minimal auth collection only. Domain collections begin in Phase 3.
   // No Media/upload collection — Vercel filesystem is ephemeral; identity uploads are out of scope.
-  collections: [Users],
+  collections: [
+    Users,
+    Categories,
+    Agencies,
+    ServiceCenters,
+    Documents,
+    Sources,
+    Transactions,
+  ],
+  globals: [SiteSettings],
+  localization: {
+    locales: [
+      { code: 'ar', label: 'العربية' },
+      { code: 'en', label: 'English' },
+    ],
+    defaultLocale: 'ar',
+    fallback: true,
+  },
   editor: lexicalEditor(),
-  // GraphQL is optional in Payload. Waraqa Phase 1 uses REST/Local API only.
-  // Scaffold route files were removed; disable to avoid exposing a GraphQL surface.
   graphQL: {
     disable: true,
   },
@@ -33,12 +54,11 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
-      // Documented node-postgres Pool option. Keep small for serverless-friendly defaults.
       max: 3,
     },
-    // Local disposable development may use Drizzle push.
-    // Preview/production schema changes use controlled migrations later — never migrate on boot.
-    push: process.env.NODE_ENV !== 'production',
+    // Prefer controlled migrations. Local disposable push only when explicitly enabled.
+    push: process.env.PAYLOAD_DATABASE_PUSH === '1',
+    migrationDir: path.resolve(dirname, '../migrations'),
   }),
   sharp,
   plugins: [],

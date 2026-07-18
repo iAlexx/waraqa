@@ -2081,6 +2081,16 @@ Phase 0 passes only when:
 
 ## Phase 3 — Core Payload Collections
 
+**Status: COMPLETE — OWNER APPROVED** (2026-07-18)
+
+### Owner amendment (2026-07-18) — Outcome A
+
+**Roadmap conflict evidence (this section vs Phase 4):** The Phase 3 task list below originally covered Users, Categories, Agencies, Service Centers, Sources, Documents, and Site Settings — **no Transaction collection**. Phase 4 (~2108–2120) listed “implement Transaction collection” plus workflow/blocks/preview/audit events.
+
+**Owner instruction:** authorize retaining the full `transactions` content model in Phase 3 (fields, drafts/versions, sources, steps, and related publish gates). Do **not** treat the original Phase 4 “implement Transaction collection” line as a rebuild of that schema.
+
+QA: Round 01 owner-approved at `docs/qa/phase-3/approved/round-01-core-collections/`.
+
 ### Tasks
 
 - implement Users and role access;
@@ -2089,7 +2099,8 @@ Phase 0 passes only when:
 - implement Service Centers;
 - implement Sources;
 - implement Documents;
-- implement Site Settings;
+- implement Site Settings (minimal Payload global — see §14.15; public UI consumption remains Phase 5);
+- implement full `transactions` content model (owner amendment 2026-07-18 — Outcome A);
 - generate Payload types;
 - create migrations;
 - add admin labels and help text;
@@ -2107,17 +2118,33 @@ Phase 0 passes only when:
 
 ## Phase 4 — Transactions Schema and Workflow
 
+**Status: NOT STARTED**
+
+### Scope note (Outcome A — 2026-07-18)
+
+The full `transactions` content model (fields, drafts, sources, steps) is **already authorized, implemented, and owner-approved in Phase 3**. Phase 4 **must not** rebuild or duplicate that schema. Phase 4 extends **workflow only** on the existing model: reusable blocks, audit events collection, scheduled review, preview, and approval invalidation after critical edits.
+
+### Admin UI polish debt (non-blocking)
+
+Owner-approved Phase 4 polish (do not block Phase 3; do not implement as Phase 3 work):
+
+1. Localize remaining mixed English Admin chrome (Create New, Search by, Columns, Filters, Updated At, Status, Last Modified, Save Draft, Publish changes, Select a value, Add Phone, Add Alias, etc.).
+2. Fix empty parent category display (`<No التصنيف الأب>` → `بدون تصنيف أب` or `—`).
+3. Boolean list cells: show Arabic نعم / لا badges instead of raw `true` / `false`.
+4. Admin login: replace default Payload logo / English form labels with Waraqa branding.
+
 ### Tasks
 
-- implement Transaction collection;
+- ~~implement Transaction collection~~ — **done in Phase 3 (Outcome A); do not re-implement schema**;
 - implement reusable blocks;
-- implement draft/review/approval/publication states;
+- implement draft/review/approval/publication workflow polish on the existing `transactions` model;
 - implement revision history;
-- implement source requirements;
-- implement hooks for audit events;
+- ~~implement source requirements~~ — **covered by Phase 3 publish gates on existing model**;
+- implement hooks for audit events (audit events collection);
 - implement scheduled review date;
 - implement preview support;
-- prevent invalid rules from publication.
+- prevent invalid rules from publication / invalidate approval after critical edits;
+- Admin UI polish debt items listed above (non-blocking).
 
 ### Acceptance criteria
 

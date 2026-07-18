@@ -68,6 +68,12 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    categories: Category;
+    agencies: Agency;
+    'service-centers': ServiceCenter;
+    documents: Document;
+    sources: Source;
+    transactions: Transaction;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,6 +82,12 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    agencies: AgenciesSelect<false> | AgenciesSelect<true>;
+    'service-centers': ServiceCentersSelect<false> | ServiceCentersSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    sources: SourcesSelect<false> | SourcesSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -84,10 +96,14 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
-  locale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('ar' | 'en') | ('ar' | 'en')[];
+  globals: {
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
+  locale: 'ar' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -121,6 +137,14 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  name?: string | null;
+  displayName?: string | null;
+  /**
+   * admin · reviewer · researcher · viewer — الباحث لا ينشر. المراجع والمدير ينشران.
+   */
+  role: 'admin' | 'reviewer' | 'researcher' | 'viewer';
+  isActive?: boolean | null;
+  preferredLocale?: ('ar' | 'en') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -139,6 +163,305 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  /**
+   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   */
+  slug: string;
+  description?: string | null;
+  parent?: (number | null) | Category;
+  sortOrder?: number | null;
+  featured?: boolean | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agencies".
+ */
+export interface Agency {
+  id: number;
+  name: string;
+  shortName?: string | null;
+  /**
+   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   */
+  slug: string;
+  type: 'ministry' | 'directorate' | 'public_institution' | 'municipality' | 'syndicate' | 'university' | 'other';
+  description?: string | null;
+  officialWebsite?: string | null;
+  contactEmail?: string | null;
+  phones?:
+    | {
+        number: string;
+        id?: string | null;
+      }[]
+    | null;
+  mainAddress?: string | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-centers".
+ */
+export interface ServiceCenter {
+  id: number;
+  name: string;
+  /**
+   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   */
+  slug: string;
+  agency: number | Agency;
+  /**
+   * قائمة ثابتة — لا يُستنتج موقع المستخدم تلقائياً.
+   */
+  governorate:
+    | 'damascus'
+    | 'rif_dimashq'
+    | 'aleppo'
+    | 'homs'
+    | 'hama'
+    | 'latakia'
+    | 'tartus'
+    | 'idlib'
+    | 'deir_ez_zor'
+    | 'al_hasakah'
+    | 'al_raqqah'
+    | 'daraa'
+    | 'as_suwayda'
+    | 'quneitra';
+  city: string;
+  address: string;
+  phones?:
+    | {
+        number: string;
+        id?: string | null;
+      }[]
+    | null;
+  workingHours?: string | null;
+  accessibilityNotes?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * وثائق يحتاجها المواطن للمعاملات — ليست ملفات مرفوعة.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  name: string;
+  /**
+   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   */
+  slug: string;
+  aliases?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  description?: string | null;
+  documentType?:
+    | (
+        | 'identity'
+        | 'civil_record'
+        | 'application'
+        | 'photograph'
+        | 'receipt'
+        | 'certificate'
+        | 'approval'
+        | 'contract'
+        | 'form'
+        | 'other'
+      )
+    | null;
+  validityNote?: string | null;
+  reusable?: boolean | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sources".
+ */
+export interface Source {
+  id: number;
+  title: string;
+  /**
+   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   */
+  slug: string;
+  sourceType:
+    | 'official_webpage'
+    | 'law'
+    | 'decree'
+    | 'decision'
+    | 'circular'
+    | 'official_form'
+    | 'official_pdf'
+    | 'announcement'
+    | 'other';
+  agency?: (number | null) | Agency;
+  officialUrl: string;
+  archiveUrl?: string | null;
+  referenceNumber?: string | null;
+  issuedAt?: string | null;
+  lastVerifiedAt?: string | null;
+  verificationStatus: 'needs_review' | 'verified' | 'outdated' | 'unavailable';
+  /**
+   * ملاحظات تحريرية — لا تُعرض للعامة.
+   */
+  notes?: string | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * المعاملات الإدارية — مجموعة Phase 3 المركزية (slug: transactions).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions".
+ */
+export interface Transaction {
+  id: number;
+  title: string;
+  /**
+   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   */
+  slug: string;
+  /**
+   * ملخص قصير للعرض العام.
+   */
+  summary: string;
+  category: number | Category;
+  agency: number | Agency;
+  serviceCenters?: (number | ServiceCenter)[] | null;
+  audiences?: ('citizen' | 'resident' | 'student' | 'employee' | 'business' | 'visitor' | 'other')[] | null;
+  eligibility?: string | null;
+  aliases?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  requiredDocuments?:
+    | {
+        document: number | Document;
+        requirementType: 'required' | 'conditional' | 'alternative';
+        condition?: string | null;
+        quantity?: number | null;
+        originalRequired?: boolean | null;
+        copiesRequired?: number | null;
+        certificationRequired?: boolean | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  steps: {
+    title: string;
+    description: string;
+    locationNote?: string | null;
+    id?: string | null;
+  }[];
+  fees?:
+    | {
+        label: string;
+        amount?: number | null;
+        currency?: ('SYP' | 'USD' | 'EUR' | 'other') | null;
+        amountText?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  estimatedDuration?: {
+    minimum?: number | null;
+    maximum?: number | null;
+    unit?: ('minutes' | 'hours' | 'business_days' | 'calendar_days' | 'weeks') | null;
+    note?: string | null;
+  };
+  outcome?: string | null;
+  prerequisiteProcedures?: (number | Transaction)[] | null;
+  sources: {
+    source: number | Source;
+    primary?: boolean | null;
+    citationNote?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * مطلوب قبل النشر.
+   */
+  lastReviewedAt?: string | null;
+  /**
+   * لا تُعاد أبداً في طلبات REST العامة المجهولة.
+   */
+  internalNotes?: string | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -163,10 +486,35 @@ export interface PayloadKv {
  */
 export interface PayloadLockedDocument {
   id: number;
-  document?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  document?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'agencies';
+        value: number | Agency;
+      } | null)
+    | ({
+        relationTo: 'service-centers';
+        value: number | ServiceCenter;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
+      } | null)
+    | ({
+        relationTo: 'sources';
+        value: number | Source;
+      } | null)
+    | ({
+        relationTo: 'transactions';
+        value: number | Transaction;
+      } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
@@ -214,6 +562,11 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  displayName?: T;
+  role?: T;
+  isActive?: T;
+  preferredLocale?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -230,6 +583,214 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  parent?: T;
+  sortOrder?: T;
+  featured?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agencies_select".
+ */
+export interface AgenciesSelect<T extends boolean = true> {
+  name?: T;
+  shortName?: T;
+  slug?: T;
+  type?: T;
+  description?: T;
+  officialWebsite?: T;
+  contactEmail?: T;
+  phones?:
+    | T
+    | {
+        number?: T;
+        id?: T;
+      };
+  mainAddress?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-centers_select".
+ */
+export interface ServiceCentersSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  agency?: T;
+  governorate?: T;
+  city?: T;
+  address?: T;
+  phones?:
+    | T
+    | {
+        number?: T;
+        id?: T;
+      };
+  workingHours?: T;
+  accessibilityNotes?: T;
+  latitude?: T;
+  longitude?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  aliases?:
+    | T
+    | {
+        value?: T;
+        id?: T;
+      };
+  description?: T;
+  documentType?: T;
+  validityNote?: T;
+  reusable?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sources_select".
+ */
+export interface SourcesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  sourceType?: T;
+  agency?: T;
+  officialUrl?: T;
+  archiveUrl?: T;
+  referenceNumber?: T;
+  issuedAt?: T;
+  lastVerifiedAt?: T;
+  verificationStatus?: T;
+  notes?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions_select".
+ */
+export interface TransactionsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  category?: T;
+  agency?: T;
+  serviceCenters?: T;
+  audiences?: T;
+  eligibility?: T;
+  aliases?:
+    | T
+    | {
+        value?: T;
+        id?: T;
+      };
+  requiredDocuments?:
+    | T
+    | {
+        document?: T;
+        requirementType?: T;
+        condition?: T;
+        quantity?: T;
+        originalRequired?: T;
+        copiesRequired?: T;
+        certificationRequired?: T;
+        notes?: T;
+        id?: T;
+      };
+  steps?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        locationNote?: T;
+        id?: T;
+      };
+  fees?:
+    | T
+    | {
+        label?: T;
+        amount?: T;
+        currency?: T;
+        amountText?: T;
+        notes?: T;
+        id?: T;
+      };
+  estimatedDuration?:
+    | T
+    | {
+        minimum?: T;
+        maximum?: T;
+        unit?: T;
+        note?: T;
+      };
+  outcome?: T;
+  prerequisiteProcedures?: T;
+  sources?:
+    | T
+    | {
+        source?: T;
+        primary?: T;
+        citationNote?: T;
+        id?: T;
+      };
+  lastReviewedAt?: T;
+  internalNotes?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -270,6 +831,53 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * إعدادات عامة للمنصة — بدون واجهة عامة في Phase 3.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName: string;
+  tagline?: string | null;
+  independenceDisclaimer: string;
+  footerDisclaimer?: string | null;
+  contactEmail?: string | null;
+  supportPhone?: string | null;
+  /**
+   * مهلة مراجعة تحريرية داخلية — ليست موعداً عاماً.
+   */
+  verificationPolicyDays?: number | null;
+  /**
+   * علم داخلي فقط في Phase 3 — لا يغيّر الواجهة العامة بعد.
+   */
+  maintenanceMode?: boolean | null;
+  /**
+   * يُستهلك في Phase 5 — لا واجهة عامة في Phase 3.
+   */
+  featuredTransactions?: (number | Transaction)[] | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  tagline?: T;
+  independenceDisclaimer?: T;
+  footerDisclaimer?: T;
+  contactEmail?: T;
+  supportPhone?: T;
+  verificationPolicyDays?: T;
+  maintenanceMode?: T;
+  featuredTransactions?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
