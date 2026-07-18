@@ -70,6 +70,9 @@ postgres-data/
 *.swo
 *~
 
+# Owner-supplied licensed fonts (temporary input — never commit)
+private-font-input/
+
 # VS Code — keep shared recommendations if present; ignore local workspace state
 .vscode/*.code-workspace
 !.vscode/extensions.json

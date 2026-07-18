@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+/* Waraqa design tokens — see docs/DESIGN_SYSTEM.md */
+:root {
+  --color-brand-950: #062f2b;
+  --color-brand-900: #0a3d37;
+  --color-brand-800: #115149;
+  --color-brand-700: #1f6b61;
+  --color-brand-100: #dff1ed;
+  --color-brand-50: #f1faf8;
+
+  --color-gold-700: #9b7632;
+  --color-gold-600: #b58c42;
+  --color-gold-500: #c9a55d;
+  --color-gold-100: #f4ead4;
+
+  --color-ink-950: #14201e;
+  --color-ink-700: #3f4d4a;
+  --color-ink-500: #5c6b68;
+  --color-border: #d5dedb;
+  --color-surface: #ffffff;
+  --color-canvas: #f7faf8;
+  --color-ivory: #fbf8f0;
+
+  --color-success: #19734d;
+  --color-warning: #9a6700;
+  --color-danger: #b42318;
+  --color-info: #175cd3;
+
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink-950);
+  --muted: var(--color-brand-50);
+  --muted-foreground: var(--color-ink-700);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink-950);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink-950);
+  --border: var(--color-border);
+  --input: var(--color-border);
+  --primary: var(--color-brand-800);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-brand-50);
+  --secondary-foreground: var(--color-brand-900);
+  --accent: var(--color-ivory);
+  --accent-foreground: var(--color-brand-900);
+  --destructive: var(--color-danger);
+  --destructive-foreground: #ffffff;
+  --ring: var(--color-brand-700);
+  --radius: 0.8125rem;
+
+  --radius-control: 0.8125rem;
+  --radius-card: 1rem;
+  --radius-surface: 1.125rem;
+
+  --shadow-sm: 0 1px 2px rgb(15 35 30 / 0.06);
+  --shadow-md: 0 8px 24px rgb(15 35 30 / 0.1);
+  --shadow-lg: 0 20px 50px rgb(15 35 30 / 0.14);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+  --color-brand-950: var(--color-brand-950);
+  --color-brand-900: var(--color-brand-900);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-50: var(--color-brand-50);
+  --color-gold-700: var(--color-gold-700);
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-100: var(--color-gold-100);
+  --color-ink-950: var(--color-ink-950);
+  --color-ink-700: var(--color-ink-700);
+  --color-ink-500: var(--color-ink-500);
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-ivory: var(--color-ivory);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-info: var(--color-info);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius-card);
+  --radius-xl: var(--radius-surface);
+  --font-sans: var(--font-waraqa-body), "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-display: var(--font-waraqa-display), var(--font-waraqa-body), "Noto Sans Arabic", sans-serif;
+  /* Official wordmark: Aref Ruqaa Ink Bold via --font-waraqa-wordmark */
+  --font-wordmark: var(--font-waraqa-wordmark), "Aref Ruqaa Ink", var(--font-waraqa-display),
+    "Noto Sans Arabic", sans-serif;
+}
+
+/* Aref Ruqaa Ink is a COLR color font with built-in warm/red ink.
+   Override every known palette index to approved brand colors. */
+@font-palette-values --waraqa-wm-primary {
+  font-family: "Aref Ruqaa Ink";
+  base-palette: 0;
+  override-colors:
+    0 #0a3d37,
+    1 #0a3d37,
+    2 #0a3d37,
+    3 #0a3d37,
+    4 #0a3d37,
+    5 #0a3d37,
+    6 #0a3d37,
+    7 #0a3d37;
+}
+
+@font-palette-values --waraqa-wm-reversed {
+  font-family: "Aref Ruqaa Ink";
+  base-palette: 0;
+  override-colors:
+    0 #fbf8f0,
+    1 #fbf8f0,
+    2 #fbf8f0,
+    3 #fbf8f0,
+    4 #fbf8f0,
+    5 #fbf8f0,
+    6 #fbf8f0,
+    7 #fbf8f0;
+}
+
+@font-palette-values --waraqa-wm-ink {
+  font-family: "Aref Ruqaa Ink";
+  base-palette: 0;
+  override-colors:
+    0 #14201e,
+    1 #14201e,
+    2 #14201e,
+    3 #14201e,
+    4 #14201e,
+    5 #14201e,
+    6 #14201e,
+    7 #14201e;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0;
+  }
+
+  a.prose-link {
+    @apply text-brand-800 underline underline-offset-4;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .waraqa-container {
+    width: min(100% - 2rem, 72rem);
+    margin-inline: auto;
+  }
+
+  .waraqa-shell {
+    width: min(100% - 2rem, 62rem);
+    margin-inline: auto;
+  }
+
+  .waraqa-reading {
+    max-inline-size: 42rem;
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: 0;
+    z-index: 100;
+    transform: translateY(-120%);
+    border-radius: var(--radius-control);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0.75rem);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .font-wordmark {
+    font-family: var(--font-wordmark);
+    letter-spacing: 0;
+    /* Solid CSS color as fallback when palette is unsupported */
+    -webkit-text-fill-color: currentColor;
+  }
+
+  /* Mobile pattern tile (~240px). Opacity stays on the element style. */
+  @media (max-width: 767px) {
+    .waraqa-pattern-responsive {
+      background-size: 240px 240px !important;
+    }
+  }
+}
+
+@media print {
+  [aria-hidden='true'].pointer-events-none {
+    display: none !important;
+  }
+}

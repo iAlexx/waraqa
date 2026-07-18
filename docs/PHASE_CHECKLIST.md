@@ -6,8 +6,8 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | --- | --- | --- | --- |
 | 0 | Decisions and Compatibility Audit | **COMPLETE — OWNER APPROVED** | Versions compatible; docs present; no feature code; no deps installed; owner amendments reflected |
 | 1 | Project Bootstrap | **COMPLETE — OWNER APPROVED** | App starts; admin loads; DB connects; lint/typecheck/test/build/e2e pass |
-| 2 | Design System and RTL Foundation | **NOT STARTED** | Components RTL/mobile/a11y OK |
-| 3 | Core Payload Collections | Not started | RBAC + migrations + types |
+| 2 | Design System and RTL Foundation | **COMPLETE — OWNER APPROVED** | Tokens, components, RTL, a11y, showcase, screenshots + automated gates; wordmark colors corrected |
+| 3 | Core Payload Collections | **NOT STARTED** | RBAC + migrations + types |
 | 4 | Transactions Schema and Workflow | Not started | Draft→publish; researcher cannot publish |
 | 5 | Public Shell and Home Page | Not started | Disclaimer, search entry, RTL |
 | 6 | Search and Categories | Not started | Aliases; published only |
@@ -20,33 +20,24 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 13 | Hardening, A11y, Performance | Not started | Full test matrix |
 | 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
 
-## Phase 0 deliverables
+## Phase 0 / 1
 
-- [x] Planning docs and `.env.example`
-- [x] Owner APPROVED (2026-07-18)
+- [x] Owner APPROVED
 
-## Phase 1 deliverables
+## Phase 2 deliverables
 
-- [x] Next.js + Payload 3.86.0 bootstrap at repo root
-- [x] `engines.node: "24.x"` and `packageManager: "pnpm@11.14.0"`
-- [x] Pinned audited package versions
-- [x] Zod env validation (`src/lib/env.ts`)
-- [x] Arabic RTL root + minimal home placeholder + independence disclaimer
-- [x] `GET /api/health` (Node runtime, sanitized)
-- [x] Docker Compose Postgres (dev-only, host port 5433)
-- [x] Vitest unit tests + Playwright E2E + optional `test:int`
-- [x] README + CI workflow
-- [x] Gate commands: lint, typecheck, test, build, test:e2e — PASS
-- [x] Phase 1 closure: GraphQL routes removed + `graphQL.disable`; unused `@eslint/eslintrc` removed; baseline commit
-- [x] Owner APPROVED (Phase 1 technical review PASS)
-
-## Phase 1 closure notes
-
-- Official blank scaffold ships optional GraphQL route files; they are **not** required for Waraqa Phase 1 (REST/Local API + admin). Routes deleted and `graphQL: { disable: true }` set so no GraphQL surface remains.
-- `@eslint/eslintrc` was unused after migrating to native `eslint-config-next` flat config; removed as a direct dependency.
+- [x] Design tokens + typography + `docs/DESIGN_SYSTEM.md`
+- [x] UI primitives (button through progress)
+- [x] Header/footer shells, skip link, geometric utility
+- [x] Dev-only `/dev/design-system` showcase (production `notFound`)
+- [x] Component + E2E + a11y tests
+- [x] QA screenshots under `docs/qa/phase-2/` (Round 05 approved)
+- [x] Automated gates PASS (lint/typecheck/test/int/build/e2e)
+- [x] Owner visual approval (wordmark not red; green / ivory / ink)
+- [x] Commit `feat: complete phase 2 design system and rtl foundation`
+- [x] Annotated tag `phase-2-complete`
 
 ## Rules
 
-- One phase at a time.
-- Do not start Phase 2 until the owner explicitly authorizes it.
-- Do not implement design-system, domain collections, search, guide, or reporting until Phase 2+.
+- Do not start Phase 3 until Phase 2 is owner-approved (now complete — Phase 3 still not started in this closure).
+- No domain collections, search, guide, reports, or migrations in Phase 2.
