@@ -1,28 +1,103 @@
-import { BrandMark } from '@/components/brand/brand-mark'
-import { HeroCornerMotifs } from '@/components/decorative/hero-corner-motifs'
-import { HomeStartCta } from '@/components/layout/home-start-cta'
-import { Card, CardDescription, CardTitle } from '@/components/ui/card'
+import type { Metadata } from 'next'
 
-export default function HomePage() {
+import { HomeCategories } from '@/components/home/home-categories'
+import { HomeFeatured } from '@/components/home/home-featured'
+import { HomeHero } from '@/components/home/home-hero'
+import { HomeHowItWorks } from '@/components/home/home-how-it-works'
+import { HomeLoadingSkeleton } from '@/components/home/home-loading-skeleton'
+import { HomeTrust } from '@/components/home/home-trust'
+import { MaintenanceNotice } from '@/components/home/maintenance-notice'
+import { loadPublicCategories } from '@/lib/public/categories'
+import { loadFeaturedTransactions } from '@/lib/public/featured-transactions'
+import { loadPublicSiteSettings } from '@/lib/public/site-settings'
+
+type HomeSearchParams = {
+  qaEmpty?: string
+  qaMaintenance?: string
+  qaLoading?: string
+}
+
+/**
+ * Block streaming shell for `/`.
+ * Route-level loading.tsx was removed so no-JS clients receive the completed
+ * server HTML (not a Suspense loading fallback). All primary data is awaited
+ * before the document is returned.
+ */
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await loadPublicSiteSettings()
+  const title = settings.siteName || 'ورقة'
+  const description =
+    settings.tagline ||
+    'ورقة منصة إرشادية بتساعدك تعرف شو المطلوب لمعاملتك، خطوة بخطوة.'
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      locale: 'ar_SY',
+      type: 'website',
+      siteName: title,
+    },
+  }
+}
+
+/**
+ * Optional QA-only empty/maintenance/loading overrides when ALLOW_QA_EMPTY_STATES=1.
+ * Never invents content — only forces empty/loading UI shells for screenshot capture.
+ */
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<HomeSearchParams>
+}) {
+  const params = await searchParams
+  const qaEnabled = process.env.ALLOW_QA_EMPTY_STATES === '1'
+
+  if (qaEnabled && params.qaLoading === '1') {
+    return <HomeLoadingSkeleton />
+  }
+
+  const settings = await loadPublicSiteSettings()
+
+  if (settings.maintenanceMode || (qaEnabled && params.qaMaintenance === '1')) {
+    return <MaintenanceNotice />
+  }
+
+  const sections = settings.homePageSections
+  const forceEmptyCategories = qaEnabled && params.qaEmpty === 'categories'
+  const forceEmptyFeatured = qaEnabled && params.qaEmpty === 'featured'
+
+  // Await all primary sections before paint — no Suspense boundary around home body.
+  const [{ categories, unavailable: categoriesUnavailable }, featured] = await Promise.all([
+    sections.showCategories && !forceEmptyCategories
+      ? loadPublicCategories()
+      : Promise.resolve({ categories: [], unavailable: false }),
+    sections.showFeatured && !forceEmptyFeatured
+      ? loadFeaturedTransactions(settings.featuredTransactionIds)
+      : Promise.resolve({ items: [], unavailable: false }),
+  ])
+
   return (
-    <section className="relative overflow-hidden bg-ivory">
-      <HeroCornerMotifs />
-      <div className="relative z-[1] mx-auto flex w-full max-w-[52rem] flex-col items-stretch gap-6 px-4 py-12 pb-14 text-start md:items-center md:gap-7 md:px-6 md:py-16 md:pb-20 md:text-center">
-        <h1>
-          <BrandMark size="hero" variant="primary" />
-        </h1>
-        <p className="max-w-[34rem] text-[1.0625rem] leading-[1.85] text-ink-700 md:text-[1.125rem]">
-          عم نجهّز منصة ورقة لتساعدك تعرف شو المطلوب لمعاملتك، خطوة بخطوة.
-        </p>
-        <HomeStartCta />
-        <Card className="w-full max-w-[34rem] border border-border/70 bg-surface text-start shadow-[var(--shadow-sm)]">
-          <CardTitle className="font-display text-xl">قريباً</CardTitle>
-          <CardDescription className="mt-2 text-[0.9375rem] leading-relaxed text-ink-700">
-            هالصفحة لسا قيد التجهيز. رح تلاقي الدليل التفاعلي والبحث بعد ما
-            نكمّل المراحل الجاية.
-          </CardDescription>
-        </Card>
-      </div>
-    </section>
+    <>
+      <HomeHero settings={settings} />
+      {sections.showCategories ? (
+        <HomeCategories
+          categories={forceEmptyCategories ? [] : categories}
+          unavailable={categoriesUnavailable}
+        />
+      ) : null}
+      {sections.showFeatured ? (
+        <HomeFeatured
+          items={forceEmptyFeatured ? [] : featured.items}
+          unavailable={featured.unavailable}
+        />
+      ) : null}
+      {sections.showHowItWorks ? <HomeHowItWorks /> : null}
+      {sections.showTrust ? <HomeTrust /> : null}
+    </>
   )
 }

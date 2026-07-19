@@ -1,0 +1,40 @@
+{
+  "phase": 5,
+  "status": "OWNER APPROVED",
+  "folder": "round-03-mobile-nav-visual-closure",
+  "kind": "complete",
+  "sourceRevision": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure",
+  "gatePass": true,
+  "files": {
+    "comparison-round02-vs-round03.png": {
+      "bytes": 57345,
+      "sha256": "84c4f4dadacf79a18781cfc1b5a8e111351dbd88fccebed407cf8d14f08c9064",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/comparison-round02-vs-round03.png"
+    },
+    "mobile-nav-closed-360-regression.png": {
+      "bytes": 46958,
+      "sha256": "cded4128142c43b30ddcc2f23fbdd035c3a92e6aad4e6a175483bd71868a86db",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-closed-360-regression.png"
+    },
+    "mobile-nav-keyboard-focus.png": {
+      "bytes": 26997,
+      "sha256": "41b0b9531748092aef2b319fbed4f79347ee56f531ff47623be6d86b8ab5bb68",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-keyboard-focus.png"
+    },
+    "mobile-nav-open-360-visible.png": {
+      "bytes": 19818,
+      "sha256": "9436c9d6376fbe063fb3780524443916c303f9cdcd54772e10cd65f0c0cdeb9b",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-open-360-visible.png"
+    },
+    "mobile-nav-open-390-visible.png": {
+      "bytes": 26997,
+      "sha256": "41b0b9531748092aef2b319fbed4f79347ee56f531ff47623be6d86b8ab5bb68",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-open-390-visible.png"
+    }
+  }
+}

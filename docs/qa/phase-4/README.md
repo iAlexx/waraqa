@@ -28,4 +28,4 @@ Same as Phase 3: never overwrite prior rounds; fictional data only; no secrets i
 
 Complete approved Phase 4 visual evidence is distributed across Rounds **02–04** under `approved/`. See [approved/README.md](./approved/README.md).
 
-Phase 5 is **not started**.
+Phase 5 is **COMPLETE — OWNER APPROVED** (see `docs/qa/phase-5/`).

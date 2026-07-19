@@ -1,0 +1,76 @@
+{
+  "phase": 5,
+  "status": "OWNER APPROVED",
+  "folder": "round-01-public-shell-home-curated",
+  "kind": "curated",
+  "sourceRevision": "docs/qa/phase-5/revisions/round-01-public-shell-home",
+  "gatePass": true,
+  "files": {
+    "categories-empty-state.png": {
+      "bytes": 60933,
+      "sha256": "38e301e1d2dde38143e4a24e4350c388f795d1977f379daf2cc9deacff179ec6",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/categories-empty-state.png"
+    },
+    "categories-populated.png": {
+      "bytes": 61486,
+      "sha256": "b3cba7644799cb7e74d3fd44601ccccc3c54be161fdbc9af328984e6e9d1ff58",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/categories-populated.png"
+    },
+    "error-state.png": {
+      "bytes": 34694,
+      "sha256": "3d6fe556baf31960424a6591956c6dbe5c431b8c8dbb7e3e8e13a66a77a9302c",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/error-state.png"
+    },
+    "footer-disclaimer.png": {
+      "bytes": 70461,
+      "sha256": "ba8a8cb8ac0995adb9e54fee174f20115d2128c1875ac16bdde70a9bf68edac4",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/footer-disclaimer.png"
+    },
+    "home-desktop-1440.png": {
+      "bytes": 199471,
+      "sha256": "b5e7cd58a4ba272e73461da0d17318f2e724e71ea539e37f5b87e2ad528bc90f",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-desktop-1440.png"
+    },
+    "home-mobile-360.png": {
+      "bytes": 184786,
+      "sha256": "e85b8a4c2a5dc6f7c2e3b540c3b4ba142a55cbc677a4a93f52aacfb4c1c5aea4",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-mobile-360.png"
+    },
+    "home-mobile-390.png": {
+      "bytes": 185133,
+      "sha256": "45d6a8492561e631598f3f07964f77a9b348e74d8acb9831ca816fbe7a268e15",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-mobile-390.png"
+    },
+    "home-tablet-768.png": {
+      "bytes": 182888,
+      "sha256": "d56eb168089a0e780fd5a38b4f646cb04a6fe7ea50a547f2405f625e1e2d5aff",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-tablet-768.png"
+    },
+    "keyboard-focus-search.png": {
+      "bytes": 64340,
+      "sha256": "ce008253a5ce42761b5eeb8e27d68ad5e1a980c26f4c0c18fdc58d87509cbe8f",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/keyboard-focus-search.png"
+    },
+    "maintenance-mode.png": {
+      "bytes": 46045,
+      "sha256": "69d928426d732983e7ca8d2012cdf9a25660e9ae530f830a707bbd2a65400d27",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/maintenance-mode.png"
+    },
+    "trust-section.png": {
+      "bytes": 75786,
+      "sha256": "cab9f8ce6b97eb89a89093a8462b461cc15706a922dc28830dfcec592f0cef37",
+      "gatePass": true,
+      "source": "docs/qa/phase-5/revisions/round-01-public-shell-home/trust-section.png"
+    }
+  }
+}

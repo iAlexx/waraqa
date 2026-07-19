@@ -1,0 +1,33 @@
+{
+  "phase": 5,
+  "round": "round-03-mobile-nav-visual-closure",
+  "productionOnly": true,
+  "round01Untouched": true,
+  "round02Untouched": true,
+  "gatePass": true,
+  "rootCause": "Fixed descendants lived inside sticky header with backdrop-blur; backdrop-filter made fixed use a ~64px header containing block, clipping drawer links.",
+  "files": {
+    "mobile-nav-open-360-visible.png": {
+      "bytes": 19818,
+      "gatePass": true,
+      "notes": "Pre-shot: labels + badge + panel min 280x200 + viewport intersection"
+    },
+    "mobile-nav-open-390-visible.png": {
+      "bytes": 26997,
+      "gatePass": true,
+      "notes": "Pre-shot: labels + badge + panel min 280x200 + viewport intersection"
+    },
+    "mobile-nav-closed-360-regression.png": {
+      "bytes": 46958,
+      "gatePass": true
+    },
+    "mobile-nav-keyboard-focus.png": {
+      "bytes": 26997,
+      "gatePass": true
+    },
+    "comparison-round02-vs-round03.png": {
+      "bytes": 57345,
+      "gatePass": true
+    }
+  }
+}

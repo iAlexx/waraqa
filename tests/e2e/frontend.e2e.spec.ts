@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import sharp from 'sharp'
 
-test.describe('Public home shell (Phase 2)', () => {
+test.describe('Public home shell (Phase 5)', () => {
   test('loads Arabic RTL shell with footer disclaimer and skip link', async ({
     page,
   }) => {
@@ -15,9 +15,11 @@ test.describe('Public home shell (Phase 2)', () => {
     await expect(html).toHaveAttribute('dir', 'rtl')
 
     const footer = page.locator('footer')
-    await expect(footer).toContainText(
-      'منصة إرشادية مستقلة — ليست موقعاً حكومياً',
-    )
+    await expect(footer).toContainText('مستقلة')
+    await expect(footer).toContainText('ليست موقعاً حكومياً')
+
+    // Hero disclaimer must be visible (not role=note — Phase 2 guard preserved)
+    await expect(page.locator('[data-hero-disclaimer]')).toContainText('مستقلة')
     await expect(
       page.getByRole('note').filter({ hasText: 'مستقلة' }),
     ).toHaveCount(0)
@@ -34,9 +36,95 @@ test.describe('Public home shell (Phase 2)', () => {
     expect(hasHorizontalOverflow).toBe(false)
   })
 
-  for (const width of [320, 360, 390] as const) {
+  test('native search form is keyboard usable and GET-based', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 800 })
+    await page.goto('/')
+    const form = page.locator('form#hero-search')
+    await expect(form).toHaveAttribute('method', /get/i)
+    await expect(form).toHaveAttribute('action', '/search')
+    const input = page.getByLabel('ابحث عن معاملة')
+    await input.click()
+    await expect(input).toBeFocused()
+    await input.fill('جواز سفر')
+    await Promise.all([
+      page.waitForURL(/\/search\?q=/),
+      page.keyboard.press('Enter'),
+    ])
+    await expect(page.getByRole('heading', { name: /البحث/ })).toBeVisible()
+    await expect(page.getByText(/ما بتعرض نتائج وهمية|محرّك البحث العربي/)).toBeVisible()
+  })
+
+  test('header landmarks and mobile checkbox menu', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+    const header = page.locator('header')
+    await expect(header).toBeVisible()
+    const box = await header.boundingBox()
+    expect(box?.height).toBeLessThanOrEqual(68)
+
+    const openControl = page.getByLabel('فتح قائمة التنقل')
+    await expect(openControl).toBeVisible()
+    await openControl.click()
+    const panel = page.locator('#waraqa-mobile-nav-panel')
+    await expect(panel).toBeVisible()
+
+    const panelBox = await panel.boundingBox()
+    expect(panelBox).toBeTruthy()
+    expect(panelBox!.width).toBeGreaterThanOrEqual(280)
+    expect(panelBox!.height).toBeGreaterThan(200)
+
+    await expect(panel.getByText('بحث', { exact: true })).toBeVisible()
+    await expect(panel.getByText('التصنيفات', { exact: true })).toBeVisible()
+    await expect(panel.getByText('كيف بتشتغل ورقة؟', { exact: true })).toBeVisible()
+    await expect(panel.getByText('عن ورقة', { exact: true })).toBeVisible()
+    await expect(panel.getByText('منصة مستقلة — مو موقع حكومي', { exact: true })).toBeVisible()
+    await expect(page.locator('[data-mobile-nav-backdrop]')).toBeVisible()
+
+    const viewport = page.viewportSize()!
+    for (const label of ['بحث', 'التصنيفات', 'كيف بتشتغل ورقة؟', 'عن ورقة']) {
+      const el = panel.getByText(label, { exact: true })
+      const b = await el.boundingBox()
+      expect(b).toBeTruthy()
+      expect(b!.width).toBeGreaterThan(8)
+      expect(b!.x).toBeGreaterThanOrEqual(-1)
+      expect(b!.x + b!.width).toBeLessThanOrEqual(viewport.width + 1)
+      expect(b!.y).toBeGreaterThan(40)
+    }
+
+    const overflow = await page.evaluate(() => {
+      return document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
+    })
+    expect(overflow).toBe(false)
+  })
+
+  test('no-JavaScript home renders complete primary content (not loading shell)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, locale: 'ar-SY' })
+    const page = await context.newPage()
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const response = await page.goto('/', { waitUntil: 'load', timeout: 60_000 })
+    expect(response?.ok()).toBeTruthy()
+
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'خلّينا نجهز معاملتك قبل ما تطلع' }),
+    ).toBeVisible()
+    await expect(page.locator('form#hero-search')).toBeVisible()
+    await expect(page.locator('[data-hero-disclaimer]')).toContainText('مستقلة')
+    await expect(page.locator('#categories')).toBeVisible()
+    await expect(page.locator('#featured')).toBeVisible()
+    await expect(page.locator('#how-it-works')).toBeVisible()
+    await expect(page.locator('#trust')).toBeVisible()
+    await expect(page.locator('footer')).toContainText('مستقلة')
+    await expect(page.locator('[data-loading="home"]')).toHaveCount(0)
+    await expect(page.getByText('عم نحضر الصفحة')).toHaveCount(0)
+
+    await context.close()
+  })
+
+  for (const width of [360, 390, 768, 1024, 1440] as const) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {
-      await page.setViewportSize({ width, height: 640 })
+      await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
       const overflow = await page.evaluate(() => {
         return document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
@@ -65,10 +153,9 @@ test.describe('Public home shell (Phase 2)', () => {
     })
     expect(styleCheck.variant).toBe('primary')
     expect(styleCheck.className).not.toMatch(/danger|destructive/)
-    // brand-900 ≈ rgb(10, 61, 55)
     expect(styleCheck.color).toMatch(/rgb\(\s*10,\s*61,\s*55\s*\)/)
 
-    const png = await page.locator('h1 [data-brand-mark]').screenshot({ type: 'png' })
+    const png = await page.locator('header [data-brand-mark]').first().screenshot({ type: 'png' })
     const { data, info } = await sharp(png)
       .ensureAlpha()
       .raw()
@@ -92,6 +179,21 @@ test.describe('Public home shell (Phase 2)', () => {
     expect(samples).toBeGreaterThan(20)
     expect(redHeavy / samples).toBeLessThan(0.15)
     expect(greenHeavy).toBeGreaterThan(redHeavy)
+  })
+
+  test('home passes axe with no critical/serious issues', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto('/')
+    const results = await new AxeBuilder({ page }).analyze()
+    const serious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious',
+    )
+    expect(serious).toEqual([])
+  })
+
+  test('graphql remains disabled', async ({ request }) => {
+    const response = await request.get('/api/graphql')
+    expect(response.status()).toBe(404)
   })
 })
 
@@ -118,7 +220,6 @@ test.describe('Design system (development)', () => {
 
     await page.getByRole('button', { name: 'Toast نجاح' }).click()
 
-    // Dismiss toast before axe so ephemeral Sonner chrome does not skew contrast.
     await page.waitForTimeout(400)
     await page.keyboard.press('Escape')
     await page.waitForTimeout(200)
@@ -157,10 +258,10 @@ test.describe('Reduced motion', () => {
   test('home remains usable with reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
-    await expect(page.getByRole('heading', { level: 1, name: 'ورقة' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'ورقة' }).first()).toBeVisible()
-    await expect(page.locator('footer')).toContainText(
-      'منصة إرشادية مستقلة — ليست موقعاً حكومياً',
-    )
+    await expect(
+      page.getByRole('heading', { level: 1, name: /خلّينا نجهز معاملتك/ }),
+    ).toBeVisible()
+    await expect(page.getByRole('link', { name: /ورقة/ }).first()).toBeVisible()
+    await expect(page.locator('footer')).toContainText('مستقلة')
   })
 })

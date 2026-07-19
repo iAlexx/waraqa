@@ -14,6 +14,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Callout } from '@/components/ui/callout'
 import { Card, CardDescription, CardTitle } from '@/components/ui/card'
+import { fallbackPublicSiteSettings } from '@/lib/public/site-settings-map'
 import { CheckboxField } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -489,11 +490,11 @@ export function DesignSystemShowcase() {
 
         <Section id="shells" title="هيكل الرأس والذيل">
           <div className="overflow-hidden rounded-[1.125rem] border border-border bg-surface">
-            <SiteHeader />
+            <SiteHeader settings={fallbackPublicSiteSettings()} />
             <div className="px-5 py-6">
               <p className="text-sm text-ink-700">معاينة الرأس والذيل على سطح أبيض هادئ.</p>
             </div>
-            <SiteFooter />
+            <SiteFooter settings={fallbackPublicSiteSettings()} />
           </div>
         </Section>
 

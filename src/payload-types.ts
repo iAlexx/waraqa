@@ -977,7 +977,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * إعدادات عامة للمنصة — بدون واجهة عامة في Phase 3.
+ * إعدادات عامة للمنصة — تُستهلك في الواجهة العامة (Phase 5).
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
@@ -995,11 +995,36 @@ export interface SiteSetting {
    */
   verificationPolicyDays?: number | null;
   /**
-   * علم داخلي فقط في Phase 3 — لا يغيّر الواجهة العامة بعد.
+   * يعرض رسالة صيانة على الواجهة العامة — لوحة /admin تبقى متاحة.
    */
   maintenanceMode?: boolean | null;
   /**
-   * يُستهلك في Phase 5 — لا واجهة عامة في Phase 3.
+   * شرائح أمثلة تحت حقل البحث — نص عربي قصير.
+   */
+  searchExamples?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * لا تُعرض للعامة إلا إن وُجدت روابط HTTP(S) صالحة.
+   */
+  socialLinks?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  homePageSections?: {
+    showCategories?: boolean | null;
+    showFeatured?: boolean | null;
+    showHowItWorks?: boolean | null;
+    showTrust?: boolean | null;
+  };
+  /**
+   * يُعرض ٤–٦ عند التوفّر — فقط السجلات العامة الصالحة.
    */
   featuredTransactions?: (number | Transaction)[] | null;
   updatedAt?: string | null;
@@ -1018,6 +1043,27 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   supportPhone?: T;
   verificationPolicyDays?: T;
   maintenanceMode?: T;
+  searchExamples?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  homePageSections?:
+    | T
+    | {
+        showCategories?: T;
+        showFeatured?: T;
+        showHowItWorks?: T;
+        showTrust?: T;
+      };
   featuredTransactions?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import {
   Alexandria,
@@ -8,6 +9,7 @@ import {
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { Toaster } from '@/components/ui/toast'
+import { loadPublicSiteSettings } from '@/lib/public/site-settings'
 
 import './globals.css'
 
@@ -32,18 +34,37 @@ const arefRuqaaInk = Aref_Ruqaa_Ink({
   variable: '--font-waraqa-wordmark',
 })
 
-export const metadata = {
-  title: 'ورقة',
-  description:
-    'ورقة منصة إرشادية بتساعدك تعرف شو المطلوب لمعاملتك، خطوة بخطوة.',
-  robots: {
-    index: true,
-    follow: true,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await loadPublicSiteSettings()
+  const title = settings.siteName || 'ورقة'
+  const description =
+    settings.tagline ||
+    'ورقة منصة إرشادية بتساعدك تعرف شو المطلوب لمعاملتك، خطوة بخطوة.'
+
+  return {
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
+    description,
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
+    openGraph: {
+      title,
+      description,
+      locale: 'ar_SY',
+      type: 'website',
+      siteName: title,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
 }
 
-export default function RootLayout(props: { children: ReactNode }) {
+export default async function RootLayout(props: { children: ReactNode }) {
   const { children } = props
+  const settings = await loadPublicSiteSettings()
 
   return (
     <html
@@ -51,15 +72,15 @@ export default function RootLayout(props: { children: ReactNode }) {
       dir="rtl"
       className={`${alexandria.variable} ${ibmPlexSansArabic.variable} ${arefRuqaaInk.variable}`}
     >
-      <body className="relative flex flex-col bg-canvas font-sans">
+      <body className="relative flex min-h-dvh flex-col overflow-x-hidden bg-canvas font-sans">
         <a href="#main-content" className="skip-link">
           تخطّى إلى المحتوى
         </a>
-        <SiteHeader />
-        <main id="main-content" tabIndex={-1} className="relative outline-none">
+        <SiteHeader settings={settings} />
+        <main id="main-content" tabIndex={-1} className="relative flex-1 outline-none">
           {children}
         </main>
-        <SiteFooter />
+        <SiteFooter settings={settings} />
         <Toaster position="bottom-center" closeButton />
       </body>
     </html>

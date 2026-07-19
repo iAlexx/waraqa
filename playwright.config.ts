@@ -23,7 +23,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'corepack pnpm@11.14.0 dev',
-    reuseExistingServer: !process.env.CI,
+    // Prefer a fresh Phase-aware server; set PLAYWRIGHT_REUSE_SERVER=1 to attach to an existing one.
+    reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1',
     url: 'http://localhost:3000',
     timeout: 180_000,
   },

@@ -2156,28 +2156,35 @@ Payload-owned English chrome strings (Create New, Save Draft, Publish changes, S
 
 ## Phase 5 — Public Shell and Home Page
 
+**Status: COMPLETE — OWNER APPROVED** (`phase-5-complete`)
+
 ### Tasks
 
-- implement public header/footer;
-- hero search;
-- categories;
-- featured procedures;
-- how-it-works section;
-- trust section;
-- disclaimers;
-- loading and error states;
-- metadata;
-- responsive behavior.
+- [x] implement public header/footer;
+- [x] hero search entry (native GET; Phase 6 boundary);
+- [x] categories;
+- [x] featured procedures (configured, publication-safe);
+- [x] how-it-works section;
+- [x] trust section;
+- [x] disclaimers;
+- [x] loading and error states;
+- [x] metadata (Phase 5-level Open Graph; not Phase 11 SEO);
+- [x] responsive behavior;
+- [x] owner visual approval (QA Rounds 01–03 → `docs/qa/phase-5/approved/`).
 
 ### Acceptance criteria
 
-- home page works without JavaScript for primary content;
-- search is usable with keyboard;
-- disclaimer is clearly visible;
-- no government logo or official visual implication;
-- mobile layout passes all target widths;
-- Lighthouse/accessibility review has no critical issue;
-- production build passes.
+- [x] home page works without JavaScript for primary content;
+- [x] search entry is usable with keyboard;
+- [x] disclaimer is clearly visible;
+- [x] no government logo or official visual implication;
+- [x] mobile layout passes all target widths;
+- [x] Lighthouse/accessibility review has no critical issue;
+- [x] production build passes.
+
+### Boundaries
+
+**Not Phase 5:** Arabic search engine/results (Phase 6), full transaction pages (Phase 7), reporting flow (Phase 10), sitemap/robots/revalidation (Phase 11).
 
 ## Phase 6 — Arabic Search
 

@@ -8,8 +8,8 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 1 | Project Bootstrap | **COMPLETE — OWNER APPROVED** | App starts; admin loads; DB connects; lint/typecheck/test/build/e2e pass |
 | 2 | Design System and RTL Foundation | **COMPLETE — OWNER APPROVED** | Tokens, components, RTL, a11y, showcase, screenshots + automated gates; wordmark colors corrected |
 | 3 | Core Payload Collections | **COMPLETE — OWNER APPROVED** | Collections + full `transactions` model + Site Settings + RBAC + migrations + Round 01 QA approved |
-| 4 | Transactions Schema and Workflow | **COMPLETE — OWNER APPROVED** | Editorial workflow, audit, preview, access gates, Admin UX; QA Rounds 02–04 approved; tag `phase-4-complete` |
-| 5 | Public Shell and Home Page | Not started | Disclaimer, search entry, RTL; Site Settings public consumption |
+| 4 | Transactions Schema and Workflow | **COMPLETE — OWNER APPROVED** | Editorial workflow, audit, preview, access gates; Admin UX; QA Rounds 02–04 approved; tag `phase-4-complete` |
+| 5 | Public Shell and Home Page | **COMPLETE — OWNER APPROVED** | Public shell, Site Settings consumption, home, states, a11y; QA Rounds 01–03 approved; tag `phase-5-complete` |
 | 6 | Search and Categories | Not started | Aliases; published only |
 | 7 | Transaction Page | Not started | Sources + verification dates |
 | 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
@@ -91,7 +91,40 @@ Branch `phase-4-editorial-workflow` from `phase-3-complete` (`461a229`).
 - [x] Owner visual approval (QA Rounds 02–04 → `docs/qa/phase-4/approved/`)
 - [x] Phase 4 commit / annotated tag `phase-4-complete`
 
-Phase 5 **not started**. Do not rebuild `transactions` schema.
+## Phase 5 — Public shell and home
+
+**Status: COMPLETE — OWNER APPROVED**
+
+Branch `phase-5-public-shell-home` from `phase-4-complete` (`e0a0a375`).
+
+### Implemented
+
+- [x] Public header and footer (RTL `ar-SY`, skip link, independence badge)
+- [x] Public Site Settings consumption (safe fields + Arabic fallbacks; private fields excluded)
+- [x] Migration `20260719_034836_phase_5_site_settings_public_fields`
+- [x] Home hero + native GET search-entry form (Phase 6 boundary placeholder `/search`)
+- [x] Published category cards (public-safe; intentional empty state)
+- [x] Eligible configured featured transactions (order preserved; draft/inactive/archived/outdated excluded)
+- [x] How-it-works and trust sections (honest “قريباً” where later phases apply)
+- [x] Loading, error, empty, maintenance, and no-JavaScript primary-content handling
+- [x] Responsive accessible mobile navigation (checkbox drawer; Round 03 visual closure)
+- [x] Arabic metadata + basic Open Graph (no Phase 11 sitemap/robots/revalidation)
+- [x] Owner visual approval — approved QA under `docs/qa/phase-5/approved/`
+- [x] Phase 5 completion commit / annotated tag `phase-5-complete`
+
+### Not started (later phases)
+
+- Phase 6 search engine and search results
+- Phase 7 transaction detail pages
+- Phase 10 reporting flow
+- Phase 11 full SEO, sitemap, robots, and revalidation
+
+### Approved QA evidence
+
+- `approved/round-02-owner-review-closure/` — complete (canonical no-JS / loading / featured)
+- `approved/round-03-mobile-nav-visual-closure/` — complete (canonical mobile nav)
+- `approved/round-01-public-shell-home-curated/` — curated baseline (superseded R01 shots excluded)
+- Revision archives under `revisions/` remain unchanged
 
 ## Phase 4 — Admin UI polish debt
 
@@ -102,6 +135,5 @@ Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list ce
 ## Rules
 
 - Phase 4 must not duplicate or re-implement the `transactions` schema (Outcome A).
-- Do not modify Phase 2 brand/UI files as part of Phase 3/4 closure beyond Admin branding components already approved.
-- Phase 2/3 QA archives remain untouched.
-- Phase 4 revision folders under `docs/qa/phase-4/revisions/` remain immutable archives.
+- Phase 5 must not implement Phase 6 search ranking/normalization or Phase 7 full transaction pages.
+- Do not start the next phase until the current phase is owner-approved and tagged.

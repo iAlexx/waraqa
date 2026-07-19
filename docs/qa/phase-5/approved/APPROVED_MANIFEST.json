@@ -1,0 +1,253 @@
+{
+  "phase": 5,
+  "status": "COMPLETE — OWNER APPROVED",
+  "ownerApproved": true,
+  "canonicalClosure": [
+    "round-02-owner-review-closure",
+    "round-03-mobile-nav-visual-closure"
+  ],
+  "curatedBaseline": "round-01-public-shell-home-curated",
+  "supersededRound01Excluded": [
+    "mobile-nav-open.png",
+    "mobile-nav-closed.png",
+    "featured-populated.png",
+    "featured-empty-state.png",
+    "loading-state.png",
+    "no-javascript-home.png"
+  ],
+  "screenshots": [
+    {
+      "file": "comparison-round01-vs-round02.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/comparison-round01-vs-round02.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/comparison-round01-vs-round02.png",
+      "bytes": 393260,
+      "sha256": "50fd1bb62c634d2321f0eb012ff428ed6c52c19283ef28743f856bd260e28fa0",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "featured-transactions-empty-regression.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/featured-transactions-empty-regression.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/featured-transactions-empty-regression.png",
+      "bytes": 57677,
+      "sha256": "f2eeb7b64686e7f0b4e01837b19aa48d999f88456be32a27575b3b5670c8f495",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "featured-transactions-populated-fixed.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/featured-transactions-populated-fixed.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/featured-transactions-populated-fixed.png",
+      "bytes": 62541,
+      "sha256": "312bde5e4c4f8b3c60f42cc3aa5f16eb2bbf29cfe27c80b33da947353e48a678",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "home-no-javascript-complete.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/home-no-javascript-complete.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/home-no-javascript-complete.png",
+      "bytes": 241444,
+      "sha256": "85b28c887e32940536f0c69e3d22c2df1e733e679df98c696445985e6830d8e3",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "loading-state-fixed.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/loading-state-fixed.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/loading-state-fixed.png",
+      "bytes": 36242,
+      "sha256": "71b22174723f682909449277a12e7c3bd2a2b177848f43bc672488c6a43c3924",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-closed-360-regression.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/mobile-nav-closed-360-regression.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/mobile-nav-closed-360-regression.png",
+      "bytes": 46958,
+      "sha256": "cded4128142c43b30ddcc2f23fbdd035c3a92e6aad4e6a175483bd71868a86db",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-open-360-fixed.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/mobile-nav-open-360-fixed.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/mobile-nav-open-360-fixed.png",
+      "bytes": 48616,
+      "sha256": "3ee902c51216a03fcbabd573d6309b9474e9336ae37096506a6f2d92940745fd",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-open-390-fixed.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/mobile-nav-open-390-fixed.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/mobile-nav-open-390-fixed.png",
+      "bytes": 50443,
+      "sha256": "ef2cf62ce8ab0209ea2a5f8575fbe4429284f028891da75b1df37bfc4e822143",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "comparison-round02-vs-round03.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/comparison-round02-vs-round03.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-03-mobile-nav-visual-closure/comparison-round02-vs-round03.png",
+      "bytes": 57345,
+      "sha256": "84c4f4dadacf79a18781cfc1b5a8e111351dbd88fccebed407cf8d14f08c9064",
+      "folder": "round-03-mobile-nav-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-closed-360-regression.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-closed-360-regression.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-03-mobile-nav-visual-closure/mobile-nav-closed-360-regression.png",
+      "bytes": 46958,
+      "sha256": "cded4128142c43b30ddcc2f23fbdd035c3a92e6aad4e6a175483bd71868a86db",
+      "folder": "round-03-mobile-nav-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-keyboard-focus.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-keyboard-focus.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-03-mobile-nav-visual-closure/mobile-nav-keyboard-focus.png",
+      "bytes": 26997,
+      "sha256": "41b0b9531748092aef2b319fbed4f79347ee56f531ff47623be6d86b8ab5bb68",
+      "folder": "round-03-mobile-nav-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-open-360-visible.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-open-360-visible.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-03-mobile-nav-visual-closure/mobile-nav-open-360-visible.png",
+      "bytes": 19818,
+      "sha256": "9436c9d6376fbe063fb3780524443916c303f9cdcd54772e10cd65f0c0cdeb9b",
+      "folder": "round-03-mobile-nav-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "mobile-nav-open-390-visible.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/mobile-nav-open-390-visible.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-03-mobile-nav-visual-closure/mobile-nav-open-390-visible.png",
+      "bytes": 26997,
+      "sha256": "41b0b9531748092aef2b319fbed4f79347ee56f531ff47623be6d86b8ab5bb68",
+      "folder": "round-03-mobile-nav-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "categories-empty-state.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/categories-empty-state.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/categories-empty-state.png",
+      "bytes": 60933,
+      "sha256": "38e301e1d2dde38143e4a24e4350c388f795d1977f379daf2cc9deacff179ec6",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "categories-populated.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/categories-populated.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/categories-populated.png",
+      "bytes": 61486,
+      "sha256": "b3cba7644799cb7e74d3fd44601ccccc3c54be161fdbc9af328984e6e9d1ff58",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "error-state.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/error-state.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/error-state.png",
+      "bytes": 34694,
+      "sha256": "3d6fe556baf31960424a6591956c6dbe5c431b8c8dbb7e3e8e13a66a77a9302c",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "footer-disclaimer.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/footer-disclaimer.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/footer-disclaimer.png",
+      "bytes": 70461,
+      "sha256": "ba8a8cb8ac0995adb9e54fee174f20115d2128c1875ac16bdde70a9bf68edac4",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "home-desktop-1440.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-desktop-1440.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/home-desktop-1440.png",
+      "bytes": 199471,
+      "sha256": "b5e7cd58a4ba272e73461da0d17318f2e724e71ea539e37f5b87e2ad528bc90f",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "home-mobile-360.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-mobile-360.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/home-mobile-360.png",
+      "bytes": 184786,
+      "sha256": "e85b8a4c2a5dc6f7c2e3b540c3b4ba142a55cbc677a4a93f52aacfb4c1c5aea4",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "home-mobile-390.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-mobile-390.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/home-mobile-390.png",
+      "bytes": 185133,
+      "sha256": "45d6a8492561e631598f3f07964f77a9b348e74d8acb9831ca816fbe7a268e15",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "home-tablet-768.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/home-tablet-768.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/home-tablet-768.png",
+      "bytes": 182888,
+      "sha256": "d56eb168089a0e780fd5a38b4f646cb04a6fe7ea50a547f2405f625e1e2d5aff",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "keyboard-focus-search.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/keyboard-focus-search.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/keyboard-focus-search.png",
+      "bytes": 64340,
+      "sha256": "ce008253a5ce42761b5eeb8e27d68ad5e1a980c26f4c0c18fdc58d87509cbe8f",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "maintenance-mode.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/maintenance-mode.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/maintenance-mode.png",
+      "bytes": 46045,
+      "sha256": "69d928426d732983e7ca8d2012cdf9a25660e9ae530f830a707bbd2a65400d27",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "trust-section.png",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-01-public-shell-home/trust-section.png",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-01-public-shell-home-curated/trust-section.png",
+      "bytes": 75786,
+      "sha256": "cab9f8ce6b97eb89a89093a8462b461cc15706a922dc28830dfcec592f0cef37",
+      "folder": "round-01-public-shell-home-curated",
+      "kind": "curated"
+    }
+  ],
+  "revisionArchivesUntouched": [
+    "docs/qa/phase-5/revisions/round-01-public-shell-home/",
+    "docs/qa/phase-5/revisions/round-02-owner-review-closure/",
+    "docs/qa/phase-5/revisions/round-03-mobile-nav-visual-closure/"
+  ],
+  "supportingFiles": [
+    {
+      "file": "fixture-manifest.json",
+      "sourceRevisionPath": "docs/qa/phase-5/revisions/round-02-owner-review-closure/fixture-manifest.json",
+      "approvedDestinationPath": "docs/qa/phase-5/approved/round-02-owner-review-closure/fixture-manifest.json",
+      "bytes": 443,
+      "sha256": "3cfbf94f7c136713129024ab652f1c6e55d150495a2d4e056ee6a251f2a84b34",
+      "folder": "round-02-owner-review-closure",
+      "kind": "complete"
+    }
+  ],
+  "screenshotCount": 24
+}

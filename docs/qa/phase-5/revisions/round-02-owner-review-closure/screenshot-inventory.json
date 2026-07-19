@@ -1,0 +1,43 @@
+{
+  "phase": 5,
+  "round": "round-02-owner-review-closure",
+  "productionOnly": true,
+  "round01Untouched": true,
+  "gatePass": true,
+  "files": {
+    "home-no-javascript-complete.png": {
+      "bytes": 241444,
+      "gatePass": true,
+      "notes": "Verified hero heading present in no-JS page text before shot"
+    },
+    "mobile-nav-open-360-fixed.png": {
+      "bytes": 48616,
+      "gatePass": true
+    },
+    "mobile-nav-open-390-fixed.png": {
+      "bytes": 50443,
+      "gatePass": true
+    },
+    "mobile-nav-closed-360-regression.png": {
+      "bytes": 46958,
+      "gatePass": true
+    },
+    "featured-transactions-populated-fixed.png": {
+      "bytes": 62541,
+      "gatePass": true,
+      "notes": "Verified empty-state Arabic string absent before shot"
+    },
+    "featured-transactions-empty-regression.png": {
+      "bytes": 57677,
+      "gatePass": true
+    },
+    "loading-state-fixed.png": {
+      "bytes": 36242,
+      "gatePass": true
+    },
+    "comparison-round01-vs-round02.png": {
+      "bytes": 393260,
+      "gatePass": true
+    }
+  }
+}

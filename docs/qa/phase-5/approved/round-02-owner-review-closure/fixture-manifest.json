@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "round": "round-02-owner-review-closure",
+  "stamp": 1784435600669,
+  "note": "Fictional demo/test data only — not official government requirements.",
+  "categoryId": 49,
+  "agencyId": 38,
+  "sourceId": 39,
+  "featuredEligibleIds": [
+    179,
+    180,
+    181,
+    182
+  ],
+  "decoyIds": {
+    "draft": 183,
+    "archived": 184
+  },
+  "configuredFeaturedOrder": [
+    179,
+    180,
+    181,
+    182,
+    183,
+    184
+  ]
+}
