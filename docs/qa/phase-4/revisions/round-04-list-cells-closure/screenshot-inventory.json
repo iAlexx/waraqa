@@ -1,0 +1,41 @@
+{
+  "round": "round-04-list-cells-closure",
+  "generatedAt": "2026-07-19T02:09:51.908Z",
+  "requiredCount": 3,
+  "presentCount": 3,
+  "missingCount": 0,
+  "zeroByteCount": 0,
+  "gatePass": true,
+  "screenshots": [
+    {
+      "filename": "transactions-list-publication-status-fixed.png",
+      "exists": true,
+      "fileSizeBytes": 79286,
+      "viewport": "1440x900",
+      "description": "Transactions list publication status Arabic labels (مسودة/منشورة) not em-dash only",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/collections/transactions",
+      "secretRedacted": true
+    },
+    {
+      "filename": "audit-events-readable-actors-fixed.png",
+      "exists": true,
+      "fileSizeBytes": 42899,
+      "viewport": "1440x900",
+      "description": "Audit events list readable actor cells (names/emails/النظام) not em-dash only",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/collections/audit-events",
+      "secretRedacted": true
+    },
+    {
+      "filename": "comparison-round03-vs-round04.png",
+      "exists": true,
+      "fileSizeBytes": 131456,
+      "viewport": "1440x900",
+      "description": "Side-by-side comparison Round 03 vs Round 04 transactions list",
+      "fictionalFixtureRecord": null,
+      "captureRoute": null,
+      "secretRedacted": true
+    }
+  ]
+}

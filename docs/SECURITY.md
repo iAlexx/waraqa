@@ -1,10 +1,10 @@
 ﻿# Waraqa Security Baseline
 
-**Status:** Phase 3 — COMPLETE — OWNER APPROVED (RBAC + public API access controls)
+**Status:** Phase 4 preview + RBAC workflow gates (**COMPLETE — OWNER APPROVED**)
 
-**Last updated:** 2026-07-18
+**Last updated:** 2026-07-19
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [.env.example](../.env.example)
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [.env.example](../.env.example)
 
 ## 1. Secret management
 

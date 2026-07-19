@@ -1,12 +1,12 @@
 ﻿# Waraqa Architecture
 
-**Status:** Phase 3 — COMPLETE — OWNER APPROVED (Phase 4 NOT STARTED)
+**Status:** Phase 4 — COMPLETE — OWNER APPROVED (Phase 3 COMPLETE)
 
 **Source of truth:** [WARAQA_MASTER_ROADMAP_EN.md](./WARAQA_MASTER_ROADMAP_EN.md)
 
-**Last updated:** 2026-07-18
+**Last updated:** 2026-07-19
 
-**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md)
+**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md)
 
 ## 1. System context
 
@@ -54,7 +54,7 @@ Primary public route families (from roadmap): home, search, categories, transact
 - Admin UI at `/admin` (not linked from public navigation).
 - **Phase 3 collections (implemented):** `users`, `categories`, `agencies`, `service-centers`, `documents`, `sources`, `transactions`.
 - **Phase 3 global (minimal):** `site-settings` — fields: `siteName`, `tagline`, `independenceDisclaimer`, `footerDisclaimer`, `contactEmail`, `supportPhone`, `verificationPolicyDays`, `maintenanceMode`, `featuredTransactions`. Public UI consumption = **Phase 5**.
-- **Outcome A (2026-07-18):** Owner authorized retaining the full `transactions` content model in Phase 3 (**COMPLETE — OWNER APPROVED**). Original roadmap conflict: Phase 3 tasks had no Transaction collection; Phase 4 said “implement Transaction collection.” Phase 4 is **NOT STARTED** and must **not** rebuild/duplicate that schema — it extends workflow only (blocks, audit events, scheduled review, preview, approval invalidation). See [CONTENT_MODEL.md](./CONTENT_MODEL.md).
+- **Outcome A (2026-07-18):** Owner authorized retaining the full `transactions` content model in Phase 3 (**COMPLETE — OWNER APPROVED**). Original roadmap conflict: Phase 3 tasks had no Transaction collection; Phase 4 said “implement Transaction collection.” Phase 4 is **COMPLETE — OWNER APPROVED** and must **not** rebuild/duplicate that schema — it extends workflow only (editorial transitions, audit events, scheduled review, preview, approval invalidation, Admin UX). See [CONTENT_MODEL.md](./CONTENT_MODEL.md).
 - **Phase 4 Admin UI polish debt (non-blocking):** mixed EN/AR Admin chrome; empty parent category display; boolean نعم/لا badges; Admin login branding — documented in [PHASE_CHECKLIST.md](./PHASE_CHECKLIST.md); not implemented in Phase 3.
 - **Naming:** collection slug is `transactions` (Arabic معاملة/المعاملات); owner brief preferred `procedures` — roadmap wins.
 - Roles (roadmap): `admin`, `reviewer`, `researcher`, `viewer`. Researchers cannot publish. See [RBAC.md](./RBAC.md).

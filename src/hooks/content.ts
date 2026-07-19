@@ -3,6 +3,8 @@ import { APIError } from 'payload'
 
 import { getUserRole, isUserActive, type UserLike } from '@/access/roles'
 import { allowSeedBypass } from '@/lib/qa-seed-guard'
+import { writeAuditEvent } from '@/lib/workflow/audit'
+import { maybeInvalidateApproval } from '@/lib/workflow/transaction-workflow'
 
 type StatusData = {
   _status?: 'draft' | 'published' | null
@@ -10,12 +12,17 @@ type StatusData = {
   publishedBy?: number | string | null
   createdBy?: number | string | null
   lastUpdatedBy?: number | string | null
+  workflowState?: string | null
   [key: string]: unknown
 }
 
 function userId(user: UserLike): number | string | undefined {
   if (!user || typeof user !== 'object') return undefined
   return user.id
+}
+
+function isWorkflowContext(req: { context?: Record<string, unknown> }): boolean {
+  return typeof req.context?.workflowAction === 'string'
 }
 
 /** Populate audit fields; stamp publish metadata when transitioning to published. */
@@ -31,6 +38,7 @@ export const populateAuditFields: CollectionBeforeChangeHook = ({
 
   if (operation === 'create' && uid != null) {
     next.createdBy = next.createdBy ?? uid
+    if (!next.workflowState) next.workflowState = 'draft'
   }
   if (uid != null) {
     next.lastUpdatedBy = uid
@@ -48,13 +56,15 @@ export const populateAuditFields: CollectionBeforeChangeHook = ({
 }
 
 /**
- * Server-side publish enforcement: only admin/reviewer may set _status=published.
- * Researchers cannot bypass Admin UI restrictions via REST/Local API.
+ * Server-side publish enforcement.
+ * Transactions: publish/unpublish only via workflow service context.
+ * Other collections: admin/reviewer may still publish directly (Phase 3 behavior).
  */
 export const enforcePublishAuthorization: CollectionBeforeChangeHook = ({
   data,
   req,
   originalDoc,
+  collection,
 }) => {
   if (allowSeedBypass(req)) {
     return data
@@ -66,8 +76,15 @@ export const enforcePublishAuthorization: CollectionBeforeChangeHook = ({
   const wasPublished = (originalDoc as StatusData | undefined)?._status === 'published'
   const willPublish = next._status === 'published'
   const willUnpublish = wasPublished && next._status === 'draft'
+  const isTx = collection?.slug === 'transactions'
 
   if ((willPublish && !wasPublished) || willUnpublish) {
+    if (isTx && !isWorkflowContext(req)) {
+      throw new APIError(
+        'النشر وإلغاء النشر يتمان عبر إجراءات سير العمل فقط.',
+        403,
+      )
+    }
     if (!isUserActive(user) || (role !== 'admin' && role !== 'reviewer')) {
       throw new APIError(
         'غير مصرّح: النشر وإلغاء النشر مسموحان فقط لدورَي المدير والمراجع.',
@@ -77,6 +94,92 @@ export const enforcePublishAuthorization: CollectionBeforeChangeHook = ({
   }
 
   return data
+}
+
+/** Block raw workflowState spoofing outside workflow service. */
+export const enforceWorkflowFieldGuard: CollectionBeforeChangeHook = ({
+  data,
+  req,
+  originalDoc,
+  operation,
+}) => {
+  if (allowSeedBypass(req) || isWorkflowContext(req)) {
+    return data
+  }
+
+  const next = { ...(data as StatusData) }
+  const prev = originalDoc as StatusData | undefined
+
+  if (operation === 'create') {
+    next.workflowState = 'draft'
+    return next
+  }
+
+  if (
+    next.workflowState != null &&
+    prev?.workflowState != null &&
+    next.workflowState !== prev.workflowState
+  ) {
+    throw new APIError('لا يمكن تغيير حالة سير العمل مباشرة عبر واجهة برمجة التطبيقات.', 403)
+  }
+
+  // Strip protected technical fields from raw updates
+  delete next.approvedContentHash
+  delete next.approvedVersionId
+  delete next.approvedAt
+  delete next.approvedBy
+  delete next.submittedForReviewAt
+  delete next.submittedForReviewBy
+  delete next.changeRequestedAt
+  delete next.changeRequestedBy
+  delete next.archivedAt
+  delete next.archivedBy
+  delete next.reviewDueAt
+  delete next.markedOutdated
+
+  return next
+}
+
+/** Invalidate approval when critical content changes. */
+export const invalidateApprovalOnCriticalEdit: CollectionBeforeChangeHook = async ({
+  data,
+  req,
+  originalDoc,
+  operation,
+}) => {
+  if (operation !== 'update' || !originalDoc) return data
+  if (allowSeedBypass(req) || isWorkflowContext(req)) return data
+
+  const next = { ...(data as StatusData) }
+  const { invalidate, patch } = maybeInvalidateApproval({
+    originalDoc: originalDoc as Record<string, unknown>,
+    nextData: next,
+  })
+
+  if (!invalidate) return next
+
+  Object.assign(next, patch)
+
+  const user = req.user as UserLike
+  try {
+    await writeAuditEvent(req.payload, {
+      req,
+      actorId: userId(user),
+      action: 'approval_invalidated',
+      entityType: 'transactions',
+      entityId: (originalDoc as { id: number | string }).id,
+      transactionId: (originalDoc as { id: number | string }).id,
+      summary: 'إبطال الاعتماد بسبب تعديل محتوى حرج',
+      metadata: {
+        fromState: String((originalDoc as StatusData).workflowState ?? ''),
+        toState: 'draft',
+      },
+    })
+  } catch {
+    // Do not block save if audit write fails on invalidation — still clear approval
+  }
+
+  return next
 }
 
 export const preventSelfParent: CollectionBeforeValidateHook = ({ data, originalDoc }) => {

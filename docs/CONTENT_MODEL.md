@@ -1,12 +1,12 @@
 ﻿# Waraqa Content Model (Phase 3)
 
-**Status:** Phase 3 — COMPLETE — OWNER APPROVED
+**Status:** Phase 4 — COMPLETE — OWNER APPROVED (Phase 3 COMPLETE)
 
-**Migrations:** `20260718_052746_phase_3_core_collections`, `20260718_163635_phase_3_site_settings`
+**Migrations:** Phase 3 + `20260718_234422_phase_4_editorial_workflow`
 
-**Last updated:** 2026-07-18
+**Last updated:** 2026-07-19
 
-**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md)
+**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md)
 
 ## Naming / scope decisions (documented)
 

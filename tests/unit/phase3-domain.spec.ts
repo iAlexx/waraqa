@@ -4,7 +4,12 @@ import { normalizeSlug, isValidSlug } from '@/lib/slug'
 import { isHttpUrl } from '@/lib/urls'
 import { validateProcedureData } from '@/lib/procedure-validation'
 import { getUserRole, type UserLike } from '@/access/roles'
-import { canPublishContent, publicPublishedRead } from '@/access'
+import {
+  canPublishContent,
+  publicPublishedRead,
+  publicTransactionRead,
+  publicTransactionWhere,
+} from '@/access'
 
 describe('normalizeSlug', () => {
   it('lowercases, hyphenates, and collapses repeats', () => {
@@ -110,5 +115,28 @@ describe('access helpers', () => {
     expect(result).toEqual({
       and: [{ _status: { equals: 'published' } }, { active: { equals: true } }],
     })
+  })
+
+  it('publicTransactionRead excludes archived and outdated at the Where layer', () => {
+    const result = publicTransactionRead({
+      req: { user: null },
+    } as never)
+    expect(result).toEqual(publicTransactionWhere)
+    expect(publicTransactionWhere).toEqual({
+      and: [
+        { _status: { equals: 'published' } },
+        { active: { equals: true } },
+        { markedOutdated: { not_equals: true } },
+        { workflowState: { not_equals: 'archived' } },
+      ],
+    })
+  })
+
+  it('publicTransactionRead allows full read for editorial roles', () => {
+    expect(
+      publicTransactionRead({
+        req: { user: { role: 'researcher', isActive: true } as never },
+      } as never),
+    ).toBe(true)
   })
 })

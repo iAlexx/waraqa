@@ -1,0 +1,209 @@
+{
+  "round": "round-03-admin-workflow-ux-closure",
+  "generatedAt": "2026-07-19T01:14:25.329Z",
+  "requiredCount": 16,
+  "presentCount": 16,
+  "missingCount": 0,
+  "zeroByteCount": 0,
+  "gatePass": true,
+  "screenshots": [
+    {
+      "filename": "admin-login-final-brand-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 10611,
+      "viewport": "1440x900",
+      "description": "Admin login final WARAQA brand at desktop 1440",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/login",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-researcher-draft-actions.png",
+      "exists": true,
+      "fileSizeBytes": 60349,
+      "viewport": "1440x900",
+      "description": "Researcher draft transaction available actions",
+      "fictionalFixtureRecord": {
+        "id": 19,
+        "key": "draft"
+      },
+      "captureRoute": "/admin/collections/transactions/19",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-researcher-changes-requested-comment.png",
+      "exists": true,
+      "fileSizeBytes": 71264,
+      "viewport": "1440x900",
+      "description": "Researcher view of changes-requested comment",
+      "fictionalFixtureRecord": {
+        "id": 22,
+        "key": "changesRequested"
+      },
+      "captureRoute": "/admin/collections/transactions/22",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-researcher-in-review-readonly.png",
+      "exists": true,
+      "fileSizeBytes": 63670,
+      "viewport": "1440x900",
+      "description": "Researcher in-review transaction read-only",
+      "fictionalFixtureRecord": {
+        "id": 21,
+        "key": "inReview"
+      },
+      "captureRoute": "/admin/collections/transactions/21",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-reviewer-in-review-actions.png",
+      "exists": true,
+      "fileSizeBytes": 64279,
+      "viewport": "1440x900",
+      "description": "Reviewer in-review available actions",
+      "fictionalFixtureRecord": {
+        "id": 21,
+        "key": "inReview"
+      },
+      "captureRoute": "/admin/collections/transactions/21",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-reviewer-approved-actions.png",
+      "exists": true,
+      "fileSizeBytes": 62717,
+      "viewport": "1440x900",
+      "description": "Reviewer approved transaction actions",
+      "fictionalFixtureRecord": {
+        "id": 24,
+        "key": "approved"
+      },
+      "captureRoute": "/admin/collections/transactions/24",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-admin-published-actions.png",
+      "exists": true,
+      "fileSizeBytes": 67918,
+      "viewport": "1440x900",
+      "description": "Admin published transaction actions",
+      "fictionalFixtureRecord": {
+        "id": 26,
+        "key": "published",
+        "slug": "tx-p4-r2-published-1784422677143"
+      },
+      "captureRoute": "/admin/collections/transactions/26",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-archived-restore-action.png",
+      "exists": true,
+      "fileSizeBytes": 67794,
+      "viewport": "1440x900",
+      "description": "Archived transaction restore action",
+      "fictionalFixtureRecord": {
+        "id": 28,
+        "key": "archived",
+        "slug": "tx-p4-r2-archived-1784422677143"
+      },
+      "captureRoute": "/admin/collections/transactions/28",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-workflow-status-readonly.png",
+      "exists": true,
+      "fileSizeBytes": 64692,
+      "viewport": "1440x900",
+      "description": "Workflow status field read-only presentation",
+      "fictionalFixtureRecord": {
+        "id": 19,
+        "key": "draft"
+      },
+      "captureRoute": "/admin/collections/transactions/19",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-publication-status-arabic.png",
+      "exists": true,
+      "fileSizeBytes": 64689,
+      "viewport": "1440x900",
+      "description": "Publication status Arabic labels",
+      "fictionalFixtureRecord": {
+        "id": 26,
+        "key": "published"
+      },
+      "captureRoute": "/admin/collections/transactions/26",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-approval-invalidated-alert.png",
+      "exists": true,
+      "fileSizeBytes": 66186,
+      "viewport": "1440x900",
+      "description": "Approval invalidated alert UI",
+      "fictionalFixtureRecord": {
+        "id": 25,
+        "key": "invalidated"
+      },
+      "captureRoute": "/admin/collections/transactions/25",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-source-coverage-admin-alert.png",
+      "exists": true,
+      "fileSizeBytes": 77854,
+      "viewport": "1440x900",
+      "description": "Source coverage admin blocker alert",
+      "fictionalFixtureRecord": {
+        "id": 23,
+        "key": "sourceBlocker"
+      },
+      "captureRoute": "/admin/collections/transactions/23",
+      "secretRedacted": true
+    },
+    {
+      "filename": "audit-events-readable-actors.png",
+      "exists": true,
+      "fileSizeBytes": 39453,
+      "viewport": "1440x900",
+      "description": "Audit events list with readable actors",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/collections/audit-events",
+      "secretRedacted": true
+    },
+    {
+      "filename": "categories-readable-parent.png",
+      "exists": true,
+      "fileSizeBytes": 24182,
+      "viewport": "1440x900",
+      "description": "Categories parent cell readable empty/parent state",
+      "fictionalFixtureRecord": {
+        "categoryRoot": 3,
+        "categoryChild": 4
+      },
+      "captureRoute": "/admin/collections/categories",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transactions-list-arabic-statuses.png",
+      "exists": true,
+      "fileSizeBytes": 72690,
+      "viewport": "1440x900",
+      "description": "Transactions list Arabic workflow/publication statuses",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/collections/transactions",
+      "secretRedacted": true
+    },
+    {
+      "filename": "comparison-round02-vs-round03.png",
+      "exists": true,
+      "fileSizeBytes": 94741,
+      "viewport": "1440x900",
+      "description": "Side-by-side comparison Round 02 vs Round 03",
+      "fictionalFixtureRecord": null,
+      "captureRoute": null,
+      "secretRedacted": true
+    }
+  ]
+}

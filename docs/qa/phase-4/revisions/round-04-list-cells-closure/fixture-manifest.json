@@ -1,0 +1,47 @@
+{
+  "password": "[redacted — see gitignored .local-credentials]",
+  "users": {
+    "admin": {
+      "email": "qa-p4-r3-admin-1784426044077@example.test",
+      "id": 32
+    },
+    "reviewer": {
+      "email": "qa-p4-r3-reviewer-1784426044077@example.test",
+      "id": 33
+    },
+    "researcher": {
+      "email": "qa-p4-r3-researcher-1784426044077@example.test",
+      "id": 34
+    },
+    "viewer": {
+      "email": "qa-p4-r3-viewer-1784426044077@example.test",
+      "id": 35
+    }
+  },
+  "ids": {
+    "draft": 68,
+    "submitReview": 69,
+    "inReview": 70,
+    "changesRequested": 71,
+    "sourceBlocker": 72,
+    "approved": 73,
+    "invalidated": 74,
+    "published": 75,
+    "unpublished": 76,
+    "archived": 77,
+    "outdated": 78,
+    "reviewDue": 79,
+    "revision": 80,
+    "categoryRoot": 17,
+    "categoryChild": 18,
+    "publishAudit": 215
+  },
+  "slugs": {
+    "draft": "tx-p4-r2-draft-1784426044077",
+    "published": "tx-p4-r2-published-1784426044077",
+    "archived": "tx-p4-r2-archived-1784426044077",
+    "outdated": "tx-p4-r2-outdated-1784426044077"
+  },
+  "round": "round-04-list-cells-closure",
+  "policy": "fictional local QA Round 04 only — reset via db:reset"
+}

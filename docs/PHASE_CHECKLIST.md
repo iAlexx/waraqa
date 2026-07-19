@@ -8,7 +8,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 1 | Project Bootstrap | **COMPLETE — OWNER APPROVED** | App starts; admin loads; DB connects; lint/typecheck/test/build/e2e pass |
 | 2 | Design System and RTL Foundation | **COMPLETE — OWNER APPROVED** | Tokens, components, RTL, a11y, showcase, screenshots + automated gates; wordmark colors corrected |
 | 3 | Core Payload Collections | **COMPLETE — OWNER APPROVED** | Collections + full `transactions` model + Site Settings + RBAC + migrations + Round 01 QA approved |
-| 4 | Transactions Schema and Workflow | **NOT STARTED** | Workflow only on existing `transactions` model — **must not** duplicate schema; includes Admin UI polish debt |
+| 4 | Transactions Schema and Workflow | **COMPLETE — OWNER APPROVED** | Editorial workflow, audit, preview, access gates, Admin UX; QA Rounds 02–04 approved; tag `phase-4-complete` |
 | 5 | Public Shell and Home Page | Not started | Disclaimer, search entry, RTL; Site Settings public consumption |
 | 6 | Search and Categories | Not started | Aliases; published only |
 | 7 | Transaction Page | Not started | Sources + verification dates |
@@ -41,7 +41,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 
 **Status: COMPLETE — OWNER APPROVED**
 
-**Scope reconciliation (Outcome A):** Full `transactions` content model is part of Phase 3; Site Settings minimal global is part of Phase 3 (public consumption = Phase 5). Phase 4 must not rebuild or duplicate the `transactions` schema — workflow extensions only. Phase 4 has **not started**.
+**Scope reconciliation (Outcome A):** Full `transactions` content model is part of Phase 3; Site Settings minimal global is part of Phase 3 (public consumption = Phase 5). Phase 4 must not rebuild or duplicate the `transactions` schema — workflow extensions only. Phase 4 is **COMPLETE — OWNER APPROVED**.
 
 - [x] Collections: `users`, `categories`, `agencies`, `service-centers`, `documents`, `sources`, `transactions`
 - [x] Site Settings minimal global (`site-settings`: siteName, tagline, independenceDisclaimer, footerDisclaimer, contactEmail, supportPhone, verificationPolicyDays, maintenanceMode, featuredTransactions) — public UI = Phase 5
@@ -67,17 +67,41 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 3. Site Settings: Phase 3 **minimal** global; public consumption = Phase 5.
 4. **Outcome A:** Full `transactions` content model in Phase 3 (owner-authorized). Phase 4 must not rebuild schema — workflow only (blocks, audit events, scheduled review, preview, approval invalidation).
 
-## Phase 4 — Admin UI polish debt (non-blocking; NOT STARTED)
+## Phase 4 — Editorial workflow
 
-Owner-approved as **non-blocking** polish for Phase 4. Do **not** treat these as Phase 3 blockers. Do not implement during Phase 3 closure.
+**Status: COMPLETE — OWNER APPROVED**
 
-1. **Mixed English/Arabic Admin chrome** — Payload Admin still shows English strings such as: Create New, Search by, Columns, Filters, Updated At, Status, Last Modified, Save Draft, Publish changes, Select a value, Add Phone, Add Alias (alongside Arabic collection/field labels).
-2. **Empty parent category display** — empty parent currently renders awkwardly (e.g. `<No التصنيف الأب>`). Desired: `بدون تصنيف أب` or `—`.
-3. **Boolean list cells** — raw `true` / `false` in lists. Desired: Arabic نعم / لا badges.
-4. **Admin login branding** — still uses default Payload logo and English form labels.
+Branch `phase-4-editorial-workflow` from `phase-3-complete` (`461a229`).
+
+- [x] Central workflow service + transitions (no raw workflowState spoofing)
+- [x] Submit / request-changes / resubmit / approve / publish / unpublish / archive / restore
+- [x] Critical fingerprint + approval invalidation
+- [x] Source evidence coverage (`coveredSections`) gates on approve/publish
+- [x] `audit-events` immutable collection + readable actor labels
+- [x] Review scheduling helpers (`reviewDueAt` / verification health / mark outdated)
+- [x] Public access query exclusion: draft / inactive / archived / outdated
+- [x] Secure preview `/preview/transactions/[id]` + `PREVIEW_SECRET` (HMAC)
+- [x] Revision restoration via workflow
+- [x] Role/state-aware Arabic Admin workflow actions + confirmations
+- [x] Read-only editorial/publication status cards; Arabic publication list cells
+- [x] Reviewer notes panel + Arabic source-coverage Admin dialog
+- [x] Waraqa Admin login branding (BrandMark + star motif)
+- [x] Migration `20260718_234422_phase_4_editorial_workflow`
+- [x] Unit + integration + e2e gates
+- [x] Owner visual approval (QA Rounds 02–04 → `docs/qa/phase-4/approved/`)
+- [x] Phase 4 commit / annotated tag `phase-4-complete`
+
+Phase 5 **not started**. Do not rebuild `transactions` schema.
+
+## Phase 4 — Admin UI polish debt
+
+Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list cells نعم/لا; parent category empty → `بدون تصنيف أب`; role-aware workflow toolbar; Arabic publication status cells; readable audit actors.
+
+**Remaining unsupported without fragile workarounds (documented):** Payload-owned English chrome strings (Create New, Save Draft, Publish changes, Search by, Columns, Filters, Login form field labels, etc.) — full Arabic Admin pack not wired via supported config.
 
 ## Rules
 
 - Phase 4 must not duplicate or re-implement the `transactions` schema (Outcome A).
-- Do not modify Phase 2 brand/UI files as part of Phase 3 closure.
-- Phase 2 QA archives under `docs/qa/phase-2/` remain untouched.
+- Do not modify Phase 2 brand/UI files as part of Phase 3/4 closure beyond Admin branding components already approved.
+- Phase 2/3 QA archives remain untouched.
+- Phase 4 revision folders under `docs/qa/phase-4/revisions/` remain immutable archives.

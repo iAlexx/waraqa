@@ -1,0 +1,362 @@
+{
+  "round": "round-02-owner-review-closure",
+  "generatedAt": "2026-07-19T00:32:21.794Z",
+  "requiredCount": 27,
+  "presentCount": 27,
+  "missingCount": 0,
+  "zeroByteCount": 0,
+  "gatePass": true,
+  "screenshots": [
+    {
+      "filename": "admin-login-waraqa-branding-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 12381,
+      "viewport": "1440x900",
+      "description": "Admin login with WARAQA branding at desktop width",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/login",
+      "secretRedacted": true
+    },
+    {
+      "filename": "admin-dashboard-arabic-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 23133,
+      "viewport": "1440x900",
+      "description": "Admin dashboard Arabic UI at desktop width",
+      "fictionalFixtureRecord": {
+        "userId": 15,
+        "role": "admin"
+      },
+      "captureRoute": "/admin",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-workflow-draft-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 60134,
+      "viewport": "1440x900",
+      "description": "Transaction in draft workflow state",
+      "fictionalFixtureRecord": {
+        "id": 32,
+        "slug": "tx-p4-r2-draft-1784420493263",
+        "key": "draft"
+      },
+      "captureRoute": "/admin/collections/transactions/32",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-submit-review-researcher-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 65544,
+      "viewport": "1440x900",
+      "description": "Researcher submit-for-review action on transaction",
+      "fictionalFixtureRecord": {
+        "id": 33,
+        "key": "submitReview"
+      },
+      "captureRoute": "/admin/collections/transactions/33",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-in-review-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 64708,
+      "viewport": "1440x900",
+      "description": "Transaction in-review workflow state",
+      "fictionalFixtureRecord": {
+        "id": 34,
+        "key": "inReview"
+      },
+      "captureRoute": "/admin/collections/transactions/34",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-request-changes-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 66366,
+      "viewport": "1440x900",
+      "description": "Reviewer request-changes action UI",
+      "fictionalFixtureRecord": {
+        "id": 35,
+        "key": "changesRequested"
+      },
+      "captureRoute": "/admin/collections/transactions/35",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-changes-requested-researcher-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 67192,
+      "viewport": "1440x900",
+      "description": "Researcher view after changes requested",
+      "fictionalFixtureRecord": {
+        "id": 35,
+        "key": "changesRequested"
+      },
+      "captureRoute": "/admin/collections/transactions/35",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-source-blocker-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 32369,
+      "viewport": "1440x900",
+      "description": "Source evidence blocker preventing publish",
+      "fictionalFixtureRecord": {
+        "id": 36,
+        "key": "sourceBlocker"
+      },
+      "captureRoute": "/admin/collections/transactions/36",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-approved-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 64628,
+      "viewport": "1440x900",
+      "description": "Transaction approved workflow state",
+      "fictionalFixtureRecord": {
+        "id": 37,
+        "key": "approved"
+      },
+      "captureRoute": "/admin/collections/transactions/37",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-approval-invalidated-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 61218,
+      "viewport": "1440x900",
+      "description": "Approval invalidated after content change",
+      "fictionalFixtureRecord": {
+        "id": 38,
+        "key": "invalidated"
+      },
+      "captureRoute": "/admin/collections/transactions/38",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-published-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 65029,
+      "viewport": "1440x900",
+      "description": "Published transaction in admin",
+      "fictionalFixtureRecord": {
+        "id": 39,
+        "slug": "tx-p4-r2-published-1784420493263",
+        "key": "published"
+      },
+      "captureRoute": "/admin/collections/transactions/39",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-unpublished-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 64780,
+      "viewport": "1440x900",
+      "description": "Unpublished transaction workflow state",
+      "fictionalFixtureRecord": {
+        "id": 40,
+        "key": "unpublished"
+      },
+      "captureRoute": "/admin/collections/transactions/40",
+      "secretRedacted": true
+    },
+    {
+      "filename": "transaction-review-due-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 65834,
+      "viewport": "1440x900",
+      "description": "Review-due schedule indicator on transaction",
+      "fictionalFixtureRecord": {
+        "id": 43,
+        "key": "reviewDue"
+      },
+      "captureRoute": "/admin/collections/transactions/43",
+      "secretRedacted": true
+    },
+    {
+      "filename": "audit-events-list-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 45958,
+      "viewport": "1440x900",
+      "description": "Audit events collection list view",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/admin/collections/audit-events",
+      "secretRedacted": true
+    },
+    {
+      "filename": "audit-event-publish-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 32520,
+      "viewport": "1440x900",
+      "description": "Publish audit event detail",
+      "fictionalFixtureRecord": {
+        "id": 117,
+        "key": "publishAudit"
+      },
+      "captureRoute": "/admin/collections/audit-events/117",
+      "secretRedacted": true
+    },
+    {
+      "filename": "revision-history-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 29460,
+      "viewport": "1440x900",
+      "description": "Transaction revision history panel",
+      "fictionalFixtureRecord": {
+        "id": 44,
+        "key": "revision"
+      },
+      "captureRoute": "/admin/collections/transactions/44",
+      "secretRedacted": true
+    },
+    {
+      "filename": "revision-restored-draft-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 61257,
+      "viewport": "1440x900",
+      "description": "Draft restored from revision history",
+      "fictionalFixtureRecord": {
+        "id": 44,
+        "key": "revision"
+      },
+      "captureRoute": "/admin/collections/transactions/44",
+      "secretRedacted": true
+    },
+    {
+      "filename": "preview-draft-desktop-1440.png",
+      "exists": true,
+      "fileSizeBytes": 49339,
+      "viewport": "1440x900",
+      "description": "Authorized draft preview at desktop",
+      "fictionalFixtureRecord": {
+        "id": 32,
+        "slug": "tx-p4-r2-draft-1784420493263",
+        "key": "draft"
+      },
+      "captureRoute": "/preview/transactions/32",
+      "secretRedacted": true
+    },
+    {
+      "filename": "preview-draft-mobile-390.png",
+      "exists": true,
+      "fileSizeBytes": 35710,
+      "viewport": "390x844",
+      "description": "Authorized draft preview at mobile 390",
+      "fictionalFixtureRecord": {
+        "id": 32,
+        "slug": "tx-p4-r2-draft-1784420493263",
+        "key": "draft"
+      },
+      "captureRoute": "/preview/transactions/32",
+      "secretRedacted": true
+    },
+    {
+      "filename": "preview-unauthorized.png",
+      "exists": true,
+      "fileSizeBytes": 33370,
+      "viewport": "1440x900",
+      "description": "Preview denial without auth cookie",
+      "fictionalFixtureRecord": {
+        "id": 32,
+        "slug": "tx-p4-r2-draft-1784420493263",
+        "key": "draft"
+      },
+      "captureRoute": "/preview/transactions/32",
+      "secretRedacted": true
+    },
+    {
+      "filename": "public-api-draft-hidden.png",
+      "exists": true,
+      "fileSizeBytes": 24117,
+      "viewport": "1440x900",
+      "description": "Anonymous public API hides draft (totalDocs 0)",
+      "fictionalFixtureRecord": {
+        "id": 32,
+        "slug": "tx-p4-r2-draft-1784420493263",
+        "key": "draft"
+      },
+      "captureRoute": "/api/transactions?where[slug][equals]=tx-p4-r2-draft-1784420493263",
+      "secretRedacted": true
+    },
+    {
+      "filename": "public-api-published-visible.png",
+      "exists": true,
+      "fileSizeBytes": 62164,
+      "viewport": "1440x900",
+      "description": "Anonymous public API returns published transaction",
+      "fictionalFixtureRecord": {
+        "id": 39,
+        "slug": "tx-p4-r2-published-1784420493263",
+        "key": "published"
+      },
+      "captureRoute": "/api/transactions?where[slug][equals]=tx-p4-r2-published-1784420493263",
+      "secretRedacted": true
+    },
+    {
+      "filename": "public-api-archived-hidden.png",
+      "exists": true,
+      "fileSizeBytes": 24509,
+      "viewport": "1440x900",
+      "description": "Anonymous public API hides archived (totalDocs 0)",
+      "fictionalFixtureRecord": {
+        "id": 41,
+        "slug": "tx-p4-r2-archived-1784420493263",
+        "key": "archived"
+      },
+      "captureRoute": "/api/transactions?where[slug][equals]=tx-p4-r2-archived-1784420493263",
+      "secretRedacted": true
+    },
+    {
+      "filename": "public-api-outdated-hidden.png",
+      "exists": true,
+      "fileSizeBytes": 25148,
+      "viewport": "1440x900",
+      "description": "Anonymous public API hides outdated (totalDocs 0)",
+      "fictionalFixtureRecord": {
+        "id": 42,
+        "slug": "tx-p4-r2-outdated-1784420493263",
+        "key": "outdated"
+      },
+      "captureRoute": "/api/transactions?where[slug][equals]=tx-p4-r2-outdated-1784420493263",
+      "secretRedacted": true
+    },
+    {
+      "filename": "graphql-disabled-404.png",
+      "exists": true,
+      "fileSizeBytes": 11669,
+      "viewport": "1440x900",
+      "description": "GraphQL endpoint returns 404 when disabled",
+      "fictionalFixtureRecord": null,
+      "captureRoute": "/api/graphql",
+      "secretRedacted": true
+    },
+    {
+      "filename": "admin-boolean-arabic-cell.png",
+      "exists": true,
+      "fileSizeBytes": 69453,
+      "viewport": "1440x900",
+      "description": "Admin boolean cell Arabic labels",
+      "fictionalFixtureRecord": {
+        "categoryRoot": 8,
+        "categoryChild": 9
+      },
+      "captureRoute": "/admin/collections/categories",
+      "secretRedacted": true
+    },
+    {
+      "filename": "admin-parent-category-empty-state.png",
+      "exists": true,
+      "fileSizeBytes": 26155,
+      "viewport": "1440x900",
+      "description": "Parent category empty-state cell",
+      "fictionalFixtureRecord": {
+        "categoryRoot": 8,
+        "categoryChild": 9
+      },
+      "captureRoute": "/admin/collections/categories",
+      "secretRedacted": true
+    }
+  ]
+}

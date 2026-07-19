@@ -11,8 +11,8 @@ export const Users: CollectionConfig = {
     plural: 'المستخدمون',
   },
   admin: {
-    useAsTitle: 'email',
-    defaultColumns: ['email', 'name', 'role', 'isActive', 'updatedAt'],
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'email', 'role', 'isActive', 'updatedAt'],
     group: 'النظام',
   },
   auth: true,
@@ -20,8 +20,9 @@ export const Users: CollectionConfig = {
     admin: ({ req: { user } }) => Boolean(user),
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (getUserRole(user as UserLike) === 'admin') return true
-      // Users can read their own record
+      const role = getUserRole(user as UserLike)
+      // Editorial roles must resolve actor / relationship labels in Admin lists.
+      if (role === 'admin' || role === 'reviewer' || role === 'researcher') return true
       return { id: { equals: user.id } }
     },
     create: async ({ req }) => {
@@ -44,6 +45,21 @@ export const Users: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    afterRead: [
+      ({ doc }) => {
+        if (!doc || typeof doc !== 'object') return doc
+        const d = doc as {
+          displayName?: string | null
+          name?: string | null
+          email?: string | null
+          id?: number | string
+          adminLabel?: string
+        }
+        const display = (d.displayName || d.name || '').trim()
+        d.adminLabel = display || d.email || (d.id != null ? `مستخدم ${d.id}` : 'مستخدم')
+        return d
+      },
+    ],
     beforeChange: [
       async ({ data, req, operation, originalDoc }) => {
         if (allowSeedBypass(req)) {
@@ -76,6 +92,14 @@ export const Users: CollectionConfig = {
           }
         }
 
+        // Prefer a human label for Admin relationships (avoids Untitled - ID).
+        const display = String(next.displayName ?? next.name ?? '').trim()
+        if (display) {
+          next.name = display
+        } else if (!String(next.name ?? '').trim() && next.email) {
+          next.name = String(next.email)
+        }
+
         if (operation === 'update') {
           const prevRole = (originalDoc as { role?: string } | undefined)?.role
           if (next.role && next.role !== prevRole && actorRole !== 'admin') {
@@ -97,6 +121,16 @@ export const Users: CollectionConfig = {
     ],
   },
   fields: [
+    {
+      name: 'adminLabel',
+      type: 'text',
+      label: 'اسم العرض',
+      virtual: true,
+      admin: {
+        hidden: true,
+        readOnly: true,
+      },
+    },
     {
       name: 'name',
       type: 'text',

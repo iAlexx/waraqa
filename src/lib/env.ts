@@ -12,6 +12,11 @@ const serverEnvSchema = z.object({
     .string()
     .min(32, 'PAYLOAD_SECRET must be at least 32 characters'),
   NEXT_PUBLIC_SERVER_URL: z.string().url('NEXT_PUBLIC_SERVER_URL must be a valid URL'),
+  /** Server-only signed draft preview tokens (Phase 4). */
+  PREVIEW_SECRET: z
+    .string()
+    .min(32, 'PREVIEW_SECRET must be at least 32 characters')
+    .optional(),
 })
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -32,6 +37,7 @@ export function getServerEnv(): ServerEnv {
     DATABASE_URL_DIRECT: process.env.DATABASE_URL_DIRECT,
     PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
     NEXT_PUBLIC_SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL,
+    PREVIEW_SECRET: process.env.PREVIEW_SECRET || undefined,
   })
 
   if (!parsed.success) {

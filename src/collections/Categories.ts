@@ -57,6 +57,12 @@ export const Categories: CollectionConfig = {
       relationTo: 'categories',
       label: 'التصنيف الأب',
       localized: false,
+      admin: {
+        components: {
+          Cell: '/components/admin/ParentCategoryCell#ParentCategoryCell',
+        },
+        description: 'اتركه فارغاً إن لم يكن هناك تصنيف أب (يُعرض: بدون تصنيف أب).',
+      },
     },
     sortOrderField(),
     {

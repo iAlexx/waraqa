@@ -74,6 +74,7 @@ export interface Config {
     documents: Document;
     sources: Source;
     transactions: Transaction;
+    'audit-events': AuditEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
     sources: SourcesSelect<false> | SourcesSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -137,6 +139,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  adminLabel?: string | null;
   name?: string | null;
   displayName?: string | null;
   /**
@@ -176,6 +179,9 @@ export interface Category {
    */
   slug: string;
   description?: string | null;
+  /**
+   * اتركه فارغاً إن لم يكن هناك تصنيف أب (يُعرض: بدون تصنيف أب).
+   */
   parent?: (number | null) | Category;
   sortOrder?: number | null;
   featured?: boolean | null;
@@ -373,7 +379,7 @@ export interface Source {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * المعاملات الإدارية — مجموعة Phase 3 المركزية (slug: transactions).
+ * المعاملات الإدارية — سير تحريري Phase 4 على نموذج Phase 3.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "transactions".
@@ -389,6 +395,7 @@ export interface Transaction {
    * ملخص قصير للعرض العام.
    */
   summary: string;
+  publicationStatus?: string | null;
   category: number | Category;
   agency: number | Agency;
   serviceCenters?: (number | ServiceCenter)[] | null;
@@ -440,6 +447,22 @@ export interface Transaction {
   sources: {
     source: number | Source;
     primary?: boolean | null;
+    /**
+     * أقسام المحتوى التي يدعمها هذا المصدر (مفاتيح ثابتة).
+     */
+    coveredSections?:
+      | (
+          | 'summary'
+          | 'eligibility'
+          | 'required_documents'
+          | 'steps'
+          | 'fees'
+          | 'duration'
+          | 'service_centers'
+          | 'outcome'
+          | 'other'
+        )[]
+      | null;
     citationNote?: string | null;
     id?: string | null;
   }[];
@@ -448,9 +471,45 @@ export interface Transaction {
    */
   lastReviewedAt?: string | null;
   /**
-   * لا تُعاد أبداً في طلبات REST العامة المجهولة.
+   * لا تُعاد أبداً في طلبات REST العامة المجهولة. لا تبطل الاعتماد.
    */
   internalNotes?: string | null;
+  /**
+   * تُغيَّر عبر إجراءات سير العمل فقط — لا تُعيَّن يدوياً.
+   */
+  workflowState: 'draft' | 'in_review' | 'changes_requested' | 'approved' | 'published' | 'archived';
+  submittedForReviewAt?: string | null;
+  submittedForReviewBy?: (number | null) | User;
+  changeRequestedAt?: string | null;
+  changeRequestedBy?: (number | null) | User;
+  /**
+   * ظاهر للباحث داخل لوحة الإدارة — غير متاح للعامة.
+   */
+  changeRequestComment?: string | null;
+  approvedAt?: string | null;
+  approvedBy?: (number | null) | User;
+  /**
+   * تقني — مخفي عن الباحث. يُكتب عبر سير العمل فقط.
+   */
+  approvedContentHash?: string | null;
+  approvedVersionId?: string | null;
+  /**
+   * إن وُجد يتجاوز verificationPolicyDays من إعدادات الموقع.
+   */
+  reviewIntervalDays?: number | null;
+  /**
+   * يُحسب عند الاعتماد/النشر. المدير فقط يتجاوزه بسبب موثّق.
+   */
+  reviewDueAt?: string | null;
+  reviewDueOverrideReason?: string | null;
+  /**
+   * يخفي المعاملة عن العامة حتى عند كونها منشورة.
+   */
+  markedOutdated?: boolean | null;
+  archivedAt?: string | null;
+  archivedBy?: (number | null) | User;
+  archiveReason?: string | null;
+  workflowSchemaVersion?: number | null;
   /**
    * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
    */
@@ -462,6 +521,48 @@ export interface Transaction {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * سجل تدقيق غير قابل للتعديل — يُكتب من خادم سير العمل فقط.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events".
+ */
+export interface AuditEvent {
+  id: number;
+  actor?: (number | null) | User;
+  action:
+    | 'draft_created'
+    | 'submitted_for_review'
+    | 'changes_requested'
+    | 'resubmitted_for_review'
+    | 'approved'
+    | 'approval_invalidated'
+    | 'published'
+    | 'unpublished'
+    | 'archived'
+    | 'archive_restored'
+    | 'revision_restored'
+    | 'review_date_overridden'
+    | 'marked_outdated';
+  entityType: string;
+  entityId: string;
+  transaction?: (number | null) | Transaction;
+  entityVersionId?: string | null;
+  summary: string;
+  beforeReference?: string | null;
+  afterReference?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -514,6 +615,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'transactions';
         value: number | Transaction;
+      } | null)
+    | ({
+        relationTo: 'audit-events';
+        value: number | AuditEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -562,6 +667,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  adminLabel?: T;
   name?: T;
   displayName?: T;
   role?: T;
@@ -721,6 +827,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   summary?: T;
+  publicationStatus?: T;
   category?: T;
   agency?: T;
   serviceCenters?: T;
@@ -778,11 +885,30 @@ export interface TransactionsSelect<T extends boolean = true> {
     | {
         source?: T;
         primary?: T;
+        coveredSections?: T;
         citationNote?: T;
         id?: T;
       };
   lastReviewedAt?: T;
   internalNotes?: T;
+  workflowState?: T;
+  submittedForReviewAt?: T;
+  submittedForReviewBy?: T;
+  changeRequestedAt?: T;
+  changeRequestedBy?: T;
+  changeRequestComment?: T;
+  approvedAt?: T;
+  approvedBy?: T;
+  approvedContentHash?: T;
+  approvedVersionId?: T;
+  reviewIntervalDays?: T;
+  reviewDueAt?: T;
+  reviewDueOverrideReason?: T;
+  markedOutdated?: T;
+  archivedAt?: T;
+  archivedBy?: T;
+  archiveReason?: T;
+  workflowSchemaVersion?: T;
   active?: T;
   createdBy?: T;
   lastUpdatedBy?: T;
@@ -791,6 +917,24 @@ export interface TransactionsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events_select".
+ */
+export interface AuditEventsSelect<T extends boolean = true> {
+  actor?: T;
+  action?: T;
+  entityType?: T;
+  entityId?: T;
+  transaction?: T;
+  entityVersionId?: T;
+  summary?: T;
+  beforeReference?: T;
+  afterReference?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

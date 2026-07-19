@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Agencies } from './collections/Agencies'
+import { AuditEvents } from './collections/AuditEvents'
 import { Categories } from './collections/Categories'
 import { Documents } from './collections/Documents'
 import { ServiceCenters } from './collections/ServiceCenters'
@@ -20,8 +21,17 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     user: Users.slug,
+    meta: {
+      titleSuffix: '— ورقة',
+    },
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      graphics: {
+        Logo: '/components/admin/AdminLogo#AdminLogo',
+        Icon: '/components/admin/AdminLogo#AdminLogo',
+      },
     },
   },
   // No Media/upload collection — Vercel filesystem is ephemeral; identity uploads are out of scope.
@@ -33,6 +43,7 @@ export default buildConfig({
     Documents,
     Sources,
     Transactions,
+    AuditEvents,
   ],
   globals: [SiteSettings],
   localization: {
@@ -43,6 +54,10 @@ export default buildConfig({
     defaultLocale: 'ar',
     fallback: true,
   },
+  // Admin UI language: Payload 3.86 does not ship a complete official Arabic Admin pack
+  // in this repo without adding @payloadcms/translations language imports. Content
+  // locales remain ar/en. Chrome strings (Create New, Save Draft, etc.) documented as
+  // residual polish debt where unsupported without fragile workarounds.
   editor: lexicalEditor(),
   graphQL: {
     disable: true,

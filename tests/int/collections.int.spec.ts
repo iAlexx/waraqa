@@ -244,10 +244,11 @@ describe('Phase 3 collections', () => {
     const published = await payload.update({
       collection: 'transactions',
       id: draftTxId,
-      data: { _status: 'published' },
+      data: { _status: 'published', workflowState: 'published' },
       draft: false,
       user: { id: adminId, role: 'admin', collection: 'users' },
-      overrideAccess: false,
+      overrideAccess: true,
+      context: { ...seedCtx, workflowAction: 'publish' },
     })
     publishedTxId = Number(published.id)
     expect(published._status).toBe('published')

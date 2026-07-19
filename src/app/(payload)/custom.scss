@@ -1,0 +1,33 @@
+/* Admin brand fonts — Aref Ruqaa Ink for BrandMark parity (brand-900 on light). */
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&display=swap');
+
+/* Match frontend globals.css — COLR palette override (Sass-safe color indices). */
+@font-palette-values --waraqa-wm-primary {
+  font-family: 'Aref Ruqaa Ink';
+  base-palette: 0;
+  override-colors:
+    #{0} #0a3d37,
+    #{1} #0a3d37,
+    #{2} #0a3d37,
+    #{3} #0a3d37,
+    #{4} #0a3d37,
+    #{5} #0a3d37,
+    #{6} #0a3d37,
+    #{7} #0a3d37;
+}
+
+[data-waraqa-admin-logo] {
+  --waraqa-brand-900: #0a3d37;
+}
+
+[data-waraqa-admin-wordmark] {
+  font-family: 'Aref Ruqaa Ink', serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #0a3d37 !important;
+  -webkit-text-fill-color: #0a3d37;
+  font-palette: --waraqa-wm-primary;
+  text-shadow: none;
+  filter: none;
+}

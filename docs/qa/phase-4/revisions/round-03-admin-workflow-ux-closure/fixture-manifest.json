@@ -1,0 +1,47 @@
+{
+  "password": "[redacted — see gitignored .local-credentials]",
+  "users": {
+    "admin": {
+      "email": "qa-p4-r3-admin-1784422677143@example.test",
+      "id": 5
+    },
+    "reviewer": {
+      "email": "qa-p4-r3-reviewer-1784422677143@example.test",
+      "id": 6
+    },
+    "researcher": {
+      "email": "qa-p4-r3-researcher-1784422677143@example.test",
+      "id": 7
+    },
+    "viewer": {
+      "email": "qa-p4-r3-viewer-1784422677143@example.test",
+      "id": 8
+    }
+  },
+  "ids": {
+    "draft": 19,
+    "submitReview": 20,
+    "inReview": 21,
+    "changesRequested": 22,
+    "sourceBlocker": 23,
+    "approved": 24,
+    "invalidated": 25,
+    "published": 26,
+    "unpublished": 27,
+    "archived": 28,
+    "outdated": 29,
+    "reviewDue": 30,
+    "revision": 31,
+    "categoryRoot": 3,
+    "categoryChild": 4,
+    "publishAudit": 70
+  },
+  "slugs": {
+    "draft": "tx-p4-r2-draft-1784422677143",
+    "published": "tx-p4-r2-published-1784422677143",
+    "archived": "tx-p4-r2-archived-1784422677143",
+    "outdated": "tx-p4-r2-outdated-1784422677143"
+  },
+  "round": "round-03-admin-workflow-ux-closure",
+  "policy": "fictional local QA Round 03 only — reset via db:reset"
+}

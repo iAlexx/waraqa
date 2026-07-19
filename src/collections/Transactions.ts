@@ -1,11 +1,12 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, PayloadRequest } from 'payload'
+import { APIError } from 'payload'
 
 import {
   adminOnlyDelete,
   canEditContent,
   contentUpdateAccess,
   editorialFieldAccess,
-  publicPublishedRead,
+  publicTransactionRead,
 } from '@/access'
 import {
   activeField,
@@ -15,17 +16,89 @@ import {
   localizedTextarea,
 } from '@/fields/common'
 import {
+  feeFields,
+  requiredDocumentFields,
+  sourceReferenceFields,
+  stepFields,
+  workflowFields,
+} from '@/fields/transaction-parts'
+import {
   enforcePublishAuthorization,
+  enforceWorkflowFieldGuard,
+  invalidateApprovalOnCriticalEdit,
   populateAuditFields,
   preventSelfPrerequisite,
 } from '@/hooks/content'
 import { stripPrivateEditorialFields } from '@/hooks/public-strip'
+import { attachPublicationStatusLabel } from '@/hooks/publication-status-label'
 import { validateProcedure } from '@/lib/procedure-validation'
+import {
+  runTransactionWorkflowAction,
+  type WorkflowRunInput,
+} from '@/lib/workflow/transaction-workflow'
+import { WorkflowError, type WorkflowAction } from '@/lib/workflow/types'
+import type { UserLike } from '@/access/roles'
+
+const WORKFLOW_ACTIONS = new Set<WorkflowAction>([
+  'submitForReview',
+  'requestChanges',
+  'resubmitForReview',
+  'approve',
+  'publish',
+  'unpublish',
+  'archive',
+  'restoreArchived',
+  'restoreRevision',
+  'overrideReviewDue',
+  'markOutdated',
+])
+
+async function handleWorkflowEndpoint(req: PayloadRequest) {
+  const user = req.user as UserLike
+  if (!user) throw new APIError('يجب تسجيل الدخول.', 401)
+
+  const id = req.routeParams?.id
+  const actionParam = req.routeParams?.action
+  if (id == null || typeof actionParam !== 'string' || !WORKFLOW_ACTIONS.has(actionParam as WorkflowAction)) {
+    throw new APIError('إجراء أو معرّف غير صالح.', 422)
+  }
+
+  let body: Record<string, unknown> = {}
+  try {
+    if (typeof req.json === 'function') {
+      body = (await req.json()) as Record<string, unknown>
+    }
+  } catch {
+    body = {}
+  }
+
+  const input: WorkflowRunInput = {
+    payload: req.payload,
+    req,
+    id: Array.isArray(id) ? id[0] : id,
+    action: actionParam as WorkflowAction,
+    user,
+    comment: typeof body.comment === 'string' ? body.comment : undefined,
+    reason: typeof body.reason === 'string' ? body.reason : undefined,
+    expectedUpdatedAt:
+      typeof body.expectedUpdatedAt === 'string' ? body.expectedUpdatedAt : undefined,
+    versionId: body.versionId as string | number | undefined,
+    reviewDueAt: typeof body.reviewDueAt === 'string' ? body.reviewDueAt : undefined,
+  }
+
+  try {
+    const doc = await runTransactionWorkflowAction(input)
+    return Response.json({ doc })
+  } catch (err) {
+    if (err instanceof WorkflowError || err instanceof APIError) throw err
+    throw new APIError(err instanceof Error ? err.message : 'فشل إجراء سير العمل.', 422)
+  }
+}
 
 /**
  * Central guidance collection.
  * Roadmap slug: `transactions` (Arabic: المعاملات).
- * Owner Phase 3 brief preferred `procedures` — documented conflict; roadmap wins.
+ * Phase 4 extends workflow only — does not rebuild Phase 3 schema.
  */
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -36,24 +109,50 @@ export const Transactions: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', 'category', 'agency', '_status', 'active', 'updatedAt'],
+    defaultColumns: [
+      'title',
+      'slug',
+      'workflowState',
+      'category',
+      'agency',
+      'publicationStatus',
+      'active',
+      'updatedAt',
+    ],
     group: 'المحتوى',
-    description: 'المعاملات الإدارية — مجموعة Phase 3 المركزية (slug: transactions).',
+    description: 'المعاملات الإدارية — سير تحريري Phase 4 على نموذج Phase 3.',
+    components: {
+      edit: {
+        beforeDocumentControls: ['/components/admin/WorkflowActions#WorkflowActions'],
+      },
+    },
   },
   versions: {
     drafts: { autosave: false },
     maxPerDoc: 20,
   },
+  endpoints: [
+    {
+      path: '/:id/workflow/:action',
+      method: 'post',
+      handler: handleWorkflowEndpoint,
+    },
+  ],
   access: {
-    read: publicPublishedRead,
+    read: publicTransactionRead,
     create: canEditContent,
     update: contentUpdateAccess,
     delete: adminOnlyDelete,
   },
   hooks: {
     beforeValidate: [preventSelfPrerequisite, validateProcedure],
-    beforeChange: [enforcePublishAuthorization, populateAuditFields],
-    afterRead: [stripPrivateEditorialFields],
+    beforeChange: [
+      enforceWorkflowFieldGuard,
+      enforcePublishAuthorization,
+      invalidateApprovalOnCriticalEdit,
+      populateAuditFields,
+    ],
+    afterRead: [attachPublicationStatusLabel, stripPrivateEditorialFields],
   },
   fields: [
     localizedText('title', 'العنوان', { required: true }),
@@ -62,6 +161,20 @@ export const Transactions: CollectionConfig = {
       required: true,
       admin: { description: 'ملخص قصير للعرض العام.' },
     }),
+    {
+      name: 'publicationStatus',
+      type: 'text',
+      label: 'حالة النشر',
+      virtual: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        components: {
+          Cell: '/components/admin/PublicationStatusCell#PublicationStatusCell',
+          Field: '/components/admin/PublicationStatusField#PublicationStatusField',
+        },
+      },
+    },
     {
       name: 'category',
       type: 'relationship',
@@ -118,63 +231,7 @@ export const Transactions: CollectionConfig = {
       type: 'array',
       label: 'الوثائق المطلوبة',
       labels: { singular: 'وثيقة', plural: 'وثائق' },
-      fields: [
-        {
-          name: 'document',
-          type: 'relationship',
-          relationTo: 'documents',
-          label: 'الوثيقة',
-          required: true,
-          localized: false,
-        },
-        {
-          name: 'requirementType',
-          dbName: 'rtype',
-          type: 'select',
-          label: 'نوع المتطلب',
-          required: true,
-          localized: false,
-          options: [
-            { label: 'إلزامي', value: 'required' },
-            { label: 'مشروط', value: 'conditional' },
-            { label: 'بديل', value: 'alternative' },
-          ],
-        },
-        localizedTextarea('condition', 'الشرط', {
-          admin: { condition: (_, siblingData) => siblingData?.requirementType === 'conditional' },
-        }),
-        {
-          name: 'quantity',
-          type: 'number',
-          label: 'الكمية',
-          defaultValue: 1,
-          min: 1,
-          localized: false,
-        },
-        {
-          name: 'originalRequired',
-          type: 'checkbox',
-          label: 'الأصل مطلوب',
-          defaultValue: false,
-          localized: false,
-        },
-        {
-          name: 'copiesRequired',
-          type: 'number',
-          label: 'عدد النسخ',
-          defaultValue: 0,
-          min: 0,
-          localized: false,
-        },
-        {
-          name: 'certificationRequired',
-          type: 'checkbox',
-          label: 'تصديق مطلوب',
-          defaultValue: false,
-          localized: false,
-        },
-        localizedTextarea('notes', 'ملاحظات'),
-      ],
+      fields: requiredDocumentFields(),
     },
     {
       name: 'steps',
@@ -184,42 +241,14 @@ export const Transactions: CollectionConfig = {
       labels: { singular: 'خطوة', plural: 'خطوات' },
       required: true,
       minRows: 1,
-      fields: [
-        localizedText('title', 'عنوان الخطوة', { required: true }),
-        localizedTextarea('description', 'وصف الخطوة', { required: true }),
-        localizedText('locationNote', 'ملاحظة المكان'),
-      ],
+      fields: stepFields(),
     },
     {
       name: 'fees',
       dbName: 'fees',
       type: 'array',
       label: 'الرسوم',
-      fields: [
-        localizedText('label', 'التسمية', { required: true }),
-        {
-          name: 'amount',
-          type: 'number',
-          label: 'المبلغ',
-          min: 0,
-          localized: false,
-        },
-        {
-          name: 'currency',
-          dbName: 'cur',
-          type: 'select',
-          label: 'العملة',
-          localized: false,
-          options: [
-            { label: 'ل.س', value: 'SYP' },
-            { label: 'USD', value: 'USD' },
-            { label: 'EUR', value: 'EUR' },
-            { label: 'أخرى', value: 'other' },
-          ],
-        },
-        localizedText('amountText', 'نص المبلغ'),
-        localizedTextarea('notes', 'ملاحظات'),
-      ],
+      fields: feeFields(),
     },
     {
       name: 'estimatedDuration',
@@ -278,24 +307,7 @@ export const Transactions: CollectionConfig = {
       labels: { singular: 'مصدر', plural: 'مصادر' },
       required: true,
       minRows: 1,
-      fields: [
-        {
-          name: 'source',
-          type: 'relationship',
-          relationTo: 'sources',
-          label: 'المصدر',
-          required: true,
-          localized: false,
-        },
-        {
-          name: 'primary',
-          type: 'checkbox',
-          label: 'أساسي',
-          defaultValue: false,
-          localized: false,
-        },
-        localizedText('citationNote', 'ملاحظة الاقتباس'),
-      ],
+      fields: sourceReferenceFields(),
     },
     {
       name: 'lastReviewedAt',
@@ -317,9 +329,10 @@ export const Transactions: CollectionConfig = {
         update: editorialFieldAccess,
       },
       admin: {
-        description: 'لا تُعاد أبداً في طلبات REST العامة المجهولة.',
+        description: 'لا تُعاد أبداً في طلبات REST العامة المجهولة. لا تبطل الاعتماد.',
       },
     },
+    ...workflowFields(),
     activeField(),
     ...auditFields(),
   ],

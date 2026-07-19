@@ -5,7 +5,7 @@ Independent Syrian administrative-procedure guidance platform.
 > **ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً.**  
 > Waraqa is an independent guidance platform and is not a government website.
 
-**Current phase:** Phase 3 — Core Payload Collections (**COMPLETE — OWNER APPROVED**). Phase 4 not started.
+**Current phase:** Phase 4 — Editorial Workflow (**COMPLETE — OWNER APPROVED**). Phase 5 not started.
 
 ## Requirements
 

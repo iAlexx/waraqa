@@ -4,8 +4,25 @@ import { getUserRole, isUserActive, type UserLike, type WaraqaRole } from './rol
 
 type Args = AccessArgs
 
-const publishedActiveWhere: Where = {
+/** Published + active — used by content collections without workflow fields. */
+export const publishedActiveWhere: Where = {
   and: [{ _status: { equals: 'published' } }, { active: { equals: true } }],
+}
+
+/**
+ * Anonymous / viewer public read for `transactions`.
+ * Query-layer exclusion (primary): published + active + not archived + not manually outdated.
+ * `afterRead` may still strip private fields / null-out as defense in depth only.
+ */
+export const publicTransactionWhere: Where = {
+  and: [
+    { _status: { equals: 'published' } },
+    { active: { equals: true } },
+    // Checkbox may be null/false — exclude only explicit true (owner gate).
+    { markedOutdated: { not_equals: true } },
+    // Public must never list archived.
+    { workflowState: { not_equals: 'archived' } },
+  ],
 }
 
 export const isAuthenticated: Access = ({ req: { user } }: Args) => {
@@ -40,9 +57,8 @@ export function isEditorialUser(user: UserLike): boolean {
 }
 
 /**
- * Anonymous: published + active only.
- * Authenticated editorial roles: full read of drafts/published.
- * Viewer: published + active only (read-only public-equivalent).
+ * Anonymous: published + active only (categories, agencies, sources, documents, centers).
+ * Editorial roles: full read. Viewer: same as anonymous.
  */
 export const publicPublishedRead: Access = ({ req: { user } }: Args) => {
   if (!user || !isUserActive(user as UserLike)) {
@@ -55,6 +71,22 @@ export const publicPublishedRead: Access = ({ req: { user } }: Args) => {
   }
 
   return publishedActiveWhere
+}
+
+/**
+ * Transactions public read — includes archived / outdated exclusion at the Where layer.
+ */
+export const publicTransactionRead: Access = ({ req: { user } }: Args) => {
+  if (!user || !isUserActive(user as UserLike)) {
+    return publicTransactionWhere
+  }
+
+  const role = getUserRole(user as UserLike)
+  if (role === 'admin' || role === 'reviewer' || role === 'researcher') {
+    return true
+  }
+
+  return publicTransactionWhere
 }
 
 export const authenticatedEditorialRead: Access = ({ req: { user } }: Args) => {

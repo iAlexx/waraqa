@@ -92,6 +92,9 @@ export function activeField(): CheckboxField {
     admin: {
       position: 'sidebar',
       description: 'المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.',
+      components: {
+        Cell: '/components/admin/BooleanArCell#BooleanArCell',
+      },
     },
   }
 }

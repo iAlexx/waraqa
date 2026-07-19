@@ -2118,44 +2118,41 @@ QA: Round 01 owner-approved at `docs/qa/phase-3/approved/round-01-core-collectio
 
 ## Phase 4 — Transactions Schema and Workflow
 
-**Status: NOT STARTED**
+**Status: COMPLETE — OWNER APPROVED**
 
 ### Scope note (Outcome A — 2026-07-18)
 
-The full `transactions` content model (fields, drafts, sources, steps) is **already authorized, implemented, and owner-approved in Phase 3**. Phase 4 **must not** rebuild or duplicate that schema. Phase 4 extends **workflow only** on the existing model: reusable blocks, audit events collection, scheduled review, preview, and approval invalidation after critical edits.
+The full `transactions` content model (fields, drafts, sources, steps) is **already authorized, implemented, and owner-approved in Phase 3**. Phase 4 **must not** rebuild or duplicate that schema. Phase 4 extends **workflow only** on the existing model: editorial transitions, audit events, scheduled review, secure preview, source-coverage gates, public access enforcement, and Admin workflow UX.
 
-### Admin UI polish debt (non-blocking)
+### Delivered (owner-approved)
 
-Owner-approved Phase 4 polish (do not block Phase 3; do not implement as Phase 3 work):
+- Central editorial workflow service (submit / request changes / resubmit / approve / publish / unpublish / archive / restore / mark outdated / restore revision)
+- Approval invalidation after critical content edits
+- Source-coverage approve/publish gates (`coveredSections`)
+- Scheduled review metadata + outdated handling
+- Archived/outdated/inactive/draft exclusion at access-query layer
+- Immutable `audit-events` with readable actors (`النظام` fallback)
+- Secure HMAC draft preview (`PREVIEW_SECRET` server-only)
+- Role/state-aware Arabic Admin workflow actions; read-only status cards; reviewer notes; Arabic source blocker dialog
+- Arabic publication status list cells; Waraqa Admin login branding
+- GraphQL remains disabled; no Media / citizen uploads
+- QA evidence: `docs/qa/phase-4/approved/` Rounds 02–04 (Round 01 not approved evidence)
 
-1. Localize remaining mixed English Admin chrome (Create New, Search by, Columns, Filters, Updated At, Status, Last Modified, Save Draft, Publish changes, Select a value, Add Phone, Add Alias, etc.).
-2. Fix empty parent category display (`<No التصنيف الأب>` → `بدون تصنيف أب` or `—`).
-3. Boolean list cells: show Arabic نعم / لا badges instead of raw `true` / `false`.
-4. Admin login: replace default Payload logo / English form labels with Waraqa branding.
+### Remaining Admin polish debt (non-blocking)
 
-### Tasks
-
-- ~~implement Transaction collection~~ — **done in Phase 3 (Outcome A); do not re-implement schema**;
-- implement reusable blocks;
-- implement draft/review/approval/publication workflow polish on the existing `transactions` model;
-- implement revision history;
-- ~~implement source requirements~~ — **covered by Phase 3 publish gates on existing model**;
-- implement hooks for audit events (audit events collection);
-- implement scheduled review date;
-- implement preview support;
-- prevent invalid rules from publication / invalidate approval after critical edits;
-- Admin UI polish debt items listed above (non-blocking).
+Payload-owned English chrome strings (Create New, Save Draft, Publish changes, Search by, Columns, Filters, Login Email/Password labels, etc.) remain where unsupported without fragile workarounds.
 
 ### Acceptance criteria
 
-- researcher can create a draft;
-- researcher cannot publish;
-- reviewer can request changes;
-- approval is invalidated after critical edits;
-- only published records are publicly readable;
-- revision restoration works;
-- a transaction missing required source evidence cannot publish;
-- audit event is recorded for publish/unpublish actions.
+- [x] researcher can create a draft and submit / resubmit;
+- [x] researcher cannot publish;
+- [x] reviewer can request changes / approve / publish / unpublish;
+- [x] approval is invalidated after critical edits;
+- [x] only published + active + non-archived + non-outdated records are publicly readable;
+- [x] revision restoration works;
+- [x] a transaction missing required source evidence cannot approve/publish;
+- [x] audit event is recorded for publish/unpublish (and other workflow actions);
+- [x] owner visual approval of Phase 4 QA Rounds 02–04.
 
 ## Phase 5 — Public Shell and Home Page
 
