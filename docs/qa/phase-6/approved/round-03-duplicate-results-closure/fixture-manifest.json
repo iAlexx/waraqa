@@ -1,0 +1,17 @@
+{
+  "phase": 6,
+  "round": "round-03-duplicate-results-closure",
+  "redacted": true,
+  "credentials": "none",
+  "reusedFixtureState": "docs/qa/phase-6/fixture-state/fixture-manifest.json",
+  "publishedEligibleTransactionCount": 14,
+  "paginationQueryExpectedUnique": 11,
+  "sampleQueries": [
+    "لا حكم عليه",
+    "إخراج قيد",
+    "اخراج قيد",
+    "تجديد باسبور",
+    "معاملة ترقيم بحث تجريبية"
+  ],
+  "note": "Round 03 closes duplicate titles from repeated non-idempotent fixture runs."
+}

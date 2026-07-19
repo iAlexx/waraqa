@@ -32,6 +32,7 @@ import {
 import { stripPrivateEditorialFields } from '@/hooks/public-strip'
 import { attachPublicationStatusLabel } from '@/hooks/publication-status-label'
 import { validateProcedure } from '@/lib/procedure-validation'
+import { populateSearchText } from '@/lib/search/populate-search-text'
 import {
   runTransactionWorkflowAction,
   type WorkflowRunInput,
@@ -151,6 +152,7 @@ export const Transactions: CollectionConfig = {
       enforcePublishAuthorization,
       invalidateApprovalOnCriticalEdit,
       populateAuditFields,
+      populateSearchText,
     ],
     afterRead: [attachPublicationStatusLabel, stripPrivateEditorialFields],
   },
@@ -161,6 +163,19 @@ export const Transactions: CollectionConfig = {
       required: true,
       admin: { description: 'ملخص قصير للعرض العام.' },
     }),
+    {
+      name: 'searchText',
+      type: 'textarea',
+      label: 'نص البحث (مولَّد)',
+      localized: false,
+      index: true,
+      admin: {
+        hidden: true,
+        readOnly: true,
+        description:
+          'Phase 6 — نص مطبَّع مولَّد تلقائياً للمرشّحين. يُزال من الاستجابات العامة عبر afterRead.',
+      },
+    },
     {
       name: 'publicationStatus',
       type: 'text',

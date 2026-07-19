@@ -1,0 +1,357 @@
+{
+  "phase": 6,
+  "status": "COMPLETE — OWNER APPROVED",
+  "ownerApproved": true,
+  "folders": [
+    {
+      "path": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/",
+      "kind": "curated",
+      "sourceRevision": "docs/qa/phase-6/revisions/round-01-search-engine-results/",
+      "screenshotCount": 13
+    },
+    {
+      "path": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/",
+      "kind": "complete",
+      "sourceRevision": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/",
+      "screenshotCount": 9
+    },
+    {
+      "path": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/",
+      "kind": "complete",
+      "sourceRevision": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/",
+      "screenshotCount": 7
+    }
+  ],
+  "screenshotCount": 29,
+  "screenshots": [
+    {
+      "file": "search-empty-query.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-empty-query.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-empty-query.png",
+      "bytes": 61199,
+      "sha256": "da4666f36234a8a5b6d801173a4082d60193d988d3dba63152194c88ff4a771e",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-exact-title-ranking.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-exact-title-ranking.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-exact-title-ranking.png",
+      "bytes": 62269,
+      "sha256": "903144b7b4728c1eadeb014a0bb1f1620962ced9b11ec059f143d2eb9640833e",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-alias-match.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-alias-match.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-alias-match.png",
+      "bytes": 58642,
+      "sha256": "16e4abaea09483b416967825d5d9984242156de4c42296761747fa1628e6f576",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-arabic-normalization.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-arabic-normalization.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-arabic-normalization.png",
+      "bytes": 60652,
+      "sha256": "746a1bf2ab7e0391fdbf54fca39150afbc3aaa301bb5a24f7570efcab18c90d4",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-no-results.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-no-results.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-no-results.png",
+      "bytes": 62929,
+      "sha256": "1988bacec876afacb7771be1203df07e4e9ac2b0fa2c2186cc7cdc3f549959cb",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-category-filter.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-category-filter.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-category-filter.png",
+      "bytes": 178176,
+      "sha256": "9a0c7b45922e0978879e70f1847713414af1616daf89a8209392b3ee21da7abb",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-agency-filter.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-agency-filter.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-agency-filter.png",
+      "bytes": 178138,
+      "sha256": "96d024285d459008277297c905ffd11a4741c297291b93e169def31365f8829e",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-service-center-filter.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-service-center-filter.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-service-center-filter.png",
+      "bytes": 178380,
+      "sha256": "228662cc483a85b4e6167b0b7f370fa5ce94e440ecc91ddd332e50c6ccb511c1",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-loading-state.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-loading-state.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-loading-state.png",
+      "bytes": 44712,
+      "sha256": "963ee53e1e04e9b9ceeed10535a2f44decba077d0b5d48cb633bb5a2ffeaef16",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-error-state.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-error-state.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-error-state.png",
+      "bytes": 38232,
+      "sha256": "bee0ff6d30f9b4a984fedfa54d833bad9c6d8f978d7f72d0d315a4d4e9e49809",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-public-safety-proof.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-public-safety-proof.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-public-safety-proof.png",
+      "bytes": 62817,
+      "sha256": "dc2094840e28eecf8fd6e066ff5b0317025ffb00ebd09fc269ebabc91a90a402",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-no-javascript.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-no-javascript.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-no-javascript.png",
+      "bytes": 57319,
+      "sha256": "9cf9c8741e437c4ed00084bc85b2f22163d4ddf3c878279481258ace243cf279",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "search-keyboard-focus.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-keyboard-focus.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-01-search-engine-results-curated/search-keyboard-focus.png",
+      "bytes": 61969,
+      "sha256": "4766a7379599fa56fbeedda4149b66734244831ef9f2dd9db2ace3eee8bba986",
+      "folder": "round-01-search-engine-results-curated",
+      "kind": "curated"
+    },
+    {
+      "file": "comparison-round01-vs-round02.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/comparison-round01-vs-round02.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/comparison-round01-vs-round02.png",
+      "bytes": 434542,
+      "sha256": "1526ce654d1767d3c692a28dee922381baa395f8882fde7833047c50b9a2be17",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-multiple-results-density.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-multiple-results-density.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-multiple-results-density.png",
+      "bytes": 198848,
+      "sha256": "c1940da173eaad7783a2de906df29f479851aa48a329ef716809f4ca5cfd4ce3",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-pagination-refined.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-pagination-refined.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-pagination-refined.png",
+      "bytes": 200368,
+      "sha256": "a0db7a8bdf4d854b527c566e2b9785bdd4abbda0c7a79e79787e7e185be488ff",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-results-cards-desktop-1440.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-desktop-1440.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-results-cards-desktop-1440.png",
+      "bytes": 198848,
+      "sha256": "c1940da173eaad7783a2de906df29f479851aa48a329ef716809f4ca5cfd4ce3",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-results-cards-mobile-360.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-mobile-360.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-results-cards-mobile-360.png",
+      "bytes": 183358,
+      "sha256": "05e47817deba7c5ba252f30960558a50cd2d0529a12e8ca7fa2fcb576081cd8f",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-results-cards-mobile-390.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-mobile-390.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-results-cards-mobile-390.png",
+      "bytes": 181586,
+      "sha256": "ca9bfbbfd238150a4c53f1f354b405c82ac70f77f63e936f85d751ea31ea4346",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-results-cards-tablet-768.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-tablet-768.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-results-cards-tablet-768.png",
+      "bytes": 181730,
+      "sha256": "54dab05ad812853030e66772b772a9e78815896816910bf4cdcbccae91f46686",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-results-keyboard-focus.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-keyboard-focus.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-results-keyboard-focus.png",
+      "bytes": 200082,
+      "sha256": "d7cd046dda51c3c5c5fba3721f9d294984fae0c341186b527771686b012070fb",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-single-result-card.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-single-result-card.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/search-single-result-card.png",
+      "bytes": 72799,
+      "sha256": "89a3e23b2e7fa3c31a022d7fe9f188847880fa0260421e7deadce7aa28886f8c",
+      "folder": "round-02-search-results-visual-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "comparison-round02-vs-round03.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/comparison-round02-vs-round03.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/comparison-round02-vs-round03.png",
+      "bytes": 259704,
+      "sha256": "e81bb9875c0b80519af1da0758af1db2da0f47779cc4dcc6cde3147d79ad530a",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-pagination-page-1-unique.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-pagination-page-1-unique.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/search-pagination-page-1-unique.png",
+      "bytes": 199142,
+      "sha256": "ca48387447afc8f5884db486ce5fd39cc304bd687a046a99680956466ef21135",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-pagination-page-2-unique.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-pagination-page-2-unique.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/search-pagination-page-2-unique.png",
+      "bytes": 66920,
+      "sha256": "01b9a6b9a351c1bc4365e638aa05fa5646ea3c24e8f215b0a69452f464828fdc",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-result-count-correct.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-result-count-correct.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/search-result-count-correct.png",
+      "bytes": 199142,
+      "sha256": "ca48387447afc8f5884db486ce5fd39cc304bd687a046a99680956466ef21135",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-unique-results-desktop-1440.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-unique-results-desktop-1440.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/search-unique-results-desktop-1440.png",
+      "bytes": 199142,
+      "sha256": "ca48387447afc8f5884db486ce5fd39cc304bd687a046a99680956466ef21135",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-unique-results-mobile-360.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-unique-results-mobile-360.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/search-unique-results-mobile-360.png",
+      "bytes": 183863,
+      "sha256": "1c8e059002472748379ab32328fdde746ae34a43d5ed0dc3a5b93d22320bdbbb",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    },
+    {
+      "file": "search-unique-results-mobile-390.png",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-unique-results-mobile-390.png",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/search-unique-results-mobile-390.png",
+      "bytes": 182091,
+      "sha256": "1f84832c0548e4643934221da2488650d2c18a8933072b478b433eac31298b05",
+      "folder": "round-03-duplicate-results-closure",
+      "kind": "complete"
+    }
+  ],
+  "supportingFiles": [
+    {
+      "file": "CHANGES.md",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/CHANGES.md",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/CHANGES.md",
+      "bytes": 1368,
+      "sha256": "98f32ca584d3fe9079ca7c53ce8c357f4485c27d0b53785589dfb85c6e61fc46",
+      "folder": "round-02-search-results-visual-closure"
+    },
+    {
+      "file": "fixture-manifest.json",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/fixture-manifest.json",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-02-search-results-visual-closure/fixture-manifest.json",
+      "bytes": 460,
+      "sha256": "22c23cf13535cb218009fe31f5ac0fdb5b604bf720b8b1fd105d5d1d078e4bb6",
+      "folder": "round-02-search-results-visual-closure"
+    },
+    {
+      "file": "CHANGES.md",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/CHANGES.md",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/CHANGES.md",
+      "bytes": 1163,
+      "sha256": "5a759c1fa847448532e153ccf507785bf8aa575c52e98d1616eb232c241ba2cd",
+      "folder": "round-03-duplicate-results-closure"
+    },
+    {
+      "file": "fixture-manifest.json",
+      "sourceRevisionPath": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/fixture-manifest.json",
+      "approvedDestinationPath": "docs/qa/phase-6/approved/round-03-duplicate-results-closure/fixture-manifest.json",
+      "bytes": 548,
+      "sha256": "f86f15a1bd370be1e48ca2da0836022985e61e2de8f3717f3177c7d5f0cfb741",
+      "folder": "round-03-duplicate-results-closure"
+    }
+  ],
+  "supersededRound01Excluded": [
+    {
+      "file": "search-desktop-results-1440.png",
+      "supersededBy": "round-02-search-results-visual-closure (card layout) + round-03-duplicate-results-closure (unique count)"
+    },
+    {
+      "file": "search-tablet-results-768.png",
+      "supersededBy": "round-02-search-results-visual-closure (tablet cards)"
+    },
+    {
+      "file": "search-mobile-results-390.png",
+      "supersededBy": "round-02 / round-03 mobile unique result cards"
+    },
+    {
+      "file": "search-mobile-results-360.png",
+      "supersededBy": "round-02 / round-03 mobile unique result cards"
+    },
+    {
+      "file": "search-pagination.png",
+      "supersededBy": "round-02 search-pagination-refined.png + round-03 unique page-1/page-2"
+    }
+  ],
+  "canonicalClosure": [
+    "round-02-search-results-visual-closure",
+    "round-03-duplicate-results-closure"
+  ],
+  "curatedBaseline": "round-01-search-engine-results-curated",
+  "revisionArchivesUntouched": [
+    "docs/qa/phase-6/revisions/round-01-search-engine-results/",
+    "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/",
+    "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/"
+  ],
+  "credentialsPresent": false,
+  "phase5ArchivesUntouched": true
+}

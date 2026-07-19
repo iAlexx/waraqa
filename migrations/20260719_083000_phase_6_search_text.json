@@ -1,0 +1,4 @@
+{
+  "key": "20260719_083000_phase_6_search_text",
+  "summary": "Add tx.search_text + pg_trgm GIN index for Phase 6 public search prefilter"
+}

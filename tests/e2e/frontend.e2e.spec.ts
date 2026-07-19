@@ -50,8 +50,8 @@ test.describe('Public home shell (Phase 5)', () => {
       page.waitForURL(/\/search\?q=/),
       page.keyboard.press('Enter'),
     ])
-    await expect(page.getByRole('heading', { name: /البحث/ })).toBeVisible()
-    await expect(page.getByText(/ما بتعرض نتائج وهمية|محرّك البحث العربي/)).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'البحث عن معاملة' })).toBeVisible()
+    await expect(page.locator('form#public-search')).toBeVisible()
   })
 
   test('header landmarks and mobile checkbox menu', async ({ page }) => {
@@ -230,9 +230,6 @@ test.describe('Design system (development)', () => {
     )
     expect(serious).toEqual([])
   })
-})
-
-test.describe('Wordmark lab (development)', () => {
   test('shows selected Aref Ruqaa Ink wordmark without Lateef', async ({ page }) => {
     test.skip(process.env.CI === 'true' && process.env.ALLOW_DEV_E2E !== '1', 'Dev lab runs locally')
 
@@ -245,6 +242,87 @@ test.describe('Wordmark lab (development)', () => {
     await expect(page.locator('[data-wordmark-candidate="Lateef"]')).toHaveCount(0)
   })
 })
+
+test.describe('Public search (Phase 6)', () => {
+  test('search page empty query and results shell', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/search')
+    await expect(page.getByRole('heading', { name: 'البحث عن معاملة' })).toBeVisible()
+    await expect(page.locator('form#public-search')).toBeVisible()
+    await expect(page.locator('[data-empty="search-query"]')).toBeVisible()
+  })
+
+  test('search results use full-width bordered cards without overflow', async ({ page }) => {
+    for (const width of [1440, 390, 360] as const) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/search?q=%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A')
+      await expect(page.locator('[data-search-page]')).toBeVisible()
+      const cards = page.locator('[data-search-result-card]')
+      const count = await cards.count()
+      if (count > 0) {
+        const box = await cards.first().boundingBox()
+        expect(box).toBeTruthy()
+        expect(box!.width).toBeGreaterThan(width * 0.7)
+        await expect(cards.first().locator('[data-search-result-cta]')).toBeVisible()
+      }
+      const overflow = await page.evaluate(() => {
+        return document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
+      })
+      expect(overflow).toBe(false)
+    }
+  })
+
+  test('filters preserve query via GET', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 800 })
+    await page.goto('/search?q=%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A')
+    const form = page.locator('form#public-search')
+    await expect(form).toHaveAttribute('method', /get/i)
+    await expect(page.locator('#search-category')).toBeVisible()
+    await expect(page.locator('#search-agency')).toBeVisible()
+    await expect(page.locator('#search-center')).toBeVisible()
+  })
+
+  test('keyboard focus on search input', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 800 })
+    await page.goto('/search')
+    const input = page.getByLabel('ابحث عن معاملة')
+    await input.focus()
+    await expect(input).toBeFocused()
+  })
+
+  test('no-JavaScript search renders server results shell', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, locale: 'ar-SY' })
+    const page = await context.newPage()
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const response = await page.goto('/search?q=%D8%AC%D9%88%D8%A7%D8%B2', {
+      waitUntil: 'load',
+      timeout: 60_000,
+    })
+    expect(response?.ok()).toBeTruthy()
+    await expect(page.getByRole('heading', { name: 'البحث عن معاملة' })).toBeVisible()
+    await expect(page.locator('form#public-search')).toBeVisible()
+    await expect(page.locator('[data-search-status]')).toBeVisible()
+    await context.close()
+  })
+
+  test('search page has no critical axe violations', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto('/search')
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze()
+    const serious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious',
+    )
+    expect(serious).toEqual([])
+  })
+
+  test('transaction detail remains Phase 7 placeholder', async ({ page }) => {
+    await page.goto('/transactions/qa-does-not-exist')
+    await expect(page.getByText(/قادمين لاحقاً/).first()).toBeVisible()
+  })
+})
+
 
 test.describe('Production protection', () => {
   test('health endpoint remains safe', async ({ request }) => {

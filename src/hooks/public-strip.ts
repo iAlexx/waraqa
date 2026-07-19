@@ -17,6 +17,7 @@ const WORKFLOW_PRIVATE = [
   'changeRequestedBy',
   'approvedBy',
   'archivedBy',
+  'searchText',
 ] as const
 
 /** Strip editorial-only / workflow-private fields from anonymous / viewer responses.

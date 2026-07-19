@@ -1,0 +1,81 @@
+{
+  "phase": 6,
+  "round": "round-01-search-engine-results",
+  "productionOnly": true,
+  "priorPhasesUntouched": true,
+  "gatePass": true,
+  "files": {
+    "search-desktop-results-1440.png": {
+      "bytes": 178994,
+      "gatePass": true
+    },
+    "search-tablet-results-768.png": {
+      "bytes": 162801,
+      "gatePass": true
+    },
+    "search-mobile-results-390.png": {
+      "bytes": 153339,
+      "gatePass": true
+    },
+    "search-mobile-results-360.png": {
+      "bytes": 153062,
+      "gatePass": true
+    },
+    "search-empty-query.png": {
+      "bytes": 61199,
+      "gatePass": true
+    },
+    "search-no-results.png": {
+      "bytes": 62929,
+      "gatePass": true
+    },
+    "search-exact-title-ranking.png": {
+      "bytes": 62269,
+      "gatePass": true
+    },
+    "search-alias-match.png": {
+      "bytes": 58642,
+      "gatePass": true
+    },
+    "search-arabic-normalization.png": {
+      "bytes": 60652,
+      "gatePass": true
+    },
+    "search-category-filter.png": {
+      "bytes": 178176,
+      "gatePass": true
+    },
+    "search-agency-filter.png": {
+      "bytes": 178138,
+      "gatePass": true
+    },
+    "search-service-center-filter.png": {
+      "bytes": 178380,
+      "gatePass": true
+    },
+    "search-pagination.png": {
+      "bytes": 63990,
+      "gatePass": true
+    },
+    "search-keyboard-focus.png": {
+      "bytes": 61969,
+      "gatePass": true
+    },
+    "search-loading-state.png": {
+      "bytes": 44712,
+      "gatePass": true
+    },
+    "search-error-state.png": {
+      "bytes": 38232,
+      "gatePass": true
+    },
+    "search-no-javascript.png": {
+      "bytes": 57319,
+      "gatePass": true
+    },
+    "search-public-safety-proof.png": {
+      "bytes": 62817,
+      "gatePass": true
+    }
+  }
+}

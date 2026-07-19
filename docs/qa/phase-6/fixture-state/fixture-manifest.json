@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "fixture": "phase6-qa-fixture",
+  "idempotent": true,
+  "slugPrefix": "qa-p6-r1-",
+  "policy": "ALLOW_QA_FIXTURE=1; cleans qa-p6-r1-* only; fictional Arabic; تجريبي marked",
+  "redacted": true,
+  "credentials": "none",
+  "publishedEligibleTransactionCount": 14,
+  "categorySlug": "qa-p6-r1-cat",
+  "agencySlug": "qa-p6-r1-agency",
+  "centerSlug": "qa-p6-r1-center",
+  "sampleQueries": [
+    "لا حكم عليه",
+    "إخراج قيد",
+    "اخراج قيد",
+    "تجديد باسبور",
+    "معاملة ترقيم بحث تجريبية"
+  ],
+  "note": "Manifest lives under docs/qa/phase-6/fixture-state/ — revision Round 01/02 folders are not modified."
+}

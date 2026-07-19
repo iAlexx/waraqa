@@ -1,4 +1,4 @@
-﻿# Waraqa Security Baseline
+# Waraqa Security Baseline
 
 **Status:** Phase 4 preview + RBAC workflow gates (**COMPLETE — OWNER APPROVED**)
 
@@ -57,9 +57,11 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 ## 5. Published-content-only public APIs
 
 - Public queries filter to published **and** `active` records only.
+- **Transactions (Phase 4+):** also exclude `markedOutdated` and `workflowState = archived` via `publicTransactionWhere` (search uses the same gate — [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md)).
 - Draft preview requires authenticated admin session or a signed preview secret **after** preview is implemented.
-- `internalNotes` (transactions) and editorial source `notes` are never returned to anonymous/viewer reads.
+- `internalNotes` (transactions), generated `searchText`, and editorial source `notes` are never returned to anonymous/viewer reads.
 - Errors returned to clients must be safe (no stack traces, no secrets).
+- Public search caps query length and page range; uses Payload `Where` (no string-interpolated SQL in app code).
 
 ## 6. Web application hardening
 

@@ -395,6 +395,10 @@ export interface Transaction {
    * ملخص قصير للعرض العام.
    */
   summary: string;
+  /**
+   * Phase 6 — نص مطبَّع مولَّد تلقائياً للمرشّحين. يُزال من الاستجابات العامة عبر afterRead.
+   */
+  searchText?: string | null;
   publicationStatus?: string | null;
   category: number | Category;
   agency: number | Agency;
@@ -827,6 +831,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   summary?: T;
+  searchText?: T;
   publicationStatus?: T;
   category?: T;
   agency?: T;

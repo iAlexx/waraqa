@@ -1,0 +1,41 @@
+{
+  "phase": 6,
+  "round": "round-03-duplicate-results-closure",
+  "productionOnly": true,
+  "round01Untouched": true,
+  "round02Untouched": true,
+  "rootCause": "fixture-duplication",
+  "beforeUniquePaginationMatches": 22,
+  "afterUniquePaginationMatches": 11,
+  "gatePass": true,
+  "files": {
+    "search-unique-results-desktop-1440.png": {
+      "bytes": 199142,
+      "gatePass": true
+    },
+    "search-unique-results-mobile-390.png": {
+      "bytes": 182091,
+      "gatePass": true
+    },
+    "search-unique-results-mobile-360.png": {
+      "bytes": 183863,
+      "gatePass": true
+    },
+    "search-pagination-page-1-unique.png": {
+      "bytes": 199142,
+      "gatePass": true
+    },
+    "search-pagination-page-2-unique.png": {
+      "bytes": 66920,
+      "gatePass": true
+    },
+    "search-result-count-correct.png": {
+      "bytes": 199142,
+      "gatePass": true
+    },
+    "comparison-round02-vs-round03.png": {
+      "bytes": 259704,
+      "gatePass": true
+    }
+  }
+}

@@ -2188,38 +2188,35 @@ Payload-owned English chrome strings (Create New, Save Draft, Publish changes, S
 
 ## Phase 6 — Arabic Search
 
+**Status: COMPLETE — OWNER APPROVED** (`phase-6-complete`)
+
 ### Tasks
 
-- implement normalization utility;
-- aliases and search text generation;
-- PostgreSQL search indexes;
-- search route;
-- result page;
-- category filters;
-- no-result state;
-- search analytics interface without sensitive logging;
-- unit and integration tests.
+- [x] implement normalization utility;
+- [x] aliases and search text generation;
+- [x] PostgreSQL search indexes;
+- [x] search route;
+- [x] result page;
+- [x] category / agency / service-center filters;
+- [x] no-result state;
+- [x] search analytics interface without sensitive logging (deferred — no extra analytics beyond existing infra);
+- [x] unit and integration tests;
+- [x] owner visual approval (QA Rounds 01–03 → `docs/qa/phase-6/approved/`).
 
 ### Acceptance criteria
 
-Queries such as the following resolve correctly against seed data:
+- [x] normalization is deterministic;
+- [x] SQL is parameterized (Payload Where + migration SQL);
+- [x] draft content is excluded;
+- [x] performance is acceptable with a realistic seed set (candidate cap documented);
+- [x] empty query behavior is intentional;
+- [x] mobile keyboard behavior is correct (native GET; E2E).
 
-```text
-لا حكم عليه
-غير محكوم
-اخراج قيد
-ورقة عائلية
-تجديد باسبور
-```
+See [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md).
 
-Additional criteria:
+### Boundaries
 
-- normalization is deterministic;
-- SQL is parameterized;
-- draft content is excluded;
-- performance is acceptable with a realistic seed set;
-- empty query behavior is intentional;
-- mobile keyboard behavior is correct.
+**Not Phase 6:** full transaction pages (Phase 7), interactive guide (Phase 8), reporting (Phase 10).
 
 ## Phase 7 — Transaction Page
 

@@ -1,0 +1,88 @@
+{
+  "phase": 6,
+  "status": "OWNER APPROVED",
+  "folder": "round-01-search-engine-results-curated",
+  "kind": "curated",
+  "sourceRevision": "docs/qa/phase-6/revisions/round-01-search-engine-results",
+  "gatePass": true,
+  "files": {
+    "search-agency-filter.png": {
+      "bytes": 178138,
+      "sha256": "96d024285d459008277297c905ffd11a4741c297291b93e169def31365f8829e",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-agency-filter.png"
+    },
+    "search-alias-match.png": {
+      "bytes": 58642,
+      "sha256": "16e4abaea09483b416967825d5d9984242156de4c42296761747fa1628e6f576",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-alias-match.png"
+    },
+    "search-arabic-normalization.png": {
+      "bytes": 60652,
+      "sha256": "746a1bf2ab7e0391fdbf54fca39150afbc3aaa301bb5a24f7570efcab18c90d4",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-arabic-normalization.png"
+    },
+    "search-category-filter.png": {
+      "bytes": 178176,
+      "sha256": "9a0c7b45922e0978879e70f1847713414af1616daf89a8209392b3ee21da7abb",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-category-filter.png"
+    },
+    "search-empty-query.png": {
+      "bytes": 61199,
+      "sha256": "da4666f36234a8a5b6d801173a4082d60193d988d3dba63152194c88ff4a771e",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-empty-query.png"
+    },
+    "search-error-state.png": {
+      "bytes": 38232,
+      "sha256": "bee0ff6d30f9b4a984fedfa54d833bad9c6d8f978d7f72d0d315a4d4e9e49809",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-error-state.png"
+    },
+    "search-exact-title-ranking.png": {
+      "bytes": 62269,
+      "sha256": "903144b7b4728c1eadeb014a0bb1f1620962ced9b11ec059f143d2eb9640833e",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-exact-title-ranking.png"
+    },
+    "search-keyboard-focus.png": {
+      "bytes": 61969,
+      "sha256": "4766a7379599fa56fbeedda4149b66734244831ef9f2dd9db2ace3eee8bba986",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-keyboard-focus.png"
+    },
+    "search-loading-state.png": {
+      "bytes": 44712,
+      "sha256": "963ee53e1e04e9b9ceeed10535a2f44decba077d0b5d48cb633bb5a2ffeaef16",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-loading-state.png"
+    },
+    "search-no-javascript.png": {
+      "bytes": 57319,
+      "sha256": "9cf9c8741e437c4ed00084bc85b2f22163d4ddf3c878279481258ace243cf279",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-no-javascript.png"
+    },
+    "search-no-results.png": {
+      "bytes": 62929,
+      "sha256": "1988bacec876afacb7771be1203df07e4e9ac2b0fa2c2186cc7cdc3f549959cb",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-no-results.png"
+    },
+    "search-public-safety-proof.png": {
+      "bytes": 62817,
+      "sha256": "dc2094840e28eecf8fd6e066ff5b0317025ffb00ebd09fc269ebabc91a90a402",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-public-safety-proof.png"
+    },
+    "search-service-center-filter.png": {
+      "bytes": 178380,
+      "sha256": "228662cc483a85b4e6167b0b7f370fa5ce94e440ecc91ddd332e50c6ccb511c1",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-01-search-engine-results/search-service-center-filter.png"
+    }
+  }
+}

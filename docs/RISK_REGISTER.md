@@ -20,7 +20,9 @@
 | R14 | pnpm 11 used with Node 20; engines pin too exact for Vercel | Medium | High | `engines.node: "24.x"`; local `.nvmrc`/`.node-version` = `24.18.0`; `packageManager: "pnpm@11.14.0"` |
 | R15 | Payload + node-postgres + Supabase transaction pooler prepared-statement / session incompatibility | Medium | High | Phase 1 must empirically test the documented adapter config against `:6543`; do not invent unsupported `prepare` flags; fall back only to officially documented mitigations if failures appear |
 | R16 | `create-payload-app@latest` drifts past audited Payload 3.86.0 | Medium | High | Always scaffold with `pnpx create-payload-app@3.86.0 --use-pnpm` |
-| R17 | Confusion between collection slug `transactions` / owner preferred `procedures`, and whether full procedure schema belongs in Phase 3 vs Phase 4 | Medium | Low | **Resolved (Outcome A, 2026-07-18):** slug remains `transactions` (roadmap); full content model authorized in Phase 3; Phase 4 must not rebuild schema â€” workflow only. See CONTENT_MODEL.md |
+| R17 | Confusion between collection slug `transactions` / owner preferred `procedures`, and whether full procedure schema belongs in Phase 3 vs Phase 4 | Medium | Low | **Resolved (Outcome A, 2026-07-18):** slug remains `transactions` (roadmap); full content model authorized in Phase 3; Phase 4 must not rebuild schema — workflow only. See CONTENT_MODEL.md |
+| R18 | Public search leaks draft/outdated/archived or private editorial fields | Medium | Critical | Always `overrideAccess: false` + `publicTransactionWhere`; strip `searchText`/editorial in afterRead + result mapper; integration tests for hidden states |
+| R19 | Arabic orthographic variants miss matches or over-match | Medium | Medium | Deterministic normalize util + unit tests; document limitations in SEARCH_ARCHITECTURE.md; fixture acceptance queries |
 
 ## Risk acceptance for MVP
 

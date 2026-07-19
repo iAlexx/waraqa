@@ -46,7 +46,9 @@ External actors:
 - **Domain logic:** Guide evaluation (rules, variants, requirements) stays pure and unit-testable—no CMS I/O inside pure evaluators.
 - **Client components:** Only where interaction requires them (guide answers, checklist, menus).
 
-Primary public route families (from roadmap): home, search, categories, transactions + guide/result, static trust pages, report form.
+Primary public route families (from roadmap): home, search (Phase 6 results), categories, transactions + guide/result (later), static trust pages, report form.
+
+Search details: [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md) — Postgres + Payload Local API, Arabic normalization, deterministic ranking, no Elasticsearch.
 
 ## 3. Payload CMS administration
 

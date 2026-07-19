@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "round": "round-01-search-engine-results",
+  "stamped": 1784440752528,
+  "policy": "ALLOW_QA_FIXTURE=1; fictional Arabic labels; تجريبي marked",
+  "redacted": true,
+  "credentials": "none",
+  "publishedTransactionCount": 14,
+  "categorySlug": "qa-p6-r1-cat-1784440752528",
+  "agencySlug": "qa-p6-r1-agency-1784440752528",
+  "centerSlug": "qa-p6-r1-center-1784440752528",
+  "sampleQueries": [
+    "لا حكم عليه",
+    "إخراج قيد",
+    "اخراج قيد",
+    "تجديد باسبور",
+    "معاملة ترقيم بحث تجريبية"
+  ]
+}

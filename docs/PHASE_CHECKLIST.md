@@ -10,7 +10,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 3 | Core Payload Collections | **COMPLETE — OWNER APPROVED** | Collections + full `transactions` model + Site Settings + RBAC + migrations + Round 01 QA approved |
 | 4 | Transactions Schema and Workflow | **COMPLETE — OWNER APPROVED** | Editorial workflow, audit, preview, access gates; Admin UX; QA Rounds 02–04 approved; tag `phase-4-complete` |
 | 5 | Public Shell and Home Page | **COMPLETE — OWNER APPROVED** | Public shell, Site Settings consumption, home, states, a11y; QA Rounds 01–03 approved; tag `phase-5-complete` |
-| 6 | Search and Categories | Not started | Aliases; published only |
+| 6 | Search and Categories | **COMPLETE — OWNER APPROVED** | Arabic search, ranking, filters, pagination, unique results; QA Rounds 01–03 approved; tag `phase-6-complete` |
 | 7 | Transaction Page | Not started | Sources + verification dates |
 | 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
 | 9 | Guide and Result UX | Not started | Checklist, print, share |
@@ -114,7 +114,6 @@ Branch `phase-5-public-shell-home` from `phase-4-complete` (`e0a0a375`).
 
 ### Not started (later phases)
 
-- Phase 6 search engine and search results
 - Phase 7 transaction detail pages
 - Phase 10 reporting flow
 - Phase 11 full SEO, sitemap, robots, and revalidation
@@ -126,6 +125,42 @@ Branch `phase-5-public-shell-home` from `phase-4-complete` (`e0a0a375`).
 - `approved/round-01-public-shell-home-curated/` — curated baseline (superseded R01 shots excluded)
 - Revision archives under `revisions/` remain unchanged
 
+## Phase 6 — Arabic search
+
+**Status: COMPLETE — OWNER APPROVED**
+
+Branch `phase-6-search-engine-results` from `phase-5-complete` (`5fe07c82`).
+
+### Implemented
+
+- [x] `/search` results (SSR, RTL, empty / no-result / error / loading QA states)
+- [x] Arabic normalization + deterministic ranking
+- [x] `searchText` generation hook + migration `20260719_083000_phase_6_search_text`
+- [x] Filters: category, agency, service center (published/active only)
+- [x] Pagination (page size 10, candidate cap 200)
+- [x] Public eligibility via `publicTransactionWhere` / `overrideAccess: false`
+- [x] Idempotent Phase 6 QA fixture (`qa-p6-r1-*`) + document-ID dedupe defense
+- [x] Full-width result cards (Round 02) + unique counts/IDs (Round 03)
+- [x] Unit + integration + E2E coverage
+- [x] Owner visual approval — approved QA under `docs/qa/phase-6/approved/`
+- [x] Phase 6 completion commit / annotated tag `phase-6-complete`
+
+### Not started (later phases)
+
+- Phase 7 transaction detail pages
+- Phase 8 interactive guide
+- Phase 10 reporting
+- Phase 11 full SEO / sitemap / robots / revalidation
+
+### Approved QA evidence
+
+- `approved/round-02-search-results-visual-closure/` — complete (canonical cards)
+- `approved/round-03-duplicate-results-closure/` — complete (unique IDs / counts)
+- `approved/round-01-search-engine-results-curated/` — curated baseline (superseded layout shots excluded)
+- Revision archives under `revisions/` remain unchanged
+
+See [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md).
+
 ## Phase 4 — Admin UI polish debt
 
 Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list cells نعم/لا; parent category empty → `بدون تصنيف أب`; role-aware workflow toolbar; Arabic publication status cells; readable audit actors.
@@ -136,4 +171,5 @@ Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list ce
 
 - Phase 4 must not duplicate or re-implement the `transactions` schema (Outcome A).
 - Phase 5 must not implement Phase 6 search ranking/normalization or Phase 7 full transaction pages.
+- Phase 6 must not implement Phase 7 full transaction pages or Phase 8 guide engine.
 - Do not start the next phase until the current phase is owner-approved and tagged.

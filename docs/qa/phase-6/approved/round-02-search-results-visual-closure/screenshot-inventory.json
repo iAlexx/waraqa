@@ -1,0 +1,76 @@
+{
+  "phase": 6,
+  "status": "OWNER APPROVED",
+  "folder": "round-02-search-results-visual-closure",
+  "kind": "complete",
+  "sourceRevision": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure",
+  "gatePass": true,
+  "files": {
+    "CHANGES.md": {
+      "bytes": 1368,
+      "sha256": "98f32ca584d3fe9079ca7c53ce8c357f4485c27d0b53785589dfb85c6e61fc46",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/CHANGES.md"
+    },
+    "comparison-round01-vs-round02.png": {
+      "bytes": 434542,
+      "sha256": "1526ce654d1767d3c692a28dee922381baa395f8882fde7833047c50b9a2be17",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/comparison-round01-vs-round02.png"
+    },
+    "fixture-manifest.json": {
+      "bytes": 460,
+      "sha256": "22c23cf13535cb218009fe31f5ac0fdb5b604bf720b8b1fd105d5d1d078e4bb6",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/fixture-manifest.json"
+    },
+    "search-multiple-results-density.png": {
+      "bytes": 198848,
+      "sha256": "c1940da173eaad7783a2de906df29f479851aa48a329ef716809f4ca5cfd4ce3",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-multiple-results-density.png"
+    },
+    "search-pagination-refined.png": {
+      "bytes": 200368,
+      "sha256": "a0db7a8bdf4d854b527c566e2b9785bdd4abbda0c7a79e79787e7e185be488ff",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-pagination-refined.png"
+    },
+    "search-results-cards-desktop-1440.png": {
+      "bytes": 198848,
+      "sha256": "c1940da173eaad7783a2de906df29f479851aa48a329ef716809f4ca5cfd4ce3",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-desktop-1440.png"
+    },
+    "search-results-cards-mobile-360.png": {
+      "bytes": 183358,
+      "sha256": "05e47817deba7c5ba252f30960558a50cd2d0529a12e8ca7fa2fcb576081cd8f",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-mobile-360.png"
+    },
+    "search-results-cards-mobile-390.png": {
+      "bytes": 181586,
+      "sha256": "ca9bfbbfd238150a4c53f1f354b405c82ac70f77f63e936f85d751ea31ea4346",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-mobile-390.png"
+    },
+    "search-results-cards-tablet-768.png": {
+      "bytes": 181730,
+      "sha256": "54dab05ad812853030e66772b772a9e78815896816910bf4cdcbccae91f46686",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-cards-tablet-768.png"
+    },
+    "search-results-keyboard-focus.png": {
+      "bytes": 200082,
+      "sha256": "d7cd046dda51c3c5c5fba3721f9d294984fae0c341186b527771686b012070fb",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-results-keyboard-focus.png"
+    },
+    "search-single-result-card.png": {
+      "bytes": 72799,
+      "sha256": "89a3e23b2e7fa3c31a022d7fe9f188847880fa0260421e7deadce7aa28886f8c",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-02-search-results-visual-closure/search-single-result-card.png"
+    }
+  }
+}

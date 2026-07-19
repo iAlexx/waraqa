@@ -16,8 +16,7 @@ export type HomeHeroProps = {
 }
 
 /**
- * Native GET search entry — Phase 5 boundary only.
- * Submits to `/search` (placeholder shell). No ranking/normalization (Phase 6).
+ * Native GET search entry — submits to `/search` (Phase 6 results).
  */
 function HomeHero({ settings, className }: HomeHeroProps) {
   return (

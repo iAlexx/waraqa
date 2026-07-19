@@ -1,0 +1,64 @@
+{
+  "phase": 6,
+  "status": "OWNER APPROVED",
+  "folder": "round-03-duplicate-results-closure",
+  "kind": "complete",
+  "sourceRevision": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure",
+  "gatePass": true,
+  "files": {
+    "CHANGES.md": {
+      "bytes": 1163,
+      "sha256": "5a759c1fa847448532e153ccf507785bf8aa575c52e98d1616eb232c241ba2cd",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/CHANGES.md"
+    },
+    "comparison-round02-vs-round03.png": {
+      "bytes": 259704,
+      "sha256": "e81bb9875c0b80519af1da0758af1db2da0f47779cc4dcc6cde3147d79ad530a",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/comparison-round02-vs-round03.png"
+    },
+    "fixture-manifest.json": {
+      "bytes": 548,
+      "sha256": "f86f15a1bd370be1e48ca2da0836022985e61e2de8f3717f3177c7d5f0cfb741",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/fixture-manifest.json"
+    },
+    "search-pagination-page-1-unique.png": {
+      "bytes": 199142,
+      "sha256": "ca48387447afc8f5884db486ce5fd39cc304bd687a046a99680956466ef21135",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-pagination-page-1-unique.png"
+    },
+    "search-pagination-page-2-unique.png": {
+      "bytes": 66920,
+      "sha256": "01b9a6b9a351c1bc4365e638aa05fa5646ea3c24e8f215b0a69452f464828fdc",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-pagination-page-2-unique.png"
+    },
+    "search-result-count-correct.png": {
+      "bytes": 199142,
+      "sha256": "ca48387447afc8f5884db486ce5fd39cc304bd687a046a99680956466ef21135",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-result-count-correct.png"
+    },
+    "search-unique-results-desktop-1440.png": {
+      "bytes": 199142,
+      "sha256": "ca48387447afc8f5884db486ce5fd39cc304bd687a046a99680956466ef21135",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-unique-results-desktop-1440.png"
+    },
+    "search-unique-results-mobile-360.png": {
+      "bytes": 183863,
+      "sha256": "1c8e059002472748379ab32328fdde746ae34a43d5ed0dc3a5b93d22320bdbbb",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-unique-results-mobile-360.png"
+    },
+    "search-unique-results-mobile-390.png": {
+      "bytes": 182091,
+      "sha256": "1f84832c0548e4643934221da2488650d2c18a8933072b478b433eac31298b05",
+      "gatePass": true,
+      "source": "docs/qa/phase-6/revisions/round-03-duplicate-results-closure/search-unique-results-mobile-390.png"
+    }
+  }
+}

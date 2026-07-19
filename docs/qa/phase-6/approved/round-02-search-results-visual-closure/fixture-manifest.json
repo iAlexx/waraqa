@@ -1,0 +1,15 @@
+{
+  "phase": 6,
+  "round": "round-02-search-results-visual-closure",
+  "reusedFrom": "round-01-search-engine-results",
+  "redacted": true,
+  "credentials": "none",
+  "sampleQueries": [
+    "لا حكم عليه",
+    "إخراج قيد",
+    "اخراج قيد",
+    "تجديد باسبور",
+    "معاملة ترقيم بحث تجريبية"
+  ],
+  "note": "Visual closure only — no new seed credentials; reuses Round 01 fixture data in DB if present"
+}

@@ -1,0 +1,45 @@
+{
+  "phase": 6,
+  "round": "round-02-search-results-visual-closure",
+  "productionOnly": true,
+  "round01Untouched": true,
+  "gatePass": true,
+  "files": {
+    "search-results-cards-desktop-1440.png": {
+      "bytes": 198848,
+      "gatePass": true
+    },
+    "search-results-cards-tablet-768.png": {
+      "bytes": 181730,
+      "gatePass": true
+    },
+    "search-results-cards-mobile-390.png": {
+      "bytes": 181586,
+      "gatePass": true
+    },
+    "search-results-cards-mobile-360.png": {
+      "bytes": 183358,
+      "gatePass": true
+    },
+    "search-single-result-card.png": {
+      "bytes": 72799,
+      "gatePass": true
+    },
+    "search-multiple-results-density.png": {
+      "bytes": 198848,
+      "gatePass": true
+    },
+    "search-results-keyboard-focus.png": {
+      "bytes": 200082,
+      "gatePass": true
+    },
+    "search-pagination-refined.png": {
+      "bytes": 200368,
+      "gatePass": true
+    },
+    "comparison-round01-vs-round02.png": {
+      "bytes": 434542,
+      "gatePass": true
+    }
+  }
+}

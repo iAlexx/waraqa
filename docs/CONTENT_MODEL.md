@@ -158,7 +158,8 @@ See [RBAC.md](./RBAC.md).
 | `serviceCenters` | No | → `service-centers` (hasMany) |
 | `audiences` | No | Multi-select: citizen, resident, student, employee, business, visitor, other |
 | `eligibility` | Yes | |
-| `aliases[]` | Yes (`value`) | For later search |
+| `aliases[]` | Yes (`value`) | Phase 6 public search (exact / contains) |
+| `searchText` | No | Phase 6 generated normalized blob (admin-hidden; stripped from public responses) |
 | `outcome` | Yes | |
 | `prerequisiteProcedures` | No | → `transactions` (hasMany); self-ref blocked |
 | `lastReviewedAt` | No | **Required to publish** |
