@@ -1,0 +1,36 @@
+{
+    "phase":  7,
+    "round":  "round-01-public-transaction-details-curated",
+    "kind":  "curated",
+    "ownerApproved":  true,
+    "gatePass":  true,
+    "sourceRevision":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/",
+    "originalInventorySha256":  "56D69A7AD32A35D2966DB3D8E9EDC793311848DE22443D7477C73B3AA3E5139B",
+    "files":  {
+                  "no-javascript-detail.png":  {
+                                                   "bytes":  160756,
+                                                   "gatePass":  true
+                                               },
+                  "keyboard-focus.png":  {
+                                             "bytes":  164710,
+                                             "gatePass":  true
+                                         },
+                  "hidden-public-safety.png":  {
+                                                   "bytes":  42947,
+                                                   "gatePass":  true
+                                               },
+                  "last-reviewed-and-disclaimer.png":  {
+                                                           "bytes":  164696,
+                                                           "gatePass":  true
+                                                       },
+                  "search-to-detail-navigation.png":  {
+                                                          "bytes":  160756,
+                                                          "gatePass":  true
+                                                      },
+                  "detail-mobile-360.png":  {
+                                                "bytes":  137119,
+                                                "gatePass":  true
+                                            }
+              }
+}
+

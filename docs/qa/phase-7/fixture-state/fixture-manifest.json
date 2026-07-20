@@ -1,0 +1,25 @@
+{
+  "phase": 7,
+  "fixture": "phase7-qa-fixture",
+  "idempotent": true,
+  "slugPrefix": "qa-p7-r1",
+  "redacted": true,
+  "credentials": "none",
+  "publishedEligibleTransactionCount": 3,
+  "detailSlugs": {
+    "complete": "qa-p7-r1-tx-complete",
+    "minimal": "qa-p7-r1-tx-minimal",
+    "long": "qa-p7-r1-tx-long"
+  },
+  "hiddenSlugs": {
+    "draft": "qa-p7-r1-tx-draft",
+    "inactive": "qa-p7-r1-tx-inactive",
+    "archived": "qa-p7-r1-tx-arch",
+    "outdated": "qa-p7-r1-tx-out"
+  },
+  "samplePaths": [
+    "/transactions/qa-p7-r1-tx-complete",
+    "/transactions/qa-p7-r1-tx-minimal",
+    "/transactions/qa-p7-r1-tx-long"
+  ]
+}

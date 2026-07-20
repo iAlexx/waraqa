@@ -110,7 +110,7 @@ function SearchResultCard({ item }: SearchResultCardProps) {
           )}
           data-search-result-cta
         >
-          عرض تفاصيل المعاملة (قريباً)
+          عرض تفاصيل المعاملة
         </Link>
       </p>
     </article>

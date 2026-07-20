@@ -1,0 +1,237 @@
+{
+  "phase": 7,
+  "round": "round-01-public-transaction-details",
+  "productionOnly": true,
+  "priorPhasesUntouched": true,
+  "gatePass": true,
+  "files": {
+    "detail-desktop-1440.png": {
+      "bytes": 164696,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "detail-tablet-768.png": {
+      "bytes": 148157,
+      "gatePass": true,
+      "viewport": {
+        "width": 768,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    "detail-mobile-390.png": {
+      "bytes": 137066,
+      "gatePass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "expectedViewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    "detail-mobile-360.png": {
+      "bytes": 137119,
+      "gatePass": true,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "expectedViewport": {
+        "width": 360,
+        "height": 800
+      }
+    },
+    "detail-long-content.png": {
+      "bytes": 298733,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "detail-minimal-content.png": {
+      "bytes": 78688,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "required-documents-section.png": {
+      "bytes": 164699,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "numbered-steps-section.png": {
+      "bytes": 163259,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "fees-section.png": {
+      "bytes": 163259,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "sources-section.png": {
+      "bytes": 162194,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "multiple-service-centers.png": {
+      "bytes": 161688,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "last-reviewed-and-disclaimer.png": {
+      "bytes": 164696,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "keyboard-focus.png": {
+      "bytes": 164710,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "search-to-detail-navigation.png": {
+      "bytes": 160756,
+      "gatePass": true,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1280,
+        "height": 900
+      }
+    },
+    "not-found.png": {
+      "bytes": 42947,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "hidden-public-safety.png": {
+      "bytes": 42947,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "loading-state.png": {
+      "bytes": 32327,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "error-state.png": {
+      "bytes": 35196,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "no-javascript-detail.png": {
+      "bytes": 160756,
+      "gatePass": true,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1280,
+        "height": 900
+      }
+    }
+  }
+}

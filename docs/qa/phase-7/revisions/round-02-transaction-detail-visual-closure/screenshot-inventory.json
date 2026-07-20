@@ -1,0 +1,183 @@
+{
+  "phase": 7,
+  "round": "round-02-transaction-detail-visual-closure",
+  "round01Untouched": true,
+  "round01InventorySha256": "56D69A7AD32A35D2966DB3D8E9EDC793311848DE22443D7477C73B3AA3E5139B",
+  "productionOnly": true,
+  "gatePass": true,
+  "files": {
+    "detail-desktop-1440-width-fixed.png": {
+      "bytes": 170815,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "detail-desktop-minimal-balanced.png": {
+      "bytes": 79611,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "detail-desktop-long-content-fixed.png": {
+      "bytes": 300281,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "detail-tablet-768-regression.png": {
+      "bytes": 153664,
+      "gatePass": true,
+      "viewport": {
+        "width": 768,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 768,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "detail-mobile-390-regression.png": {
+      "bytes": 143356,
+      "gatePass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "expectedViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflowOk": true
+    },
+    "required-documents-focused.png": {
+      "bytes": 62212,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "focusedSection": "[data-section=\"documents\"]",
+      "overflowOk": true
+    },
+    "steps-and-fees-focused.png": {
+      "bytes": 45694,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "focusedSection": "[data-section=\"steps\"]",
+      "overflowOk": true
+    },
+    "service-centers-focused.png": {
+      "bytes": 51357,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "focusedSection": "[data-section=\"centers\"]",
+      "overflowOk": true
+    },
+    "sources-focused-long-url.png": {
+      "bytes": 52421,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "focusedSection": "[data-section=\"sources\"]",
+      "overflowOk": true
+    },
+    "loading-state-balanced.png": {
+      "bytes": 35634,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "error-state-with-retry.png": {
+      "bytes": 40263,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "not-found-balanced.png": {
+      "bytes": 43009,
+      "gatePass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "expectedViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflowOk": true
+    },
+    "comparison-round01-vs-round02.png": {
+      "bytes": 323163,
+      "gatePass": true,
+      "viewport": {
+        "width": 1460,
+        "height": 1648
+      },
+      "expectedViewport": {
+        "width": 1460,
+        "height": 1648
+      },
+      "overflowOk": true
+    }
+  }
+}

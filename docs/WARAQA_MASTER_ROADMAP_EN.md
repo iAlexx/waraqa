@@ -2220,32 +2220,36 @@ See [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md).
 
 ## Phase 7 — Transaction Page
 
+**Status: COMPLETE — OWNER APPROVED** (branch `phase-7-public-transaction-details`; tag `phase-7-complete`)
+
+See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
+
 ### Tasks
 
-- transaction data loader;
-- page header;
-- verification badge;
-- general requirements;
-- general steps;
-- fees;
-- service centers;
-- duration;
-- sources;
-- common mistakes;
-- guide CTA;
-- report CTA;
-- print-safe public view foundation;
-- SEO metadata.
+- [x] transaction data loader (public DTO; `overrideAccess: false`);
+- [x] page header (title, summary, category, agency, last reviewed, disclaimer);
+- [x] trust messaging (`آخر مراجعة`, official sources, independent-platform disclaimer) — not editorial verification badges;
+- [x] requirements / documents;
+- [x] ordered steps;
+- [x] fees;
+- [x] service centers;
+- [x] duration;
+- [x] sources (safe http(s) only);
+- [ ] common mistakes — **schema field does not exist**; not invented in Phase 7;
+- [ ] guide CTA — **Phase 8 boundary**;
+- [ ] report CTA — **Phase 10 boundary**;
+- [x] print-safe SSR public view foundation (no client-only requirement);
+- [x] basic SEO metadata (Arabic title/description/OG) — not full Phase 11 SEO system.
 
 ### Acceptance criteria
 
-- missing optional sections do not leave empty containers;
-- source links are safe and accessible;
-- outdated status displays a prominent warning;
-- page renders server-side;
-- long Arabic content remains readable;
-- all sections match configured order;
-- no draft content leaks.
+- [x] missing optional sections do not leave empty containers;
+- [x] source links are safe and accessible;
+- [x] outdated / archived / draft / inactive are **not found** publicly (owner Phase 7 policy; no warning page that leaks existence);
+- [x] page renders server-side;
+- [x] long Arabic content remains readable;
+- [x] array sections preserve saved order;
+- [x] no draft / private editorial content leaks.
 
 ## Phase 8 — Guide Engine
 

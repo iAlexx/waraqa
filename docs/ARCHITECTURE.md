@@ -1,12 +1,12 @@
 ﻿# Waraqa Architecture
 
-**Status:** Phase 4 — COMPLETE — OWNER APPROVED (Phase 3 COMPLETE)
+**Status:** Phase 6–7 COMPLETE — OWNER APPROVED
 
 **Source of truth:** [WARAQA_MASTER_ROADMAP_EN.md](./WARAQA_MASTER_ROADMAP_EN.md)
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-20
 
-**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md)
+**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)
 
 ## 1. System context
 
@@ -46,9 +46,11 @@ External actors:
 - **Domain logic:** Guide evaluation (rules, variants, requirements) stays pure and unit-testable—no CMS I/O inside pure evaluators.
 - **Client components:** Only where interaction requires them (guide answers, checklist, menus).
 
-Primary public route families (from roadmap): home, search (Phase 6 results), categories, transactions + guide/result (later), static trust pages, report form.
+Primary public route families (from roadmap): home, search (Phase 6 results), categories, transaction detail (Phase 7), guide/result (Phase 8+), static trust pages, report form (Phase 10).
 
 Search details: [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md) — Postgres + Payload Local API, Arabic normalization, deterministic ranking, no Elasticsearch.
+
+Transaction detail: [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md) — public DTO loader, SSR `/transactions/[slug]`, Phase 4 eligibility, not-found for hidden states.
 
 ## 3. Payload CMS administration
 

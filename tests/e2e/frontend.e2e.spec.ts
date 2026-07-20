@@ -317,9 +317,150 @@ test.describe('Public search (Phase 6)', () => {
     expect(serious).toEqual([])
   })
 
-  test('transaction detail remains Phase 7 placeholder', async ({ page }) => {
+  test('inaccessible transaction slug returns not found', async ({ page }) => {
     await page.goto('/transactions/qa-does-not-exist')
-    await expect(page.getByText(/قادمين لاحقاً/).first()).toBeVisible()
+    await expect(page.locator('[data-not-found]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: /غير موجودة/ })).toBeVisible()
+  })
+})
+
+test.describe('Public transaction detail (Phase 7)', () => {
+  const detailSlug = process.env.E2E_P7_DETAIL_SLUG || 'qa-p7-r1-tx-complete'
+
+  test('desktop detail page renders sections when fixture slug exists', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const res = await page.goto(`/transactions/${detailSlug}`)
+    if (res?.status() === 404) {
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-transaction-detail]')).toBeVisible()
+    await expect(page.locator('#transaction-title')).toBeVisible()
+    await expect(page.locator('[data-section="steps"]')).toBeVisible()
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    )
+    expect(overflow).toBe(false)
+  })
+
+  test('mobile detail has no overflow when fixture present', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 })
+    const res = await page.goto(`/transactions/${detailSlug}`)
+    if (res?.status() === 404) {
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-transaction-detail]')).toBeVisible()
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    )
+    expect(overflow).toBe(false)
+  })
+
+  test('no-JavaScript detail SSR when fixture present', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, locale: 'ar-SY' })
+    const page = await context.newPage()
+    const res = await page.goto(`/transactions/${detailSlug}`, {
+      waitUntil: 'load',
+      timeout: 60_000,
+    })
+    if (res?.status() === 404) {
+      await context.close()
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-transaction-detail]')).toBeVisible()
+    await expect(page.locator('#transaction-title')).toBeVisible()
+    await context.close()
+  })
+
+  test('search CTA opens detail for fixture result', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto('/search?q=%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A')
+    const cta = page.locator('[data-search-result-cta]').first()
+    if ((await cta.count()) < 1) {
+      test.skip(true, 'No search results available')
+      return
+    }
+    await expect(cta).toContainText('عرض تفاصيل المعاملة')
+    await Promise.all([page.waitForURL(/\/transactions\//), cta.click()])
+    const path = new URL(page.url()).pathname
+    expect(path.startsWith('/transactions/')).toBe(true)
+  })
+
+  test('detail page axe when fixture present', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const res = await page.goto(`/transactions/${detailSlug}`)
+    if (res?.status() === 404) {
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+    const serious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious',
+    )
+    expect(serious).toEqual([])
+  })
+
+  test('long-content and minimal pages when fixture present', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const longSlug = process.env.E2E_P7_LONG_SLUG || 'qa-p7-r1-tx-long'
+    const minSlug = process.env.E2E_P7_MIN_SLUG || 'qa-p7-r1-tx-minimal'
+    const longRes = await page.goto(`/transactions/${longSlug}`)
+    if (longRes?.status() === 404) {
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-transaction-detail]')).toBeVisible()
+    await expect(page.locator('[data-section="steps"]')).toBeVisible()
+
+    await page.goto(`/transactions/${minSlug}`)
+    await expect(page.locator('[data-transaction-detail]')).toBeVisible()
+    await expect(page.locator('[data-section="steps"]')).toBeVisible()
+    await expect(page.locator('[data-section="fees"]')).toHaveCount(0)
+    await expect(page.locator('[data-section="documents"]')).toHaveCount(0)
+  })
+
+  test('keyboard focus reaches back-to-search when fixture present', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const res = await page.goto(`/transactions/${detailSlug}`)
+    if (res?.status() === 404) {
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    const back = page.locator('[data-back-to-search]')
+    await back.focus()
+    await expect(back).toBeFocused()
+  })
+
+  test('desktop content rail is centered at 1440 when fixture present', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const res = await page.goto(`/transactions/${detailSlug}`)
+    if (res?.status() === 404) {
+      test.skip(true, 'Phase 7 fixture not seeded')
+      return
+    }
+    const centered = await page.evaluate(() => {
+      const article = document.querySelector('[data-transaction-detail]')
+      const rail = article?.firstElementChild as HTMLElement | null
+      if (!article || !rail) return false
+      const a = article.getBoundingClientRect()
+      const r = rail.getBoundingClientRect()
+      return Math.abs(r.left - a.left - (a.right - r.right)) <= 48 && r.width >= a.width * 0.55
+    })
+    expect(centered).toBe(true)
+  })
+
+  test('error QA state exposes Arabic retry action', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(`/transactions/${detailSlug}?qaError=1`)
+    const retry = page.locator('[data-error-retry]')
+    if ((await retry.count()) < 1) {
+      test.skip(true, 'ALLOW_QA_EMPTY_STATES not enabled')
+      return
+    }
+    await expect(retry).toBeVisible()
+    await expect(retry).toContainText('إعادة المحاولة')
   })
 })
 

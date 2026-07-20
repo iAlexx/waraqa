@@ -1,10 +1,10 @@
 # Waraqa Security Baseline
 
-**Status:** Phase 4 preview + RBAC workflow gates (**COMPLETE — OWNER APPROVED**)
+**Status:** Phase 4–7 COMPLETE — OWNER APPROVED (Phase 7 public detail loader)
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-20
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [.env.example](../.env.example)
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [.env.example](../.env.example)
 
 ## 1. Secret management
 
@@ -57,11 +57,13 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 ## 5. Published-content-only public APIs
 
 - Public queries filter to published **and** `active` records only.
-- **Transactions (Phase 4+):** also exclude `markedOutdated` and `workflowState = archived` via `publicTransactionWhere` (search uses the same gate — [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md)).
+- **Transactions (Phase 4+):** also exclude `markedOutdated` and `workflowState = archived` via `publicTransactionWhere` (search and Phase 7 detail use the same gate — [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)).
+- **Phase 7 detail:** `loadPublicTransactionBySlug` always uses `overrideAccess: false`, maps to a public DTO (no raw Payload document in React), and returns a uniform not-found for draft/inactive/archived/outdated/missing slugs (no existence leak; no outdated warning page).
 - Draft preview requires authenticated admin session or a signed preview secret **after** preview is implemented.
 - `internalNotes` (transactions), generated `searchText`, and editorial source `notes` are never returned to anonymous/viewer reads.
 - Errors returned to clients must be safe (no stack traces, no secrets).
 - Public search caps query length and page range; uses Payload `Where` (no string-interpolated SQL in app code).
+- Public source links on the detail page allow **http(s) only**; unsafe protocols are dropped.
 
 ## 6. Web application hardening
 

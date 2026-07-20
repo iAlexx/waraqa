@@ -115,7 +115,9 @@ Justified: Arabic-normalized `contains` prefilter without rewriting display fiel
 
 ## Boundaries
 
-**Not Phase 6:** transaction detail pages (Phase 7), decision guide (Phase 8), reporting (Phase 10), sitemap / revalidation (Phase 11).
+**Not Phase 6:** decision guide (Phase 8), reporting (Phase 10), sitemap / revalidation (Phase 11).
+
+**Phase 7 note:** result card CTAs link to `/transactions/[slug]` public detail (see [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)). Phase 6 ranking/filters/pagination/dedupe remain unchanged.
 
 ## Known limitations
 

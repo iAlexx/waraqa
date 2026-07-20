@@ -1,0 +1,258 @@
+{
+    "phase":  7,
+    "status":  "COMPLETE — OWNER APPROVED",
+    "ownerApproved":  true,
+    "folders":  [
+                    {
+                        "screenshotCount":  6,
+                        "path":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/",
+                        "sourceRevision":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/",
+                        "kind":  "curated"
+                    },
+                    {
+                        "screenshotCount":  13,
+                        "path":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/",
+                        "sourceRevision":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/",
+                        "kind":  "complete"
+                    }
+                ],
+    "screenshotCount":  19,
+    "round01Curated":  true,
+    "round02Complete":  true,
+    "round01OriginalInventorySha256":  "56D69A7AD32A35D2966DB3D8E9EDC793311848DE22443D7477C73B3AA3E5139B",
+    "round01OriginalInventoryVerified":  true,
+    "inventoryGatePass":  {
+                              "round02Revision":  true,
+                              "round01Revision":  true
+                          },
+    "excludedRound01Screenshots":  [
+                                       {
+                                           "file":  "detail-desktop-1440.png",
+                                           "replacedBy":  "detail-desktop-1440-width-fixed.png"
+                                       },
+                                       {
+                                           "file":  "detail-long-content.png",
+                                           "replacedBy":  "detail-desktop-long-content-fixed.png"
+                                       },
+                                       {
+                                           "file":  "detail-minimal-content.png",
+                                           "replacedBy":  "detail-desktop-minimal-balanced.png"
+                                       },
+                                       {
+                                           "file":  "detail-mobile-390.png",
+                                           "replacedBy":  "detail-mobile-390-regression.png"
+                                       },
+                                       {
+                                           "file":  "detail-tablet-768.png",
+                                           "replacedBy":  "detail-tablet-768-regression.png"
+                                       },
+                                       {
+                                           "file":  "required-documents-section.png",
+                                           "replacedBy":  "required-documents-focused.png"
+                                       },
+                                       {
+                                           "file":  "numbered-steps-section.png",
+                                           "replacedBy":  "steps-and-fees-focused.png"
+                                       },
+                                       {
+                                           "file":  "fees-section.png",
+                                           "replacedBy":  "steps-and-fees-focused.png"
+                                       },
+                                       {
+                                           "file":  "multiple-service-centers.png",
+                                           "replacedBy":  "service-centers-focused.png"
+                                       },
+                                       {
+                                           "file":  "sources-section.png",
+                                           "replacedBy":  "sources-focused-long-url.png"
+                                       },
+                                       {
+                                           "file":  "loading-state.png",
+                                           "replacedBy":  "loading-state-balanced.png"
+                                       },
+                                       {
+                                           "file":  "error-state.png",
+                                           "replacedBy":  "error-state-with-retry.png"
+                                       },
+                                       {
+                                           "file":  "not-found.png",
+                                           "replacedBy":  "not-found-balanced.png"
+                                       }
+                                   ],
+    "noPhase8Work":  true,
+    "noMigrationAddedInPhase7":  true,
+    "screenshots":  [
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/detail-mobile-360.png",
+                            "bytes":  137119,
+                            "kind":  "curated",
+                            "sha256":  "1bff77efa1b0e5892ce64ff63d3e92084c34ce5e08e38331b5cca429341e9b0f",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/detail-mobile-360.png",
+                            "folder":  "round-01-public-transaction-details-curated",
+                            "file":  "detail-mobile-360.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/hidden-public-safety.png",
+                            "bytes":  42947,
+                            "kind":  "curated",
+                            "sha256":  "0c9bff82628f05c98d4d69af22ddc4de9879510dfb00a20275f4ea407fd78c5c",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/hidden-public-safety.png",
+                            "folder":  "round-01-public-transaction-details-curated",
+                            "file":  "hidden-public-safety.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/keyboard-focus.png",
+                            "bytes":  164710,
+                            "kind":  "curated",
+                            "sha256":  "efafb8083caf1e31961458fed2b127602ea8e78749c79f50fd1946c0b56f7a6f",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/keyboard-focus.png",
+                            "folder":  "round-01-public-transaction-details-curated",
+                            "file":  "keyboard-focus.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/last-reviewed-and-disclaimer.png",
+                            "bytes":  164696,
+                            "kind":  "curated",
+                            "sha256":  "c9ee4e49e841e5e71f053cbe0c74dbe692ad011e4e7663b2ad9a92440a13b691",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/last-reviewed-and-disclaimer.png",
+                            "folder":  "round-01-public-transaction-details-curated",
+                            "file":  "last-reviewed-and-disclaimer.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/no-javascript-detail.png",
+                            "bytes":  160756,
+                            "kind":  "curated",
+                            "sha256":  "e6f1661160dacb24294ff43f8801b781f02a321d48dc14cfc6e710a650ad5899",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/no-javascript-detail.png",
+                            "folder":  "round-01-public-transaction-details-curated",
+                            "file":  "no-javascript-detail.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-01-public-transaction-details-curated/search-to-detail-navigation.png",
+                            "bytes":  160756,
+                            "kind":  "curated",
+                            "sha256":  "e6f1661160dacb24294ff43f8801b781f02a321d48dc14cfc6e710a650ad5899",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-01-public-transaction-details/search-to-detail-navigation.png",
+                            "folder":  "round-01-public-transaction-details-curated",
+                            "file":  "search-to-detail-navigation.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/comparison-round01-vs-round02.png",
+                            "bytes":  323163,
+                            "kind":  "complete",
+                            "sha256":  "bdcaf951c8b12870b6676b9c9ad7e813b5a14f31dc08f16c091a49728b4153ee",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/comparison-round01-vs-round02.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "comparison-round01-vs-round02.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/detail-desktop-1440-width-fixed.png",
+                            "bytes":  170815,
+                            "kind":  "complete",
+                            "sha256":  "19c52c5edbcd536a2d72cf092c580de693d2eb0d9f942e04b69be33887c24ba1",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/detail-desktop-1440-width-fixed.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "detail-desktop-1440-width-fixed.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/detail-desktop-long-content-fixed.png",
+                            "bytes":  300281,
+                            "kind":  "complete",
+                            "sha256":  "caed04310b9af89d4174e000a8575feb1c9af50a67f5be06d29120449d2d11d9",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/detail-desktop-long-content-fixed.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "detail-desktop-long-content-fixed.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/detail-desktop-minimal-balanced.png",
+                            "bytes":  79611,
+                            "kind":  "complete",
+                            "sha256":  "80b354d7a0d195afc0373c750c533b99463ffaefda3136a2c0eaa8adbacfa4be",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/detail-desktop-minimal-balanced.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "detail-desktop-minimal-balanced.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/detail-mobile-390-regression.png",
+                            "bytes":  143356,
+                            "kind":  "complete",
+                            "sha256":  "1efe9c18a5429d2eacac4cdaac69e2081aefad188b8eb5205e1e77e6dede7af6",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/detail-mobile-390-regression.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "detail-mobile-390-regression.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/detail-tablet-768-regression.png",
+                            "bytes":  153664,
+                            "kind":  "complete",
+                            "sha256":  "831c3e8604585e174fd254818a9c5f1a574bf81a1c039516ea045a27d66d3759",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/detail-tablet-768-regression.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "detail-tablet-768-regression.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/error-state-with-retry.png",
+                            "bytes":  40263,
+                            "kind":  "complete",
+                            "sha256":  "cc8d5ac1e8ed60e5079ca88bb51423dc627d14460bfcce861557a1dfca6dbcb9",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/error-state-with-retry.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "error-state-with-retry.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/loading-state-balanced.png",
+                            "bytes":  35634,
+                            "kind":  "complete",
+                            "sha256":  "e25cf9e8038de25fc9a0275d8b00bd387de6ecf6b8fdccb1e68a1927cbde08e1",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/loading-state-balanced.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "loading-state-balanced.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/not-found-balanced.png",
+                            "bytes":  43009,
+                            "kind":  "complete",
+                            "sha256":  "ce5be18c33e1abf5a5388ef9698e255913fa48b1afa7a42fdd482484a4d5111a",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/not-found-balanced.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "not-found-balanced.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/required-documents-focused.png",
+                            "bytes":  62212,
+                            "kind":  "complete",
+                            "sha256":  "59fcd0cab7b3b94e7298ba8461900ab4ddcdc2efc5798140a8214fcd384a9850",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/required-documents-focused.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "required-documents-focused.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/service-centers-focused.png",
+                            "bytes":  51357,
+                            "kind":  "complete",
+                            "sha256":  "7e7c9ee8ea132fc0d4f261953e80307a76093d204709f120d1e80f0f7a4fb6d6",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/service-centers-focused.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "service-centers-focused.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/sources-focused-long-url.png",
+                            "bytes":  52421,
+                            "kind":  "complete",
+                            "sha256":  "e0aaf25287590a0682294972892f3479728cbfda03f7aad126c726d38ea1977b",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/sources-focused-long-url.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "sources-focused-long-url.png"
+                        },
+                        {
+                            "approvedDestinationPath":  "docs/qa/phase-7/approved/round-02-transaction-detail-visual-closure/steps-and-fees-focused.png",
+                            "bytes":  45694,
+                            "kind":  "complete",
+                            "sha256":  "f4340300c215877026d4e856b8b81cfa114233dda2512562232ae30856f80271",
+                            "sourceRevisionPath":  "docs/qa/phase-7/revisions/round-02-transaction-detail-visual-closure/steps-and-fees-focused.png",
+                            "folder":  "round-02-transaction-detail-visual-closure",
+                            "file":  "steps-and-fees-focused.png"
+                        }
+                    ]
+}
+

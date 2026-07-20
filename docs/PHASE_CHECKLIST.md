@@ -114,7 +114,6 @@ Branch `phase-5-public-shell-home` from `phase-4-complete` (`e0a0a375`).
 
 ### Not started (later phases)
 
-- Phase 7 transaction detail pages
 - Phase 10 reporting flow
 - Phase 11 full SEO, sitemap, robots, and revalidation
 
@@ -147,7 +146,6 @@ Branch `phase-6-search-engine-results` from `phase-5-complete` (`5fe07c82`).
 
 ### Not started (later phases)
 
-- Phase 7 transaction detail pages
 - Phase 8 interactive guide
 - Phase 10 reporting
 - Phase 11 full SEO / sitemap / robots / revalidation
@@ -161,6 +159,41 @@ Branch `phase-6-search-engine-results` from `phase-5-complete` (`5fe07c82`).
 
 See [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md).
 
+## Phase 7 — Public transaction detail
+
+**Status: COMPLETE — OWNER APPROVED**
+
+Branch `phase-7-public-transaction-details` from `phase-6-complete` (`3ad7a08f`).
+
+### Implemented
+
+- [x] Public loader `loadPublicTransactionBySlug` (`overrideAccess: false` + `publicTransactionWhere`)
+- [x] Explicit public DTO mapper (no raw Payload docs in React; private/editorial fields stripped)
+- [x] `/transactions/[slug]` SSR Arabic RTL detail page (breadcrumbs, sections, disclaimer, sources)
+- [x] Safe http(s) source links; optional sections omitted when empty
+- [x] Basic Arabic + Open Graph metadata (no Phase 11 SEO system)
+- [x] Search result CTA → real detail route (Phase 6 ranking/filters/pagination unchanged)
+- [x] Hidden states (draft/inactive/archived/outdated/missing) → not-found (no existence leak)
+- [x] Centered desktop reading rail (`max-w-5xl`) + polished section cards (Round 02)
+- [x] Idempotent QA fixture `qa-p7-r1-*` + Round 01/02 revision evidence
+- [x] Unit + integration + E2E coverage
+- [x] Owner visual approval — approved QA under `docs/qa/phase-7/approved/`
+- [x] Phase 7 completion commit / annotated tag `phase-7-complete`
+
+### Not started (later phases)
+
+- Phase 8 interactive guide / decision rules
+- Phase 10 outdated-information reporting
+- Phase 11 sitemap, robots, structured data, advanced revalidation
+
+### Approved QA evidence
+
+- `approved/round-02-transaction-detail-visual-closure/` — complete (canonical desktop width / cards / states)
+- `approved/round-01-public-transaction-details-curated/` — curated baseline (superseded layout shots excluded)
+- Revision archives under `revisions/` remain unchanged
+
+See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
+
 ## Phase 4 — Admin UI polish debt
 
 Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list cells نعم/لا; parent category empty → `بدون تصنيف أب`; role-aware workflow toolbar; Arabic publication status cells; readable audit actors.
@@ -172,4 +205,5 @@ Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list ce
 - Phase 4 must not duplicate or re-implement the `transactions` schema (Outcome A).
 - Phase 5 must not implement Phase 6 search ranking/normalization or Phase 7 full transaction pages.
 - Phase 6 must not implement Phase 7 full transaction pages or Phase 8 guide engine.
+- Phase 7 must not implement Phase 8 guide engine, Phase 10 reporting, or Phase 11 SEO/sitemap/revalidation.
 - Do not start the next phase until the current phase is owner-approved and tagged.

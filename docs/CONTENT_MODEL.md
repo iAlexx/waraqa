@@ -1,12 +1,12 @@
 ﻿# Waraqa Content Model (Phase 3)
 
-**Status:** Phase 4 — COMPLETE — OWNER APPROVED (Phase 3 COMPLETE)
+**Status:** Phase 3–7 COMPLETE — OWNER APPROVED
 
-**Migrations:** Phase 3 + `20260718_234422_phase_4_editorial_workflow`
+**Migrations:** Phase 3 + `20260718_234422_phase_4_editorial_workflow` + Phase 5 site-settings public fields + Phase 6 `searchText` — **no Phase 7 migration**
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-20
 
-**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md)
+**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)
 
 ## Naming / scope decisions (documented)
 
@@ -165,6 +165,8 @@ See [RBAC.md](./RBAC.md).
 | `lastReviewedAt` | No | **Required to publish** |
 | `internalNotes` | No | Editorial-only; never returned on anonymous REST |
 | `active` | No | Must be true for public visibility even when published |
+
+**Phase 7 public detail:** maps the fields above into `PublicTransactionDetail` for `/transactions/[slug]` — see [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md). No schema rebuild; `aliases` / `searchText` / `internalNotes` / workflow fields stay off the public page. There is **no** `commonMistakes` field in this model.
 
 #### Procedure document structure
 
