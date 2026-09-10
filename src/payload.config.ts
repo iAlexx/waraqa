@@ -8,6 +8,7 @@ import sharp from 'sharp'
 import { Agencies } from './collections/Agencies'
 import { AuditEvents } from './collections/AuditEvents'
 import { Categories } from './collections/Categories'
+import { Claims } from './collections/Claims'
 import { Documents } from './collections/Documents'
 import { ServiceCenters } from './collections/ServiceCenters'
 import { Sources } from './collections/Sources'
@@ -43,6 +44,7 @@ export default buildConfig({
     Documents,
     Sources,
     Transactions,
+    Claims,
     AuditEvents,
   ],
   globals: [SiteSettings],

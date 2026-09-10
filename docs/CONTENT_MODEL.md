@@ -2,9 +2,9 @@
 
 **Status:** Phase 3–7 COMPLETE — OWNER APPROVED
 
-**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` — **no Phase 7 migration**
+**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` + P0-05A `20260721_051000_p0_05a_claims_foundation`
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-09-10
 
 **Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md)
 
@@ -140,6 +140,38 @@ See [RBAC.md](./RBAC.md).
 | Drafts/versions | Yes |
 | Public read | Published + active (without private notes / audit ids for non-editorial) |
 | Delete | Admin only |
+
+---
+
+### 6b. `claims` — ادعاء / الادعاءات (P0-05A foundation)
+
+**Purpose:** First-class discrete government-service facts that can be independently verified and linked to existing `sources` as evidence.
+
+**IMPLEMENTED NOW (storage foundation only):**
+- Claim statement + stable `key`
+- Status: `DRAFT` \| `NEEDS_REVIEW` \| `VERIFIED` \| `UNKNOWN` \| `CONFLICTED` \| `NEEDS_OFFICIAL_CONFIRMATION` \| `OUTDATED` \| `SUPERSEDED` \| `REJECTED`
+- Publication permission (data only): `INTERNAL_ONLY` \| `PUBLIC` \| `PUBLIC_WITH_WARNING` \| `BLOCKED`
+- Evidence rows → `sources` with relation `SUPPORTS` \| `CONTRADICTS` \| `PARTIALLY_SUPPORTS` \| `SUPERSEDES` \| `CONTEXT_ONLY`
+- Optional `transaction`, light `kind` / `scopeKind`+`scopeKey` for later binding
+- Review metadata: `reviewedBy`, `verifiedAt`, `validFrom`, `validUntil`, `reviewDueAt`
+- Drafts/versions + audit fields; editorial-only Admin read (not public API)
+
+**NOT IMPLEMENTED YET (later P0-05B+):**
+- Fail-closed public transaction publication based on claim state
+- Decision Engine / guide rule activation bound to claims
+- Citizen-facing UNKNOWN/CONFLICTED warnings
+- Automatic stale-source blocking, review queues, Golden Demo content
+
+| Area | Detail |
+| --- | --- |
+| Key fields | Localized `statement`, `editorialNotes`; non-localized `key` (unique, stable), `status`, `publicationPermission`, `kind`, `scopeKind`, `scopeKey`, `transaction` → `transactions`, `evidence[]`, review dates, `active` + audit |
+| `evidence[]` (`dbName: claim_ev`) | `source` → `sources`, `relationType`, optional `note`, `quoteOrLocator`, `checkedAt` |
+| Drafts/versions | Yes (`maxPerDoc: 20`) |
+| Public read | **None in P0-05A** — editorial roles only (`authenticatedEditorialRead`) |
+| Delete | Admin only |
+| Migration | `20260721_051000_p0_05a_claims_foundation` |
+
+Sources remain the citable URL/legal artifacts. Claims do **not** duplicate Source records.
 
 ---
 

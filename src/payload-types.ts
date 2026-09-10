@@ -74,6 +74,7 @@ export interface Config {
     documents: Document;
     sources: Source;
     transactions: Transaction;
+    claims: Claim;
     'audit-events': AuditEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -89,6 +90,7 @@ export interface Config {
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
     sources: SourcesSelect<false> | SourcesSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    claims: ClaimsSelect<false> | ClaimsSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -672,6 +674,89 @@ export interface Transaction {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * أسس ادعاءات/أدلة — التخزين فقط في هذه المرحلة. لا تفرض صلاحية النشر على الواجهة العامة بعد.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "claims".
+ */
+export interface Claim {
+  id: number;
+  /**
+   * معرّف برمجي ثابت (a-z, 0-9, _). لربط لاحق بالمتطلبات/القواعد.
+   */
+  key: string;
+  /**
+   * صياغة موجزة لواقعة خدمة حكومية قابلة للتحقق مستقلاً.
+   */
+  statement: string;
+  /**
+   * ملاحظات داخلية — ليست قيمة حكومية ولا تُعرض للعامة.
+   */
+  editorialNotes?: string | null;
+  /**
+   * ربط اختياري بالمعاملة المالكة. لا يُلزم كل حقول المعاملة بادعاءات بعد.
+   */
+  transaction?: (number | null) | Transaction;
+  /**
+   * تصنيف خفيف للتصفية — ليس أنطولوجيا كاملة.
+   */
+  kind?: ('requirement' | 'fee' | 'step' | 'eligibility' | 'process' | 'duration' | 'location' | 'other') | null;
+  /**
+   * تلميح ربط لاحق (وثيقة/خطوة/رسم/قاعدة دليل…) — دون إعادة هيكلة الحقول الآن.
+   */
+  scopeKind?: ('transaction_section' | 'document_key' | 'step_key' | 'fee_key' | 'guide_rule' | 'other') | null;
+  /**
+   * مثل مفتاح وثيقة/خطوة/قاعدة. اختياري في P0-05A.
+   */
+  scopeKey?: string | null;
+  /**
+   * UNKNOWN و CONFLICTED حالتان صالحتان — لا تُختزلان إلى verified boolean.
+   */
+  status:
+    | 'DRAFT'
+    | 'NEEDS_REVIEW'
+    | 'VERIFIED'
+    | 'UNKNOWN'
+    | 'CONFLICTED'
+    | 'NEEDS_OFFICIAL_CONFIRMATION'
+    | 'OUTDATED'
+    | 'SUPERSEDED'
+    | 'REJECTED';
+  /**
+   * بيانات فقط في P0-05A — لا تغيّر سلوك النشر العام بعد.
+   */
+  publicationPermission: 'INTERNAL_ONLY' | 'PUBLIC' | 'PUBLIC_WITH_WARNING' | 'BLOCKED';
+  /**
+   * يربط بمصادر موجودة. يدعم SUPPORTS و CONTRADICTS معاً (تعارض).
+   */
+  evidence?:
+    | {
+        source: number | Source;
+        relationType: 'SUPPORTS' | 'CONTRADICTS' | 'PARTIALLY_SUPPORTS' | 'SUPERSEDES' | 'CONTEXT_ONLY';
+        note?: string | null;
+        quoteOrLocator?: string | null;
+        checkedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  reviewedBy?: (number | null) | User;
+  verifiedAt?: string | null;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  reviewDueAt?: string | null;
+  /**
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   */
+  active?: boolean | null;
+  createdBy?: (number | null) | User;
+  lastUpdatedBy?: (number | null) | User;
+  publishedBy?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * سجل تدقيق غير قابل للتعديل — يُكتب من خادم سير العمل فقط.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -764,6 +849,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'transactions';
         value: number | Transaction;
+      } | null)
+    | ({
+        relationTo: 'claims';
+        value: number | Claim;
       } | null)
     | ({
         relationTo: 'audit-events';
@@ -1156,6 +1245,44 @@ export interface TransactionsSelect<T extends boolean = true> {
   archivedBy?: T;
   archiveReason?: T;
   workflowSchemaVersion?: T;
+  active?: T;
+  createdBy?: T;
+  lastUpdatedBy?: T;
+  publishedBy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "claims_select".
+ */
+export interface ClaimsSelect<T extends boolean = true> {
+  key?: T;
+  statement?: T;
+  editorialNotes?: T;
+  transaction?: T;
+  kind?: T;
+  scopeKind?: T;
+  scopeKey?: T;
+  status?: T;
+  publicationPermission?: T;
+  evidence?:
+    | T
+    | {
+        source?: T;
+        relationType?: T;
+        note?: T;
+        quoteOrLocator?: T;
+        checkedAt?: T;
+        id?: T;
+      };
+  reviewedBy?: T;
+  verifiedAt?: T;
+  validFrom?: T;
+  validUntil?: T;
+  reviewDueAt?: T;
   active?: T;
   createdBy?: T;
   lastUpdatedBy?: T;
