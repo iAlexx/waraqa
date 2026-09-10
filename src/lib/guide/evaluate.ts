@@ -1,4 +1,5 @@
 import type {
+  ConditionResult,
   GuideAnswers,
   GuideChecklistItem,
   GuideCondition,
@@ -18,40 +19,182 @@ function isOperator(value: unknown): value is GuideOperator {
   return typeof value === 'string' && (GUIDE_OPERATORS as readonly string[]).includes(value)
 }
 
-function normalizeAnswer(raw: string | string[] | undefined): string[] {
-  if (raw == null) return []
-  if (Array.isArray(raw)) return raw.map(String).filter(Boolean)
-  return raw ? [String(raw)] : []
+/**
+ * Unanswered / unusable answer detection (no JS truthiness shortcuts).
+ *
+ * Unanswered:
+ * - missing key, undefined, null
+ * - "" or whitespace-only string
+ *
+ * Answered (including empty multi selection):
+ * - [] is a present multi answer meaning “none selected” (UI can write this after toggles)
+ * - false / 0 are answered if ever supplied (defensive; normal guide answers are strings)
+ *
+ * Unusable (malformed): any other non-string / non-array shape → UNKNOWN for compare ops
+ */
+type AnswerInspection =
+  | { kind: 'unanswered' }
+  | { kind: 'unusable' }
+  | { kind: 'answered'; values: string[] }
+
+function inspectAnswer(answers: GuideAnswers, questionKey: string): AnswerInspection {
+  if (!Object.prototype.hasOwnProperty.call(answers, questionKey)) {
+    return { kind: 'unanswered' }
+  }
+  const raw = (answers as Record<string, unknown>)[questionKey]
+
+  if (raw === undefined || raw === null) {
+    return { kind: 'unanswered' }
+  }
+
+  if (typeof raw === 'boolean') {
+    return { kind: 'answered', values: [raw ? 'true' : 'false'] }
+  }
+
+  if (typeof raw === 'number') {
+    if (Number.isNaN(raw)) return { kind: 'unusable' }
+    return { kind: 'answered', values: [String(raw)] }
+  }
+
+  if (typeof raw === 'string') {
+    if (raw.trim() === '') return { kind: 'unanswered' }
+    return { kind: 'answered', values: [raw] }
+  }
+
+  if (Array.isArray(raw)) {
+    const values: string[] = []
+    for (const item of raw) {
+      if (typeof item === 'boolean') {
+        values.push(item ? 'true' : 'false')
+        continue
+      }
+      if (typeof item === 'number') {
+        if (Number.isNaN(item)) return { kind: 'unusable' }
+        values.push(String(item))
+        continue
+      }
+      if (typeof item !== 'string') return { kind: 'unusable' }
+      if (item.trim() === '') continue
+      values.push(item)
+    }
+    // [] remains answered-empty (explicit none), not unanswered
+    return { kind: 'answered', values }
+  }
+
+  return { kind: 'unusable' }
 }
 
-function evaluateCondition(cond: GuideCondition, answers: GuideAnswers): boolean {
-  if (!isOperator(cond.operator)) return false
-  const answered = Object.prototype.hasOwnProperty.call(answers, cond.questionKey)
-  const values = normalizeAnswer(answers[cond.questionKey])
+/** Values used for required-answer completeness (aligned with inspectAnswer). */
+function normalizeAnswer(raw: string | string[] | undefined): string[] {
+  if (raw == null) return []
+  if (Array.isArray(raw)) {
+    return raw
+      .map((v) => (typeof v === 'string' ? v : String(v)))
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0)
+  }
+  const s = String(raw).trim()
+  return s ? [s] : []
+}
+
+function andResults(a: ConditionResult, b: ConditionResult): ConditionResult {
+  if (a === 'NO_MATCH' || b === 'NO_MATCH') return 'NO_MATCH'
+  if (a === 'UNKNOWN' || b === 'UNKNOWN') return 'UNKNOWN'
+  return 'MATCH'
+}
+
+function orResults(a: ConditionResult, b: ConditionResult): ConditionResult {
+  if (a === 'MATCH' || b === 'MATCH') return 'MATCH'
+  if (a === 'UNKNOWN' || b === 'UNKNOWN') return 'UNKNOWN'
+  return 'NO_MATCH'
+}
+
+function combineAll(results: ConditionResult[]): ConditionResult {
+  let acc: ConditionResult = 'MATCH'
+  for (const r of results) acc = andResults(acc, r)
+  return acc
+}
+
+function combineAny(results: ConditionResult[]): ConditionResult {
+  if (results.length === 0) return 'MATCH'
+  let acc: ConditionResult = 'NO_MATCH'
+  for (const r of results) acc = orResults(acc, r)
+  return acc
+}
+
+/**
+ * Evaluate a single condition to MATCH | NO_MATCH | UNKNOWN.
+ *
+ * exists: asks whether a usable non-empty answer is present.
+ * Missing / empty / whitespace → NO_MATCH (not UNKNOWN).
+ * Malformed → UNKNOWN (fail closed; do not claim existence).
+ */
+export function evaluateConditionResult(
+  cond: GuideCondition,
+  answers: GuideAnswers,
+): ConditionResult {
+  if (!cond || typeof cond !== 'object') return 'UNKNOWN'
+  if (!isOperator(cond.operator)) return 'UNKNOWN'
+
+  const inspection = inspectAnswer(answers, cond.questionKey)
+  const expected = cond.value ?? ''
 
   switch (cond.operator) {
-    case 'exists':
-      return answered && values.length > 0
-    case 'equals':
-      return values.length === 1 && values[0] === (cond.value ?? '')
-    case 'notEquals':
-      if (!answered || values.length === 0) return true
-      return !(values.length === 1 && values[0] === (cond.value ?? ''))
-    case 'includes':
-      return values.includes(cond.value ?? '')
+    case 'exists': {
+      if (inspection.kind === 'unusable') return 'UNKNOWN'
+      if (inspection.kind === 'unanswered') return 'NO_MATCH'
+      return inspection.values.length > 0 ? 'MATCH' : 'NO_MATCH'
+    }
+    case 'equals': {
+      if (inspection.kind !== 'answered') return 'UNKNOWN'
+      return inspection.values.length === 1 && inspection.values[0] === expected
+        ? 'MATCH'
+        : 'NO_MATCH'
+    }
+    case 'notEquals': {
+      if (inspection.kind !== 'answered') return 'UNKNOWN'
+      return !(inspection.values.length === 1 && inspection.values[0] === expected)
+        ? 'MATCH'
+        : 'NO_MATCH'
+    }
+    case 'includes': {
+      if (inspection.kind !== 'answered') return 'UNKNOWN'
+      return inspection.values.includes(expected) ? 'MATCH' : 'NO_MATCH'
+    }
     default:
-      return false
+      return 'UNKNOWN'
   }
 }
 
-function evaluateGroup(group: GuideConditionGroup | null | undefined, answers: GuideAnswers): boolean {
-  if (!group) return true
+/**
+ * Flat ALL/ANY group evaluation (no nested trees).
+ *
+ * - null/undefined group → MATCH (no constraint attached; used by visibleWhen).
+ * - Effectively empty group (`{}` / `{ all: [], any: [] }`) → UNKNOWN.
+ *   Decision rules can reach the evaluator with empty `when` (schema allows empty
+ *   arrays; public map uses `mapConditions(...) ?? { all: [], any: [] }`). Vacuous
+ *   MATCH would fire government-service effects unconditionally — refuse that.
+ * - One empty bucket + one non-empty: empty bucket is vacuous MATCH; combine with AND.
+ */
+export function evaluateGroupResult(
+  group: GuideConditionGroup | null | undefined,
+  answers: GuideAnswers,
+): ConditionResult {
+  if (!group) return 'MATCH'
   const all = group.all ?? []
   const any = group.any ?? []
-  if (all.length === 0 && any.length === 0) return true
-  const allOk = all.length === 0 || all.every((c) => evaluateCondition(c, answers))
-  const anyOk = any.length === 0 || any.some((c) => evaluateCondition(c, answers))
-  return allOk && anyOk
+  if (all.length === 0 && any.length === 0) return 'UNKNOWN'
+
+  const allResult =
+    all.length === 0 ? 'MATCH' : combineAll(all.map((c) => evaluateConditionResult(c, answers)))
+  const anyResult =
+    any.length === 0 ? 'MATCH' : combineAny(any.map((c) => evaluateConditionResult(c, answers)))
+
+  return andResults(allResult, anyResult)
+}
+
+function isMatch(result: ConditionResult): boolean {
+  return result === 'MATCH'
 }
 
 export function visibleQuestions(
@@ -60,7 +203,7 @@ export function visibleQuestions(
 ): GuideQuestion[] {
   return questions.filter((q) => {
     if (!q.active) return false
-    return evaluateGroup(q.visibleWhen, answers)
+    return isMatch(evaluateGroupResult(q.visibleWhen, answers))
   })
 }
 
@@ -152,6 +295,7 @@ export type EvaluateGuideInput = {
 /**
  * Pure deterministic guide evaluator.
  * Exclusion overrides inclusion when applied later (higher priority runs after lower).
+ * Rules fire only when condition group result === MATCH (never UNKNOWN).
  */
 export function evaluateGuide(input: EvaluateGuideInput): GuideEvaluationOutput {
   const visible = visibleQuestions(input.questions, input.answers)
@@ -159,8 +303,12 @@ export function evaluateGuide(input: EvaluateGuideInput): GuideEvaluationOutput 
 
   for (const q of visible) {
     if (!q.required) continue
-    const vals = normalizeAnswer(input.answers[q.key])
-    if (vals.length < 1) {
+    const inspection = inspectAnswer(input.answers, q.key)
+    const vals =
+      inspection.kind === 'answered'
+        ? inspection.values
+        : normalizeAnswer(input.answers[q.key])
+    if (inspection.kind !== 'answered' || vals.length < 1) {
       return {
         ok: false,
         reason: 'incomplete_answers',
@@ -204,7 +352,7 @@ export function evaluateGuide(input: EvaluateGuideInput): GuideEvaluationOutput 
   const selectedVariants: string[] = []
 
   for (const rule of activeRules) {
-    if (!evaluateGroup(rule.when, input.answers)) continue
+    if (!isMatch(evaluateGroupResult(rule.when, input.answers))) continue
     fired.push(rule.key)
     const explanation = rule.explanation
     for (const effect of rule.effects) {

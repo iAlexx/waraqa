@@ -3,6 +3,10 @@
 export const GUIDE_OPERATORS = ['equals', 'notEquals', 'includes', 'exists'] as const
 export type GuideOperator = (typeof GUIDE_OPERATORS)[number]
 
+/** Canonical internal condition evaluation result (P0-04). Never coerce UNKNOWN → true. */
+export const CONDITION_RESULTS = ['MATCH', 'NO_MATCH', 'UNKNOWN'] as const
+export type ConditionResult = (typeof CONDITION_RESULTS)[number]
+
 export const GUIDE_EFFECT_TYPES = [
   'includeDocument',
   'excludeDocument',
