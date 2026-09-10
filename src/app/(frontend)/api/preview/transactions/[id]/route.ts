@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 import { NextResponse } from 'next/server'
 
 import config from '@payload-config'
-import { getUserRole, isUserActive, type UserLike } from '@/access/roles'
+import { hasActiveRole, type UserLike } from '@/access/roles'
 import { getServerEnv } from '@/lib/env'
 import { signPreviewToken } from '@/lib/workflow/preview-token'
 
@@ -17,13 +17,11 @@ export async function POST(
   const headerList = await getHeaders()
   const { user } = await payload.auth({ headers: headerList })
 
-  if (!user || !isUserActive(user as UserLike)) {
-    return NextResponse.json({ message: 'يجب تسجيل الدخول.' }, { status: 401 })
-  }
-
-  const role = getUserRole(user as UserLike)
-  if (role !== 'admin' && role !== 'reviewer' && role !== 'researcher') {
-    return NextResponse.json({ message: 'غير مصرّح.' }, { status: 403 })
+  if (!user || !hasActiveRole(user as UserLike, 'admin', 'reviewer', 'researcher')) {
+    return NextResponse.json(
+      { message: user ? 'غير مصرّح.' : 'يجب تسجيل الدخول.' },
+      { status: user ? 403 : 401 },
+    )
   }
 
   const env = getServerEnv()

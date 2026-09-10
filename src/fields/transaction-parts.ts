@@ -1,6 +1,7 @@
 import type { Field } from 'payload'
 
 import { editorialFieldAccess } from '@/access'
+import { hasActiveRole, type UserLike } from '@/access/roles'
 import { COVERED_SECTIONS } from '@/lib/workflow/types'
 import { localizedText, localizedTextarea } from './common'
 import { stableKeyField } from './guide-fields'
@@ -259,10 +260,7 @@ export function workflowFields(): Field[] {
       label: 'بصمة الاعتماد',
       localized: false,
       access: {
-        read: ({ req: { user } }) => {
-          const role = user && typeof user === 'object' && 'role' in user ? (user as { role?: string }).role : null
-          return role === 'admin' || role === 'reviewer'
-        },
+        read: ({ req: { user } }) => hasActiveRole(user as UserLike, 'admin', 'reviewer'),
       },
       admin: {
         readOnly: true,
@@ -276,10 +274,7 @@ export function workflowFields(): Field[] {
       label: 'معرّف نسخة الاعتماد',
       localized: false,
       access: {
-        read: ({ req: { user } }) => {
-          const role = user && typeof user === 'object' && 'role' in user ? (user as { role?: string }).role : null
-          return role === 'admin' || role === 'reviewer'
-        },
+        read: ({ req: { user } }) => hasActiveRole(user as UserLike, 'admin', 'reviewer'),
       },
       admin: { readOnly: true, position: 'sidebar' },
     },

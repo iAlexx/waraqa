@@ -1,6 +1,12 @@
 import type { Access, AccessArgs, Where } from 'payload'
 
-import { getUserRole, isUserActive, type UserLike, type WaraqaRole } from './roles'
+import {
+  getActiveUserRole,
+  hasActiveRole,
+  isUserActive,
+  type UserLike,
+  type WaraqaRole,
+} from './roles'
 
 type Args = AccessArgs
 
@@ -30,14 +36,12 @@ export const isAuthenticated: Access = ({ req: { user } }: Args) => {
 }
 
 export const isAdmin: Access = ({ req: { user } }: Args) => {
-  return isUserActive(user as UserLike) && getUserRole(user as UserLike) === 'admin'
+  return hasActiveRole(user as UserLike, 'admin')
 }
 
 export function hasRole(...roles: WaraqaRole[]): Access {
   return ({ req: { user } }: Args) => {
-    if (!isUserActive(user as UserLike)) return false
-    const role = getUserRole(user as UserLike)
-    return role !== null && roles.includes(role)
+    return hasActiveRole(user as UserLike, ...roles)
   }
 }
 
@@ -51,9 +55,7 @@ export const canReviewContent: Access = hasRole('admin', 'reviewer')
 export const canPublishContent: Access = hasRole('admin', 'reviewer')
 
 export function isEditorialUser(user: UserLike): boolean {
-  if (!isUserActive(user)) return false
-  const role = getUserRole(user)
-  return role === 'admin' || role === 'reviewer' || role === 'researcher'
+  return hasActiveRole(user, 'admin', 'reviewer', 'researcher')
 }
 
 /**
@@ -65,7 +67,7 @@ export const publicPublishedRead: Access = ({ req: { user } }: Args) => {
     return publishedActiveWhere
   }
 
-  const role = getUserRole(user as UserLike)
+  const role = getActiveUserRole(user as UserLike)
   if (role === 'admin' || role === 'reviewer' || role === 'researcher') {
     return true
   }
@@ -81,7 +83,7 @@ export const publicTransactionRead: Access = ({ req: { user } }: Args) => {
     return publicTransactionWhere
   }
 
-  const role = getUserRole(user as UserLike)
+  const role = getActiveUserRole(user as UserLike)
   if (role === 'admin' || role === 'reviewer' || role === 'researcher') {
     return true
   }
@@ -102,8 +104,7 @@ export const editorialFieldAccess = ({ req: { user } }: { req: { user?: unknown 
  * researchers may only touch non-published docs (blocks Publish in Admin UI).
  */
 export const contentUpdateAccess: Access = ({ req: { user } }: Args) => {
-  if (!isUserActive(user as UserLike)) return false
-  const role = getUserRole(user as UserLike)
+  const role = getActiveUserRole(user as UserLike)
   if (role === 'admin' || role === 'reviewer') return true
   if (role === 'researcher') {
     return {

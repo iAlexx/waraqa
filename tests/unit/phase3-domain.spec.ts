@@ -106,6 +106,11 @@ describe('access helpers', () => {
         req: { user: { role: 'researcher', isActive: true } as UserLike },
       } as never),
     ).toBe(false)
+    expect(
+      canPublishContent({
+        req: { user: { role: 'admin' } as UserLike },
+      } as never),
+    ).toBe(false)
   })
 
   it('publicPublishedRead constrains anonymous users', () => {

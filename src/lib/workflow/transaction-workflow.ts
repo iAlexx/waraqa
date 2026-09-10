@@ -1,6 +1,6 @@
 import type { Payload, PayloadRequest } from 'payload'
 
-import { getUserRole, isUserActive, type UserLike, type WaraqaRole } from '@/access/roles'
+import { getActiveUserRole, type UserLike, type WaraqaRole } from '@/access/roles'
 import { validateProcedureData } from '@/lib/procedure-validation'
 import { writeAuditEvent, type AuditAction } from './audit'
 import { hashCriticalContent } from './content-fingerprint'
@@ -26,14 +26,9 @@ export type WorkflowRunInput = {
   reviewDueAt?: string
 }
 
-function roleOf(user: UserLike): WaraqaRole | null {
-  if (!isUserActive(user)) return null
-  return getUserRole(user)
-}
-
 function requireAuth(user: UserLike): WaraqaRole {
   if (!user) throw new WorkflowError('يجب تسجيل الدخول.', 401)
-  const role = roleOf(user)
+  const role = getActiveUserRole(user)
   if (!role) throw new WorkflowError('الحساب غير نشط أو غير مصرّح.', 403)
   return role
 }

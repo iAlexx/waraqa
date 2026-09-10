@@ -1,5 +1,7 @@
 # Development-only PostgreSQL for Waraqa Phase 1.
 # Do not use this compose file for production or preview.
+# Integration tests create/use a sibling database named `<db>_int` (e.g. waraqa_int)
+# and must not write to the primary `waraqa` database.
 services:
   postgres:
     image: postgres:16-alpine

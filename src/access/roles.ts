@@ -24,6 +24,18 @@ export function getUserRole(user: UserLike): WaraqaRole | null {
 }
 
 export function isUserActive(user: UserLike): boolean {
-  if (!user) return false
-  return user.isActive !== false
+  // Fail closed: missing, null, or non-boolean active state is not privileged.
+  return Boolean(user && typeof user === 'object' && user.isActive === true)
+}
+
+/** Resolve a role only for an explicitly active user. */
+export function getActiveUserRole(user: UserLike): WaraqaRole | null {
+  if (!isUserActive(user)) return null
+  return getUserRole(user)
+}
+
+/** Shared fail-closed role predicate for server and Admin UI authorization. */
+export function hasActiveRole(user: UserLike, ...roles: WaraqaRole[]): boolean {
+  const role = getActiveUserRole(user)
+  return role !== null && roles.includes(role)
 }

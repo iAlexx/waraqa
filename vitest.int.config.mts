@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [tsconfigPaths(), react()],
   test: {
     environment: 'node',
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ['./vitest.setup.ts', './tests/int/setup-disposable-db.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
     fileParallelism: false,
     testTimeout: 60_000,

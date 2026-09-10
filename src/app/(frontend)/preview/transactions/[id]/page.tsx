@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@payload-config'
-import { getUserRole, isUserActive, type UserLike } from '@/access/roles'
+import { getActiveUserRole, type UserLike } from '@/access/roles'
 import { getServerEnv } from '@/lib/env'
 import { computeVerificationHealth } from '@/lib/workflow/review-schedule'
 import { verifyPreviewToken } from '@/lib/workflow/preview-token'
@@ -28,7 +28,8 @@ export default async function TransactionPreviewPage({ params, searchParams }: P
   const headerList = await getHeaders()
   const { user } = await payload.auth({ headers: headerList })
 
-  if (!user || !isUserActive(user as UserLike)) {
+  const role = getActiveUserRole(user as UserLike)
+  if (!user || !role) {
     return (
       <main dir="rtl" lang="ar" style={pageStyle}>
         <Banner />
@@ -37,7 +38,6 @@ export default async function TransactionPreviewPage({ params, searchParams }: P
     )
   }
 
-  const role = getUserRole(user as UserLike)
   const env = getServerEnv()
   const secret = env.PREVIEW_SECRET || env.PAYLOAD_SECRET
 

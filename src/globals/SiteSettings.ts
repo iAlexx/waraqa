@@ -1,13 +1,11 @@
 import type { GlobalConfig } from 'payload'
 
-import { getUserRole, isUserActive, type UserLike } from '@/access/roles'
+import { hasActiveRole, type UserLike } from '@/access/roles'
 import { localizedText, localizedTextarea } from '@/fields/common'
 import { httpUrlMessage, isHttpUrl } from '@/lib/urls'
 
 function isEditorial(user: UserLike): boolean {
-  if (!isUserActive(user)) return false
-  const role = getUserRole(user)
-  return role === 'admin' || role === 'reviewer' || role === 'researcher'
+  return hasActiveRole(user, 'admin', 'reviewer', 'researcher')
 }
 
 /**

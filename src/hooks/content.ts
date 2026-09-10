@@ -1,7 +1,7 @@
 import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payload'
 import { APIError } from 'payload'
 
-import { getUserRole, isUserActive, type UserLike } from '@/access/roles'
+import { hasActiveRole, type UserLike } from '@/access/roles'
 import { allowSeedBypass } from '@/lib/qa-seed-guard'
 import { writeAuditEvent } from '@/lib/workflow/audit'
 import { maybeInvalidateApproval } from '@/lib/workflow/transaction-workflow'
@@ -72,7 +72,6 @@ export const enforcePublishAuthorization: CollectionBeforeChangeHook = ({
 
   const next = data as StatusData
   const user = req.user as UserLike
-  const role = getUserRole(user)
   const wasPublished = (originalDoc as StatusData | undefined)?._status === 'published'
   const willPublish = next._status === 'published'
   const willUnpublish = wasPublished && next._status === 'draft'
@@ -85,7 +84,7 @@ export const enforcePublishAuthorization: CollectionBeforeChangeHook = ({
         403,
       )
     }
-    if (!isUserActive(user) || (role !== 'admin' && role !== 'reviewer')) {
+    if (!hasActiveRole(user, 'admin', 'reviewer')) {
       throw new APIError(
         'غير مصرّح: النشر وإلغاء النشر مسموحان فقط لدورَي المدير والمراجع.',
         403,

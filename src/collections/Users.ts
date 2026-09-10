@@ -1,8 +1,55 @@
-import type { CollectionConfig } from 'payload'
+import {
+  AuthenticationError,
+  type CollectionBeforeChangeHook,
+  type CollectionConfig,
+} from 'payload'
 
 import { isAdmin } from '@/access'
-import { getUserRole, type UserLike, WARAQA_ROLES } from '@/access/roles'
+import {
+  getActiveUserRole,
+  hasActiveRole,
+  isUserActive,
+  type UserLike,
+  WARAQA_ROLES,
+} from '@/access/roles'
 import { allowSeedBypass } from '@/lib/qa-seed-guard'
+
+/** Reject local-auth login unless the persisted account is explicitly active. */
+type UserBeforeLoginHook = NonNullable<
+  NonNullable<CollectionConfig['hooks']>['beforeLogin']
+>[number]
+
+export const rejectInactiveUserLogin: UserBeforeLoginHook = ({ req, user }) => {
+  if (!isUserActive(user as UserLike)) {
+    // Keep the response indistinguishable from invalid credentials.
+    throw new AuthenticationError(req.t)
+  }
+  return user
+}
+
+/**
+ * Payload JWTs carry a session ID that must exist in the user's `sessions` array.
+ * Clearing that array on deactivation invalidates every existing token for the user.
+ */
+export const revokeSessionsOnDeactivation: CollectionBeforeChangeHook = ({
+  data,
+  operation,
+  originalDoc,
+}) => {
+  if (operation !== 'update') return data
+
+  const previous = originalDoc as { isActive?: unknown } | undefined
+  const next = { ...(data as Record<string, unknown>) }
+  const wasActive = previous?.isActive === true
+  const hasActiveUpdate = Object.prototype.hasOwnProperty.call(next, 'isActive')
+  const willBeActive = hasActiveUpdate ? next.isActive === true : wasActive
+
+  if (wasActive && !willBeActive) {
+    next.sessions = []
+  }
+
+  return next
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -15,19 +62,22 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email', 'role', 'isActive', 'updatedAt'],
     group: 'النظام',
   },
-  auth: true,
+  auth: {
+    useSessions: true,
+  },
   access: {
-    admin: ({ req: { user } }) => Boolean(user),
+    admin: ({ req: { user } }) => isUserActive(user as UserLike),
     read: ({ req: { user } }) => {
-      if (!user) return false
-      const role = getUserRole(user as UserLike)
+      if (!isUserActive(user as UserLike) || user?.id == null) return false
+      const role = getActiveUserRole(user as UserLike)
       // Editorial roles must resolve actor / relationship labels in Admin lists.
       if (role === 'admin' || role === 'reviewer' || role === 'researcher') return true
       return { id: { equals: user.id } }
     },
     create: async ({ req }) => {
       const user = req.user as UserLike
-      if (getUserRole(user) === 'admin') return true
+      if (hasActiveRole(user, 'admin')) return true
+      if (user) return false
       // First-user bootstrap: allow create when no users exist yet
       const existing = await req.payload.find({
         collection: 'users',
@@ -38,13 +88,14 @@ export const Users: CollectionConfig = {
       return existing.totalDocs === 0
     },
     update: ({ req: { user } }) => {
-      if (getUserRole(user as UserLike) === 'admin') return true
-      if (!user) return false
+      if (hasActiveRole(user as UserLike, 'admin')) return true
+      if (!isUserActive(user as UserLike) || user?.id == null) return false
       return { id: { equals: user.id } }
     },
     delete: isAdmin,
   },
   hooks: {
+    beforeLogin: [rejectInactiveUserLogin],
     afterRead: [
       ({ doc }) => {
         if (!doc || typeof doc !== 'object') return doc
@@ -61,6 +112,7 @@ export const Users: CollectionConfig = {
       },
     ],
     beforeChange: [
+      revokeSessionsOnDeactivation,
       async ({ data, req, operation, originalDoc }) => {
         if (allowSeedBypass(req)) {
           return data
@@ -68,7 +120,7 @@ export const Users: CollectionConfig = {
 
         const next = { ...data }
         const actor = req.user as UserLike
-        const actorRole = getUserRole(actor)
+        const actorRole = getActiveUserRole(actor)
 
         if (operation === 'create') {
           const existing = await req.payload.find({
@@ -160,7 +212,7 @@ export const Users: CollectionConfig = {
       })),
       access: {
         // Only admins see/change role in forms for others; field still stored
-        update: ({ req: { user } }) => getUserRole(user as UserLike) === 'admin',
+        update: ({ req: { user } }) => hasActiveRole(user as UserLike, 'admin'),
       },
       admin: {
         description:
@@ -173,7 +225,7 @@ export const Users: CollectionConfig = {
       label: 'نشط',
       defaultValue: true,
       access: {
-        update: ({ req: { user } }) => getUserRole(user as UserLike) === 'admin',
+        update: ({ req: { user } }) => hasActiveRole(user as UserLike, 'admin'),
       },
     },
     {

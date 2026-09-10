@@ -3,7 +3,7 @@
 import { useAuth, useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { WaraqaRole } from '@/access/roles'
+import { getActiveUserRole, type UserLike } from '@/access/roles'
 import {
   actorDisplayLabel,
   getVisibleWorkflowActions,
@@ -20,15 +20,6 @@ type DialogMode =
   | { kind: 'reason'; def: AdminWorkflowActionDef }
   | { kind: 'coverage'; lines: string[]; raw: string }
   | null
-
-function roleOf(user: unknown): WaraqaRole | null {
-  if (!user || typeof user !== 'object') return null
-  const role = (user as { role?: string }).role
-  if (role === 'admin' || role === 'reviewer' || role === 'researcher' || role === 'viewer') {
-    return role
-  }
-  return null
-}
 
 function resolveLocalized(value: unknown): string {
   if (value == null) return ''
@@ -67,7 +58,7 @@ export function WorkflowActions() {
   const [reviewerLabel, setReviewerLabel] = useState<string>('—')
   const [invalidated, setInvalidated] = useState(false)
 
-  const role = roleOf(user)
+  const role = getActiveUserRole(user as UserLike)
   const actions = useMemo(
     () =>
       getVisibleWorkflowActions({

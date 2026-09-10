@@ -50,9 +50,9 @@ afterAll(async () => {
 })
 
 describe('Phase 4 editorial workflow', () => {
-  let admin: { id: number; role: string; collection: string }
-  let reviewer: { id: number; role: string; collection: string }
-  let researcher: { id: number; role: string; collection: string }
+  let admin: { id: number; role: string; isActive: true; collection: string }
+  let reviewer: { id: number; role: string; isActive: true; collection: string }
+  let researcher: { id: number; role: string; isActive: true; collection: string }
   let categoryId: number
   let agencyId: number
   let documentId: number
@@ -75,7 +75,7 @@ describe('Phase 4 editorial workflow', () => {
         context: seedCtx,
       }),
     )
-    admin = { id: Number(a.id), role: 'admin', collection: 'users' }
+    admin = { id: Number(a.id), role: 'admin', isActive: true, collection: 'users' }
 
     const r = await track(
       'users',
@@ -91,7 +91,7 @@ describe('Phase 4 editorial workflow', () => {
         context: seedCtx,
       }),
     )
-    reviewer = { id: Number(r.id), role: 'reviewer', collection: 'users' }
+    reviewer = { id: Number(r.id), role: 'reviewer', isActive: true, collection: 'users' }
 
     const res = await track(
       'users',
@@ -107,7 +107,7 @@ describe('Phase 4 editorial workflow', () => {
         context: seedCtx,
       }),
     )
-    researcher = { id: Number(res.id), role: 'researcher', collection: 'users' }
+    researcher = { id: Number(res.id), role: 'researcher', isActive: true, collection: 'users' }
 
     const cat = await track(
       'categories',

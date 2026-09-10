@@ -1,6 +1,6 @@
 import type { CollectionAfterReadHook } from 'payload'
 
-import { getUserRole, isUserActive, type UserLike } from '@/access/roles'
+import { getActiveUserRole, hasActiveRole, type UserLike } from '@/access/roles'
 
 const WORKFLOW_PRIVATE = [
   'internalNotes',
@@ -30,10 +30,8 @@ const WORKFLOW_PRIVATE = [
  */
 export const stripPrivateEditorialFields: CollectionAfterReadHook = ({ doc, req }) => {
   const user = req.user as UserLike
-  const role = getUserRole(user)
-  const editorial =
-    isUserActive(user) &&
-    (role === 'admin' || role === 'reviewer' || role === 'researcher')
+  const role = getActiveUserRole(user)
+  const editorial = hasActiveRole(user, 'admin', 'reviewer', 'researcher')
 
   if (editorial) {
     if (role === 'researcher') {

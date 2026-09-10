@@ -217,7 +217,7 @@ describe('Phase 3 collections', () => {
         id: draftTxId,
         data: { _status: 'published' },
         draft: false,
-        user: { id: researcherId, role: 'researcher', collection: 'users' },
+        user: { id: researcherId, role: 'researcher', isActive: true, collection: 'users' },
         overrideAccess: false,
       }),
     ).rejects.toThrow()
@@ -236,7 +236,7 @@ describe('Phase 3 collections', () => {
         id,
         data: { _status: 'published' },
         draft: false,
-        user: { id: adminId, role: 'admin', collection: 'users' },
+        user: { id: adminId, role: 'admin', isActive: true, collection: 'users' },
         overrideAccess: false,
       })
     }
@@ -246,7 +246,7 @@ describe('Phase 3 collections', () => {
       id: draftTxId,
       data: { _status: 'published', workflowState: 'published' },
       draft: false,
-      user: { id: adminId, role: 'admin', collection: 'users' },
+      user: { id: adminId, role: 'admin', isActive: true, collection: 'users' },
       overrideAccess: true,
       context: { ...seedCtx, workflowAction: 'publish' },
     })
@@ -334,7 +334,7 @@ describe('Phase 3 collections', () => {
         id: Number(bad.id),
         data: { sources: [], _status: 'published' },
         draft: false,
-        user: { id: adminId, role: 'admin', collection: 'users' },
+        user: { id: adminId, role: 'admin', isActive: true, collection: 'users' },
         overrideAccess: false,
       }),
     ).rejects.toThrow()
@@ -353,7 +353,7 @@ describe('Phase 3 collections', () => {
           active: true,
           _status: 'published',
         },
-        user: { id: adminId, role: 'admin', collection: 'users' },
+        user: { id: adminId, role: 'admin', isActive: true, collection: 'users' },
         overrideAccess: false,
       }),
     )
