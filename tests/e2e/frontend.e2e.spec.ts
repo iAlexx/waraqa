@@ -465,6 +465,82 @@ test.describe('Public transaction detail (Phase 7)', () => {
 })
 
 
+test.describe('Phase 8 interactive guide', () => {
+  const guideSlug = process.env.E2E_P8_GUIDE_SLUG || 'qa-p8-r1-tx-guide'
+  const hiddenSlug = process.env.E2E_P8_HIDDEN_SLUG || 'qa-p8-r1-tx-draft'
+
+  test('detail CTA opens guide, answers produce checklist, restart clears, no URL answers', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const detailRes = await page.goto(`/transactions/${guideSlug}`)
+    if (detailRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+    const cta = page.locator('[data-start-guide]')
+    await expect(cta).toBeVisible()
+    await expect(cta).toContainText('ابدأ الدليل التفاعلي')
+    await Promise.all([page.waitForURL(new RegExp(`/transactions/${guideSlug}/guide`)), cta.click()])
+
+    await expect(page.locator('[data-guide-page]')).toBeVisible()
+    await expect(page.locator('[data-guide-client]')).toBeVisible()
+
+    // Labels wrap sr-only radios — click the visible label text
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-client]').getByRole('heading', { name: 'الوثائق' })).toBeVisible()
+    expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
+
+    await page.getByRole('button', { name: 'ابدأ من جديد' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await expect(page.locator('#guide-question-heading')).toBeVisible()
+    expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
+  })
+
+  test('hidden transaction guide slug returns not found', async ({ page }) => {
+    await page.goto(`/transactions/${hiddenSlug}/guide`)
+    await expect(page.locator('[data-not-found]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: /غير موجودة/ })).toBeVisible()
+  })
+
+  test('no-JavaScript guide page shows noscript fallback when fixture present', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, locale: 'ar-SY' })
+    const page = await context.newPage()
+    const res = await page.goto(`/transactions/${guideSlug}/guide`, {
+      waitUntil: 'load',
+      timeout: 60_000,
+    })
+    if (res?.status() === 404) {
+      await context.close()
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-guide-page]')).toBeVisible()
+    await expect(page.getByText(/يحتاج جافاسكريبت/)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'فتح تفاصيل المعاملة' })).toBeVisible()
+    await context.close()
+  })
+
+  test('graphql remains disabled (Phase 8 consistent with public shell)', async ({ request }) => {
+    const response = await request.get('/api/graphql')
+    expect(response.status()).toBe(404)
+  })
+})
+
 test.describe('Production protection', () => {
   test('health endpoint remains safe', async ({ request }) => {
     const response = await request.get('/api/health')

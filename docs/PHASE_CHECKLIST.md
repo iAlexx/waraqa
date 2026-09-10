@@ -146,7 +146,6 @@ Branch `phase-6-search-engine-results` from `phase-5-complete` (`5fe07c82`).
 
 ### Not started (later phases)
 
-- Phase 8 interactive guide
 - Phase 10 reporting
 - Phase 11 full SEO / sitemap / robots / revalidation
 
@@ -182,7 +181,6 @@ Branch `phase-7-public-transaction-details` from `phase-6-complete` (`3ad7a08f`)
 
 ### Not started (later phases)
 
-- Phase 8 interactive guide / decision rules
 - Phase 10 outdated-information reporting
 - Phase 11 sitemap, robots, structured data, advanced revalidation
 
@@ -193,6 +191,45 @@ Branch `phase-7-public-transaction-details` from `phase-6-complete` (`3ad7a08f`)
 - Revision archives under `revisions/` remain unchanged
 
 See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
+
+## Phase 8 — Interactive guide
+
+**Status: TECHNICAL PASS — AWAITING OWNER VISUAL APPROVAL**
+
+Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
+
+### Implemented
+
+- [x] Additive guide fields on `transactions` (`guideEnabled`, questions, variants, notices, decision rules)
+- [x] Stable `key` on questions/options/variants/docs/steps/fees/notices; migration + backfill
+- [x] Pure rule evaluator (`evaluateGuide`) — operators, groups, effects, variant selection, fail closed
+- [x] Admin validation + publish gate (`validateGuideOnTransaction`, `isPublicGuideAvailable`)
+- [x] Public loader/DTO (`loadPublicGuideBySlug`, `mapPublicGuide`) — `overrideAccess: false`
+- [x] `/transactions/[slug]/guide` — in-memory client Q&A + in-session result checklist
+- [x] Phase 7 CTA «ابدأ الدليل التفاعلي» when eligible
+- [x] Postgres migration `20260720_041000_phase_8_interactive_guide`
+- [x] Unit + integration + E2E coverage; `qa-p8-r1-*` fixture + Round 01 QA inventory
+- [x] Architecture doc [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md)
+
+### Owner decisions (Phase 8)
+
+- [x] Answers in-memory only — no localStorage/sessionStorage/cookies/DB/analytics/URL answer params
+- [x] No WhatsApp/print/saved checklists/export/accounts (deferred Phase 9+)
+- [x] Variants + `selectVariant`; conflicting variant keys fail validation
+
+### Not started (later phases)
+
+- Phase 9 share / print / local persistence
+- Phase 10 reporting
+- Phase 11 sitemap / structured data / advanced revalidation
+
+### QA evidence
+
+- `revisions/round-01-interactive-guide/` — Round 01 capture target (not owner-approved)
+- **No** `approved/` folder until owner visual sign-off
+- **No** commit / tag / push on this branch yet
+
+See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md).
 
 ## Phase 4 — Admin UI polish debt
 
@@ -206,4 +243,5 @@ Completed in Phase 4: Waraqa Admin logo (Aref Ruqaa Ink + star); boolean list ce
 - Phase 5 must not implement Phase 6 search ranking/normalization or Phase 7 full transaction pages.
 - Phase 6 must not implement Phase 7 full transaction pages or Phase 8 guide engine.
 - Phase 7 must not implement Phase 8 guide engine, Phase 10 reporting, or Phase 11 SEO/sitemap/revalidation.
+- Phase 8 must not implement Phase 9 share/print/persistence, Phase 10 reporting, or Phase 11 SEO/sitemap/revalidation.
 - Do not start the next phase until the current phase is owner-approved and tagged.

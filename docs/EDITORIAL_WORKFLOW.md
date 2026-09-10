@@ -67,7 +67,7 @@ Anonymous list queries for archived or manually outdated records must return `do
 
 ## Rule validation
 
-No `questions` / `decisionRules` on the Phase 3 model — structural rule validation is **N/A** until Phase 8. No guide evaluator.
+Phase 8 adds `questions`, `variants`, `notices`, and `decisionRules` on `transactions` with `validateGuideOnTransaction` — see [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md).
 
 ## Concurrency
 

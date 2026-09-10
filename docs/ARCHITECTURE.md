@@ -52,6 +52,8 @@ Search details: [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md) — Postgres 
 
 Transaction detail: [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md) — public DTO loader, SSR `/transactions/[slug]`, Phase 4 eligibility, not-found for hidden states.
 
+Interactive guide (Phase 8): [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) — pure evaluator, in-memory answers, `/transactions/[slug]/guide`, CTA on eligible detail only.
+
 ## 3. Payload CMS administration
 
 - Payload runs **inside** the same Next.js application (`(payload)` App Router segment).

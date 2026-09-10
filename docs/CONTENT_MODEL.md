@@ -2,11 +2,11 @@
 
 **Status:** Phase 3–7 COMPLETE — OWNER APPROVED
 
-**Migrations:** Phase 3 + `20260718_234422_phase_4_editorial_workflow` + Phase 5 site-settings public fields + Phase 6 `searchText` — **no Phase 7 migration**
+**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` — **no Phase 7 migration**
 
 **Last updated:** 2026-07-20
 
-**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)
+**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md)
 
 ## Naming / scope decisions (documented)
 
@@ -40,6 +40,7 @@
 | `sources` collection | `sources` (explicit) |
 | Document type / source type / verification | `dtype`, `stype`, `vstatus` |
 | Transaction arrays / groups | `req_docs`, `steps`, `fees`, `duration`, `prereqs`, `srcs`, `reviewed_at`, `notes_int` |
+| Phase 8 guide arrays | `questions`, `qopts`, `variants`, `notices`, `dec_rules`, `fx` |
 | Nested field shortcuts | `rtype`, `qty`, `orig_req`, `copies`, `cert_req`, `cur`, `min`, `max`, `unit`, `gov` |
 | Audience enum | `tx_audience` |
 
@@ -168,6 +169,8 @@ See [RBAC.md](./RBAC.md).
 
 **Phase 7 public detail:** maps the fields above into `PublicTransactionDetail` for `/transactions/[slug]` — see [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md). No schema rebuild; `aliases` / `searchText` / `internalNotes` / workflow fields stay off the public page. There is **no** `commonMistakes` field in this model.
 
+**Phase 8 interactive guide (additive):** `guideEnabled`, `questions[]`, `variants[]`, `notices[]`, `decisionRules[]`; stable `key` on questions/options/variants/notices and on `requiredDocuments` / `steps` / `fees` rows. Public DTO + pure evaluator — see [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md). Answers are **not** persisted server-side in Phase 8.
+
 #### Procedure document structure
 
 **`requiredDocuments[]` (`dbName: req_docs`)**
@@ -256,7 +259,7 @@ users ← audit fields on all content collections
 - Full Site Settings surface beyond the minimal global above (social links, search examples, home sections, analytics)
 - Public consumption of Site Settings (Phase 5)
 - Reports / Audit event collections
-- Public guide engine, search APIs, seeds of five procedures
+- Public search APIs, seeds of five procedures (guide engine = **Phase 8**, see [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md))
 - Media / file uploads
 - Phase 4 workflow features (blocks, audit events collection, scheduled review, preview, approval invalidation) — **not started**; schema already in Phase 3 per Outcome A
 - Phase 4 Admin UI polish debt (non-blocking): mixed EN/AR Admin chrome; empty parent category label; boolean نعم/لا badges; Admin login branding — see [PHASE_CHECKLIST.md](./PHASE_CHECKLIST.md)

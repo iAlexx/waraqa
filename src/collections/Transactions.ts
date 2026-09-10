@@ -15,6 +15,7 @@ import {
   localizedText,
   localizedTextarea,
 } from '@/fields/common'
+import { guideFields } from '@/fields/guide-fields'
 import {
   feeFields,
   requiredDocumentFields,
@@ -31,6 +32,8 @@ import {
 } from '@/hooks/content'
 import { stripPrivateEditorialFields } from '@/hooks/public-strip'
 import { attachPublicationStatusLabel } from '@/hooks/publication-status-label'
+import { ensureStableContentKeys } from '@/lib/guide/ensure-keys'
+import { validateGuideOnTransaction } from '@/lib/guide/validate-guide'
 import { validateProcedure } from '@/lib/procedure-validation'
 import { populateSearchText } from '@/lib/search/populate-search-text'
 import {
@@ -146,8 +149,9 @@ export const Transactions: CollectionConfig = {
     delete: adminOnlyDelete,
   },
   hooks: {
-    beforeValidate: [preventSelfPrerequisite, validateProcedure],
+    beforeValidate: [preventSelfPrerequisite, validateProcedure, validateGuideOnTransaction],
     beforeChange: [
+      ensureStableContentKeys,
       enforceWorkflowFieldGuard,
       enforcePublishAuthorization,
       invalidateApprovalOnCriticalEdit,
@@ -347,6 +351,7 @@ export const Transactions: CollectionConfig = {
         description: 'لا تُعاد أبداً في طلبات REST العامة المجهولة. لا تبطل الاعتماد.',
       },
     },
+    ...guideFields(),
     ...workflowFields(),
     activeField(),
     ...auditFields(),

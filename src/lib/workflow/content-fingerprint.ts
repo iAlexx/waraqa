@@ -53,6 +53,7 @@ export function buildCriticalCanonical(data: Record<string, unknown>): unknown {
     ? data.requiredDocuments.map((row) => {
         const r = row as Record<string, unknown>
         return {
+          key: typeof r.key === 'string' ? r.key : null,
           document: relId(r.document),
           requirementType: r.requirementType ?? null,
           condition: loc(r.condition as Localized),
@@ -69,6 +70,7 @@ export function buildCriticalCanonical(data: Record<string, unknown>): unknown {
     ? data.steps.map((row) => {
         const r = row as Record<string, unknown>
         return {
+          key: typeof r.key === 'string' ? r.key : null,
           title: loc(r.title as Localized),
           description: loc(r.description as Localized),
           locationNote: loc(r.locationNote as Localized),
@@ -80,6 +82,7 @@ export function buildCriticalCanonical(data: Record<string, unknown>): unknown {
     ? data.fees.map((row) => {
         const r = row as Record<string, unknown>
         return {
+          key: typeof r.key === 'string' ? r.key : null,
           label: loc(r.label as Localized),
           amount: r.amount ?? null,
           currency: r.currency ?? null,
@@ -121,6 +124,71 @@ export function buildCriticalCanonical(data: Record<string, unknown>): unknown {
     outcome: loc(data.outcome as Localized),
     prerequisiteProcedures: sortedIds(data.prerequisiteProcedures),
     sources,
+    guideEnabled: Boolean(data.guideEnabled),
+    questions: Array.isArray(data.questions)
+      ? data.questions.map((row) => {
+          const r = row as Record<string, unknown>
+          return {
+            key: typeof r.key === 'string' ? r.key : null,
+            questionType: r.questionType ?? null,
+            prompt: loc(r.prompt as Localized),
+            helpText: loc(r.helpText as Localized),
+            required: r.required !== false,
+            active: r.active !== false,
+            options: Array.isArray(r.options)
+              ? r.options.map((o) => {
+                  const opt = o as Record<string, unknown>
+                  return {
+                    key: typeof opt.key === 'string' ? opt.key : null,
+                    label: loc(opt.label as Localized),
+                  }
+                })
+              : [],
+            visibleWhen: r.visibleWhen ?? null,
+          }
+        })
+      : [],
+    variants: Array.isArray(data.variants)
+      ? data.variants.map((row) => {
+          const r = row as Record<string, unknown>
+          return {
+            key: typeof r.key === 'string' ? r.key : null,
+            title: loc(r.title as Localized),
+            explanation: loc(r.explanation as Localized),
+            active: r.active !== false,
+          }
+        })
+      : [],
+    notices: Array.isArray(data.notices)
+      ? data.notices.map((row) => {
+          const r = row as Record<string, unknown>
+          return {
+            key: typeof r.key === 'string' ? r.key : null,
+            title: loc(r.title as Localized),
+            body: loc(r.body as Localized),
+            severity: r.severity ?? null,
+            active: r.active !== false,
+          }
+        })
+      : [],
+    decisionRules: Array.isArray(data.decisionRules)
+      ? data.decisionRules.map((row) => {
+          const r = row as Record<string, unknown>
+          return {
+            key: typeof r.key === 'string' ? r.key : null,
+            priority: r.priority ?? null,
+            active: r.active !== false,
+            explanation: loc(r.explanation as Localized),
+            when: r.when ?? null,
+            effects: Array.isArray(r.effects)
+              ? r.effects.map((fx) => {
+                  const e = fx as Record<string, unknown>
+                  return { type: e.type ?? null, targetKey: e.targetKey ?? null }
+                })
+              : [],
+          }
+        })
+      : [],
     active: data.active !== false,
     markedOutdated: Boolean(data.markedOutdated),
   }

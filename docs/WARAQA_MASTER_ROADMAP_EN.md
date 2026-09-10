@@ -2253,6 +2253,8 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 
 ## Phase 8 — Guide Engine
 
+> **Owner decision (2026-07-20):** Phase 8 ships **in-memory answers only** and an **in-session result checklist**. Roadmap items below for “save local progress”, “browser refresh preserves safe progress”, and “schema-version mismatch in local storage” are **deferred to Phase 9+**. WhatsApp share, print, and persistent checklists remain Phase 9 scope. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md).
+
 ### Tasks
 
 - define typed answer model;

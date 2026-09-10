@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { TransactionDetailSkeleton } from '@/components/transaction/transaction-detail-skeleton'
 import { TransactionDetailView } from '@/components/transaction/transaction-detail-view'
+import { transactionHasPublicGuide } from '@/lib/guide/public-guide'
 import { loadPublicTransactionBySlug } from '@/lib/public/transaction-detail'
 import { loadPublicSiteSettings } from '@/lib/public/site-settings'
 
@@ -92,5 +93,6 @@ export default async function TransactionDetailPage({ params, searchParams }: Pr
     notFound()
   }
 
-  return <TransactionDetailView transaction={result.transaction} />
+  const hasGuide = await transactionHasPublicGuide(slug)
+  return <TransactionDetailView transaction={result.transaction} hasGuide={hasGuide} />
 }

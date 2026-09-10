@@ -3,10 +3,18 @@ import type { Field } from 'payload'
 import { editorialFieldAccess } from '@/access'
 import { COVERED_SECTIONS } from '@/lib/workflow/types'
 import { localizedText, localizedTextarea } from './common'
+import { stableKeyField } from './guide-fields'
 
 /** Reusable required-document array fields (Phase 3 shape preserved). */
 export function requiredDocumentFields(): Field[] {
   return [
+    stableKeyField({
+      required: false,
+      admin: {
+        description:
+          'مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).',
+      },
+    }),
     {
       name: 'document',
       type: 'relationship',
@@ -67,6 +75,13 @@ export function requiredDocumentFields(): Field[] {
 
 export function stepFields(): Field[] {
   return [
+    stableKeyField({
+      required: false,
+      admin: {
+        description:
+          'مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).',
+      },
+    }),
     localizedText('title', 'عنوان الخطوة', { required: true }),
     localizedTextarea('description', 'وصف الخطوة', { required: true }),
     localizedText('locationNote', 'ملاحظة المكان'),
@@ -75,6 +90,13 @@ export function stepFields(): Field[] {
 
 export function feeFields(): Field[] {
   return [
+    stableKeyField({
+      required: false,
+      admin: {
+        description:
+          'مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).',
+      },
+    }),
     localizedText('label', 'التسمية', { required: true }),
     {
       name: 'amount',

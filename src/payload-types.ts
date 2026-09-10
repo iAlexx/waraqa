@@ -413,6 +413,10 @@ export interface Transaction {
     | null;
   requiredDocuments?:
     | {
+        /**
+         * مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).
+         */
+        key?: string | null;
         document: number | Document;
         requirementType: 'required' | 'conditional' | 'alternative';
         condition?: string | null;
@@ -425,6 +429,10 @@ export interface Transaction {
       }[]
     | null;
   steps: {
+    /**
+     * مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).
+     */
+    key?: string | null;
     title: string;
     description: string;
     locationNote?: string | null;
@@ -432,6 +440,10 @@ export interface Transaction {
   }[];
   fees?:
     | {
+        /**
+         * مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).
+         */
+        key?: string | null;
         label: string;
         amount?: number | null;
         currency?: ('SYP' | 'USD' | 'EUR' | 'other') | null;
@@ -478,6 +490,139 @@ export interface Transaction {
    * لا تُعاد أبداً في طلبات REST العامة المجهولة. لا تبطل الاعتماد.
    */
   internalNotes?: string | null;
+  /**
+   * يظهر زر «ابدأ الدليل التفاعلي» فقط عند التفعيل ووجود إعداد دليل صالح بدون أخطاء.
+   */
+  guideEnabled?: boolean | null;
+  questions?:
+    | {
+        /**
+         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         */
+        key: string;
+        questionType: 'single' | 'multi' | 'boolean';
+        prompt: string;
+        helpText?: string | null;
+        required?: boolean | null;
+        active?: boolean | null;
+        options?:
+          | {
+              /**
+               * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+               */
+              key: string;
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        visibleWhen?: {
+          all?:
+            | {
+                questionKey: string;
+                operator: 'equals' | 'notEquals' | 'includes' | 'exists';
+                /**
+                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 */
+                value?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+          any?:
+            | {
+                questionKey: string;
+                operator: 'equals' | 'notEquals' | 'includes' | 'exists';
+                /**
+                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 */
+                value?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  variants?:
+    | {
+        /**
+         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         */
+        key: string;
+        title: string;
+        explanation?: string | null;
+        active?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  notices?:
+    | {
+        /**
+         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         */
+        key: string;
+        title: string;
+        body: string;
+        severity?: ('info' | 'warning') | null;
+        active?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  decisionRules?:
+    | {
+        /**
+         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         */
+        key: string;
+        /**
+         * الأقل يُنفَّذ أولاً؛ الأعلى لاحقاً (يتجاوز عند التعارض).
+         */
+        priority: number;
+        active?: boolean | null;
+        explanation?: string | null;
+        when?: {
+          all?:
+            | {
+                questionKey: string;
+                operator: 'equals' | 'notEquals' | 'includes' | 'exists';
+                /**
+                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 */
+                value?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+          any?:
+            | {
+                questionKey: string;
+                operator: 'equals' | 'notEquals' | 'includes' | 'exists';
+                /**
+                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 */
+                value?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+        };
+        effects: {
+          type:
+            | 'includeDocument'
+            | 'excludeDocument'
+            | 'includeStep'
+            | 'excludeStep'
+            | 'includeFee'
+            | 'excludeFee'
+            | 'includeNotice'
+            | 'excludeNotice'
+            | 'selectVariant';
+          /**
+           * مفتاح وثيقة / خطوة / رسم / ملاحظة / متغير.
+           */
+          targetKey: string;
+          id?: string | null;
+        }[];
+        id?: string | null;
+      }[]
+    | null;
   /**
    * تُغيَّر عبر إجراءات سير العمل فقط — لا تُعيَّن يدوياً.
    */
@@ -847,6 +992,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   requiredDocuments?:
     | T
     | {
+        key?: T;
         document?: T;
         requirementType?: T;
         condition?: T;
@@ -860,6 +1006,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   steps?:
     | T
     | {
+        key?: T;
         title?: T;
         description?: T;
         locationNote?: T;
@@ -868,6 +1015,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   fees?:
     | T
     | {
+        key?: T;
         label?: T;
         amount?: T;
         currency?: T;
@@ -896,6 +1044,100 @@ export interface TransactionsSelect<T extends boolean = true> {
       };
   lastReviewedAt?: T;
   internalNotes?: T;
+  guideEnabled?: T;
+  questions?:
+    | T
+    | {
+        key?: T;
+        questionType?: T;
+        prompt?: T;
+        helpText?: T;
+        required?: T;
+        active?: T;
+        options?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              id?: T;
+            };
+        visibleWhen?:
+          | T
+          | {
+              all?:
+                | T
+                | {
+                    questionKey?: T;
+                    operator?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              any?:
+                | T
+                | {
+                    questionKey?: T;
+                    operator?: T;
+                    value?: T;
+                    id?: T;
+                  };
+            };
+        id?: T;
+      };
+  variants?:
+    | T
+    | {
+        key?: T;
+        title?: T;
+        explanation?: T;
+        active?: T;
+        id?: T;
+      };
+  notices?:
+    | T
+    | {
+        key?: T;
+        title?: T;
+        body?: T;
+        severity?: T;
+        active?: T;
+        id?: T;
+      };
+  decisionRules?:
+    | T
+    | {
+        key?: T;
+        priority?: T;
+        active?: T;
+        explanation?: T;
+        when?:
+          | T
+          | {
+              all?:
+                | T
+                | {
+                    questionKey?: T;
+                    operator?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              any?:
+                | T
+                | {
+                    questionKey?: T;
+                    operator?: T;
+                    value?: T;
+                    id?: T;
+                  };
+            };
+        effects?:
+          | T
+          | {
+              type?: T;
+              targetKey?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   workflowState?: T;
   submittedForReviewAt?: T;
   submittedForReviewBy?: T;

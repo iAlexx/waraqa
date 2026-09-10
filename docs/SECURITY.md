@@ -1,10 +1,10 @@
 # Waraqa Security Baseline
 
-**Status:** Phase 4–7 COMPLETE — OWNER APPROVED (Phase 7 public detail loader)
+**Status:** Phase 4–7 COMPLETE — OWNER APPROVED; Phase 8 guide TECHNICAL PASS (awaiting owner visual)
 
 **Last updated:** 2026-07-20
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [.env.example](../.env.example)
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [.env.example](../.env.example)
 
 ## 1. Secret management
 
@@ -82,7 +82,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 - **No** national ID collection.
 - **No** citizen accounts.
 - Change reports: optional contact only; never published automatically.
-- Checklist state stays on-device (session/local storage).
+- **Phase 8 guide answers:** in-memory React state only for the browser session — no `localStorage`, `sessionStorage`, cookies, server persistence, analytics, or answer data in URLs. Refresh restarts the guide. Local persistence is deferred to Phase 9+.
 
 ## 8. Dependency and migration safety
 

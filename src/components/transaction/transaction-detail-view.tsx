@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils/cn'
 
 export type TransactionDetailViewProps = {
   transaction: PublicTransactionDetail
+  /** Phase 8 — show interactive guide CTA when a valid public guide exists. */
+  hasGuide?: boolean
   className?: string
 }
 
@@ -68,7 +70,11 @@ function MetaRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function TransactionDetailView({ transaction: t, className }: TransactionDetailViewProps) {
+function TransactionDetailView({
+  transaction: t,
+  hasGuide = false,
+  className,
+}: TransactionDetailViewProps) {
   return (
     <article
       className={cn('waraqa-container py-8 md:py-12', className)}
@@ -160,6 +166,18 @@ function TransactionDetailView({ transaction: t, className }: TransactionDetailV
             ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً. راجع الجهة الرسمية قبل التقديم — المعلومات
             قد تتغيّر.
           </p>
+
+          {hasGuide ? (
+            <p className="mt-5">
+              <Link
+                href={`/transactions/${encodeURIComponent(t.slug)}/guide`}
+                className="inline-flex min-h-12 items-center rounded-[0.8125rem] bg-brand-800 px-5 font-semibold text-white hover:bg-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40"
+                data-start-guide
+              >
+                ابدأ الدليل التفاعلي
+              </Link>
+            </p>
+          ) : null}
         </header>
 
         <div className="mt-10 flex flex-col gap-10">

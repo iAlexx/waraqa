@@ -54,6 +54,16 @@ next-env.d.ts
 /blob-report/
 /playwright/.cache/
 
+# Local research and archive bundles (not application inputs)
+/WARAQA — Full MVP/
+/WARAQA — Full MVP.zip
+/docs/qa.zip
+
+# Phase 8 generated QA state and captures (README/CHANGES remain trackable)
+/docs/qa/phase-8/fixture-state/
+/docs/qa/phase-8/revisions/**/*.png
+/docs/qa/phase-8/revisions/**/screenshot-inventory.json
+
 # local database dumps / volumes (never commit)
 *.sql
 *.sql.gz
