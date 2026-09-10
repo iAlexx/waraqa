@@ -49,6 +49,18 @@ export const Sources: CollectionConfig = {
   hooks: {
     beforeChange: [enforcePublishAuthorization, populateAuditFields],
     afterRead: [stripPrivateEditorialFields],
+    afterChange: [
+      async ({ doc, req, context }) => {
+        if (context?.claimTrustRecompute === true) return doc
+        try {
+          const { recomputeClaimTrustForSourceId } = await import('@/lib/claims/recompute-claim-trust')
+          await recomputeClaimTrustForSourceId(req.payload, doc.id, req)
+        } catch {
+          // Non-blocking: approve/publish and public Where still fail closed.
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     localizedText('title', 'العنوان', { required: true }),

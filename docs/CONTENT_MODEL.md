@@ -147,29 +147,30 @@ See [RBAC.md](./RBAC.md).
 
 **Purpose:** First-class discrete government-service facts that can be independently verified and linked to existing `sources` as evidence.
 
-**IMPLEMENTED NOW (storage foundation only):**
+**IMPLEMENTED NOW (P0-05A storage + P0-05B1 publication safety):**
 - Claim statement + stable `key`
 - Status: `DRAFT` \| `NEEDS_REVIEW` \| `VERIFIED` \| `UNKNOWN` \| `CONFLICTED` \| `NEEDS_OFFICIAL_CONFIRMATION` \| `OUTDATED` \| `SUPERSEDED` \| `REJECTED`
-- Publication permission (data only): `INTERNAL_ONLY` \| `PUBLIC` \| `PUBLIC_WITH_WARNING` \| `BLOCKED`
+- Publication permission: `INTERNAL_ONLY` \| `PUBLIC` \| `PUBLIC_WITH_WARNING` \| `BLOCKED`
 - Evidence rows → `sources` with relation `SUPPORTS` \| `CONTRADICTS` \| `PARTIALLY_SUPPORTS` \| `SUPERSEDES` \| `CONTEXT_ONLY`
 - Optional `transaction`, light `kind` / `scopeKind`+`scopeKey` for later binding
 - Review metadata: `reviewedBy`, `verifiedAt`, `validFrom`, `validUntil`, `reviewDueAt`
 - Drafts/versions + audit fields; editorial-only Admin read (not public API)
+- Central `evaluateClaimTrust` / `evaluateSourceTrust`; transaction `claimBindings` + denormalized `claimTrustOk`
+- Approve/publish gate + dynamic public fail-closed when claim/source trust collapses
 
-**NOT IMPLEMENTED YET (later P0-05B+):**
-- Fail-closed public transaction publication based on claim state
-- Decision Engine / guide rule activation bound to claims
-- Citizen-facing UNKNOWN/CONFLICTED warnings
-- Automatic stale-source blocking, review queues, Golden Demo content
+**NOT IMPLEMENTED YET (P0-05B2+):**
+- Evidence-bound Decision Engine / guide rule activation
+- Citizen-facing UNKNOWN/CONFLICTED / warning UI
+- Golden Demo content; per-field claim retrofit; separate Evidence collection
 
 | Area | Detail |
 | --- | --- |
 | Key fields | Localized `statement`, `editorialNotes`; non-localized `key` (unique, stable), `status`, `publicationPermission`, `kind`, `scopeKind`, `scopeKey`, `transaction` → `transactions`, `evidence[]`, review dates, `active` + audit |
 | `evidence[]` (`dbName: claim_ev`) | `source` → `sources`, `relationType`, optional `note`, `quoteOrLocator`, `checkedAt` |
 | Drafts/versions | Yes (`maxPerDoc: 20`) |
-| Public read | **None in P0-05A** — editorial roles only (`authenticatedEditorialRead`) |
+| Public read | **None for claims** — editorial roles only (`authenticatedEditorialRead`) |
 | Delete | Admin only |
-| Migration | `20260721_051000_p0_05a_claims_foundation` |
+| Migrations | `20260721_051000_p0_05a_claims_foundation`, `20260721_120000_p0_05b1_claim_trust_publication` |
 
 Sources remain the citable URL/legal artifacts. Claims do **not** duplicate Source records.
 

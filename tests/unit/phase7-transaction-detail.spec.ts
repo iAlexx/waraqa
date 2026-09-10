@@ -18,6 +18,7 @@ function baseDoc(overrides: Record<string, unknown> = {}): Record<string, unknow
     active: true,
     markedOutdated: false,
     workflowState: 'published',
+    claimTrustOk: true,
     title: 'إخراج قيد تجريبي',
     slug: 'qa-p7-civil',
     summary: 'ملخص قصير للعرض العام.',
@@ -75,6 +76,8 @@ describe('mapPublicTransactionDetail', () => {
     expect(mapPublicTransactionDetail(baseDoc({ active: false }))).toBeNull()
     expect(mapPublicTransactionDetail(baseDoc({ workflowState: 'archived' }))).toBeNull()
     expect(mapPublicTransactionDetail(baseDoc({ markedOutdated: true }))).toBeNull()
+    expect(mapPublicTransactionDetail(baseDoc({ claimTrustOk: false }))).toBeNull()
+    expect(mapPublicTransactionDetail(baseDoc({ claimTrustOk: undefined }))).toBeNull()
   })
 
   it('preserves document/step/fee order and drops unpublished relations', () => {
@@ -128,6 +131,7 @@ describe('mapPublicTransactionDetail', () => {
             active: true,
             markedOutdated: false,
             workflowState: 'published',
+            claimTrustOk: true,
           },
           99,
         ],

@@ -6,6 +6,8 @@ import { writeAuditEvent, type AuditAction } from './audit'
 import { hashCriticalContent } from './content-fingerprint'
 import { calculateReviewDueAt } from './review-schedule'
 import { validateSourceEvidence, type SourceDocLike } from './source-evidence'
+import { resolveClaimGraph } from '@/lib/claims/recompute-claim-trust'
+import { validateClaimBindingsForPublication } from '@/lib/claims/validate-claim-publication'
 import {
   assertTransition,
   WorkflowError,
@@ -177,6 +179,19 @@ export async function runTransactionWorkflowAction(input: WorkflowRunInput) {
       const resolved = await resolveSources(payload, doc.sources as never, input.req)
       const evidenceErrors = validateSourceEvidence(doc as never, resolved)
       if (evidenceErrors.length) throw new WorkflowError(evidenceErrors.join(' '), 422)
+      const claimGraph = await resolveClaimGraph(
+        payload,
+        doc.claimBindings as never,
+        input.req,
+      )
+      // Merge already-resolved publication sources into claim evidence checks.
+      for (const [id, src] of resolved) claimGraph.sources.set(id, src)
+      const claimGate = validateClaimBindingsForPublication(
+        doc.claimBindings as never,
+        claimGraph.claims,
+        claimGraph.sources,
+      )
+      if (!claimGate.ok) throw new WorkflowError(claimGate.errors.join(' '), 422)
       const hash = hashCriticalContent(doc)
       const policy = await policyDays(payload, input.req)
       const due = calculateReviewDueAt({
@@ -191,6 +206,7 @@ export async function runTransactionWorkflowAction(input: WorkflowRunInput) {
         approvedContentHash: hash,
         approvedVersionId: doc._version ?? doc.id,
         reviewDueAt: due?.toISOString() ?? doc.reviewDueAt,
+        claimTrustOk: true,
         _status: 'draft',
       }
       auditAction = 'approved'
@@ -205,6 +221,18 @@ export async function runTransactionWorkflowAction(input: WorkflowRunInput) {
       const resolved = await resolveSources(payload, doc.sources as never, input.req)
       const evidenceErrors = validateSourceEvidence(doc as never, resolved)
       if (evidenceErrors.length) throw new WorkflowError(evidenceErrors.join(' '), 422)
+      const claimGraph = await resolveClaimGraph(
+        payload,
+        doc.claimBindings as never,
+        input.req,
+      )
+      for (const [id, src] of resolved) claimGraph.sources.set(id, src)
+      const claimGate = validateClaimBindingsForPublication(
+        doc.claimBindings as never,
+        claimGraph.claims,
+        claimGraph.sources,
+      )
+      if (!claimGate.ok) throw new WorkflowError(claimGate.errors.join(' '), 422)
       const hash = hashCriticalContent(doc)
       if (!doc.approvedContentHash || hash !== doc.approvedContentHash) {
         throw new WorkflowError(
@@ -225,6 +253,7 @@ export async function runTransactionWorkflowAction(input: WorkflowRunInput) {
         publishedBy: uid,
         reviewDueAt: due?.toISOString() ?? doc.reviewDueAt,
         markedOutdated: false,
+        claimTrustOk: true,
       }
       auditAction = 'published'
       auditSummary = 'نشر المعاملة'

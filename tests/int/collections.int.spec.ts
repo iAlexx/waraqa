@@ -5,6 +5,7 @@ import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 
 let payload: Payload
 const created: Array<{ collection: string; id: number | string }> = []
@@ -16,7 +17,16 @@ async function track<T extends { id: number | string }>(collection: string, doc:
 }
 
 async function cleanup() {
-  const order = ['transactions', 'sources', 'documents', 'service-centers', 'agencies', 'categories', 'users']
+  const order = [
+    'transactions',
+    'claims',
+    'sources',
+    'documents',
+    'service-centers',
+    'agencies',
+    'categories',
+    'users',
+  ]
   for (const collection of order) {
     for (const item of [...created].reverse()) {
       if (item.collection !== collection) continue
@@ -40,11 +50,13 @@ afterAll(async () => {
 describe('Phase 3 collections', () => {
   let adminId: number
   let researcherId: number
+  let reviewerId: number
   let categoryId: number
   let agencyId: number
   let centerId: number
   let documentId: number
   let sourceId: number
+  let claimId: number
   let draftTxId: number
   let publishedTxId: number
 
@@ -82,6 +94,22 @@ describe('Phase 3 collections', () => {
     )
     researcherId = Number(researcher.id)
     expect(researcher.role).toBe('researcher')
+
+    const reviewer = await track(
+      'users',
+      await payload.create({
+        collection: 'users',
+        data: {
+          email: `reviewer-p3-${stamp}@example.test`,
+          password: 'TestPassphrase-Phase3-Reviewer!',
+          role: 'reviewer',
+          name: 'مراجع تجريبي',
+        },
+        overrideAccess: true,
+        context: seedCtx,
+      }),
+    )
+    reviewerId = Number(reviewer.id)
   })
 
   it('creates category, agency, service center, document, source drafts', async () => {
@@ -229,7 +257,6 @@ describe('Phase 3 collections', () => {
       ['agencies', agencyId],
       ['service-centers', centerId],
       ['documents', documentId],
-      ['sources', sourceId],
     ] as const) {
       await payload.update({
         collection: collection as 'categories',
@@ -241,10 +268,35 @@ describe('Phase 3 collections', () => {
       })
     }
 
+    await payload.update({
+      collection: 'sources',
+      id: sourceId,
+      data: { _status: 'published', verificationStatus: 'verified' },
+      draft: false,
+      user: { id: adminId, role: 'admin', isActive: true, collection: 'users' },
+      overrideAccess: true,
+      context: seedCtx,
+    })
+
+    const claim = await track(
+      'claims',
+      await createAuthoritativeClaimFixture(payload, {
+        key: `claim_p3_${Date.now()}`,
+        sourceId,
+        reviewerId,
+      }),
+    )
+    claimId = Number(claim.id)
+
     const published = await payload.update({
       collection: 'transactions',
       id: draftTxId,
-      data: { _status: 'published', workflowState: 'published' },
+      data: {
+        _status: 'published',
+        workflowState: 'published',
+        claimTrustOk: true,
+        claimBindings: [{ claim: claimId, required: true, coveredSection: 'summary' }],
+      },
       draft: false,
       user: { id: adminId, role: 'admin', isActive: true, collection: 'users' },
       overrideAccess: true,

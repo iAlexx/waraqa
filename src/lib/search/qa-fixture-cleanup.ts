@@ -66,6 +66,7 @@ export async function countPhase6QaPublishedEligible(payload: Payload): Promise<
         { active: { equals: true } },
         { markedOutdated: { not_equals: true } },
         { workflowState: { not_equals: 'archived' } },
+        { claimTrustOk: { equals: true } },
       ],
     },
   })

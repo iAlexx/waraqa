@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
 import { localizedString, type LocalizedLike } from '@/lib/public/localized'
 
 export type PublicFeaturedCard = {
@@ -13,11 +14,17 @@ export type PublicFeaturedCard = {
   demoLabeled: boolean
 }
 
+/**
+ * Sync public prefilter (status + stored claimTrustOk cache).
+ * Not the final trust authority — public loaders also run
+ * `liveEvaluatePublicTransactionClaimTrust` before exposure.
+ */
 export function isPubliclyEligibleTransaction(doc: Record<string, unknown>): boolean {
   if (doc._status !== 'published') return false
   if (doc.active !== true) return false
   if (doc.markedOutdated === true) return false
   if (doc.workflowState === 'archived') return false
+  if (doc.claimTrustOk !== true) return false
   return true
 }
 
@@ -50,6 +57,7 @@ export async function loadFeaturedTransactions(
         })) as unknown as Record<string, unknown>
 
         if (!isPubliclyEligibleTransaction(doc)) continue
+        if (!(await liveEvaluatePublicTransactionClaimTrust(payload, doc))) continue
 
         const title = localizedString(doc.title as LocalizedLike)
         const slug = typeof doc.slug === 'string' ? doc.slug : ''

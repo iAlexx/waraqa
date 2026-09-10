@@ -70,13 +70,14 @@ describe('mapPublicSiteSettings', () => {
 })
 
 describe('isPubliclyEligibleTransaction', () => {
-  it('accepts published active non-archived non-outdated', () => {
+  it('accepts published active non-archived non-outdated with claimTrustOk', () => {
     expect(
       isPubliclyEligibleTransaction({
         _status: 'published',
         active: true,
         markedOutdated: false,
         workflowState: 'published',
+        claimTrustOk: true,
       }),
     ).toBe(true)
   })
@@ -88,6 +89,7 @@ describe('isPubliclyEligibleTransaction', () => {
         active: true,
         markedOutdated: false,
         workflowState: 'draft',
+        claimTrustOk: true,
       }),
     ).toBe(false)
     expect(
@@ -96,6 +98,7 @@ describe('isPubliclyEligibleTransaction', () => {
         active: false,
         markedOutdated: false,
         workflowState: 'published',
+        claimTrustOk: true,
       }),
     ).toBe(false)
     expect(
@@ -104,6 +107,7 @@ describe('isPubliclyEligibleTransaction', () => {
         active: true,
         markedOutdated: true,
         workflowState: 'published',
+        claimTrustOk: true,
       }),
     ).toBe(false)
     expect(
@@ -112,6 +116,27 @@ describe('isPubliclyEligibleTransaction', () => {
         active: true,
         markedOutdated: false,
         workflowState: 'archived',
+        claimTrustOk: true,
+      }),
+    ).toBe(false)
+  })
+
+  it('rejects missing or false claimTrustOk', () => {
+    expect(
+      isPubliclyEligibleTransaction({
+        _status: 'published',
+        active: true,
+        markedOutdated: false,
+        workflowState: 'published',
+      }),
+    ).toBe(false)
+    expect(
+      isPubliclyEligibleTransaction({
+        _status: 'published',
+        active: true,
+        markedOutdated: false,
+        workflowState: 'published',
+        claimTrustOk: false,
       }),
     ).toBe(false)
   })

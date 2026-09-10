@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
 import { localizedString, type LocalizedLike } from '@/lib/public/localized'
 
 export type PublicCategoryCard = {
@@ -19,6 +20,7 @@ function isDemoLabel(text: string): boolean {
 
 /**
  * Public categories: published + active only (collection access + explicit filter).
+ * Procedure counts use claimTrustOk as a DB prefilter, then live Claim/Source trust.
  */
 export async function loadPublicCategories(): Promise<{
   categories: PublicCategoryCard[]
@@ -46,8 +48,10 @@ export async function loadPublicCategories(): Promise<{
 
       let procedureCount: number | null = null
       try {
-        const count = await payload.count({
+        const candidates = await payload.find({
           collection: 'transactions',
+          depth: 0,
+          limit: 500,
           overrideAccess: false,
           where: {
             and: [
@@ -56,10 +60,22 @@ export async function loadPublicCategories(): Promise<{
               { active: { equals: true } },
               { markedOutdated: { not_equals: true } },
               { workflowState: { not_equals: 'archived' } },
+              { claimTrustOk: { equals: true } },
             ],
           },
         })
-        procedureCount = count.totalDocs
+        let liveCount = 0
+        for (const tx of candidates.docs) {
+          if (
+            await liveEvaluatePublicTransactionClaimTrust(
+              payload,
+              tx as unknown as Record<string, unknown>,
+            )
+          ) {
+            liveCount += 1
+          }
+        }
+        procedureCount = liveCount
       } catch {
         procedureCount = null
       }

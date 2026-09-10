@@ -9,6 +9,7 @@ import config from '@/payload.config'
 import { loadPublicCategories } from '@/lib/public/categories'
 import { loadFeaturedTransactions } from '@/lib/public/featured-transactions'
 import { loadPublicSiteSettings, mapPublicSiteSettings } from '@/lib/public/site-settings'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 
 let payload: Payload
 const created: Array<{ collection: string; id: number | string }> = []
@@ -24,15 +25,19 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  for (const row of [...created].reverse()) {
-    try {
-      await payload.delete({
-        collection: row.collection as 'transactions',
-        id: row.id,
-        overrideAccess: true,
-      })
-    } catch {
-      // ignore cleanup errors
+  const order = ['transactions', 'claims', 'sources', 'agencies', 'categories', 'users']
+  for (const collection of order) {
+    for (const row of [...created].reverse()) {
+      if (row.collection !== collection) continue
+      try {
+        await payload.delete({
+          collection: row.collection as 'transactions',
+          id: row.id,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore cleanup errors
+      }
     }
   }
 })
@@ -121,6 +126,32 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
       }),
     )
 
+    const reviewer = await track(
+      'users',
+      await payload.create({
+        collection: 'users',
+        data: {
+          email: `reviewer-p5-${stamp}@example.test`,
+          password: 'TestPassphrase-Phase5-Reviewer!',
+          role: 'reviewer',
+          name: 'Reviewer P5',
+        },
+        overrideAccess: true,
+        context: seedCtx,
+      }),
+    )
+
+    const claim = await track(
+      'claims',
+      await createAuthoritativeClaimFixture(payload, {
+        key: `claim_p5_${stamp}`,
+        sourceId: source.id,
+        reviewerId: reviewer.id,
+      }),
+    )
+
+    const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
+
     async function createTx(
       suffix: string,
       patch: Record<string, unknown>,
@@ -163,6 +194,8 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
     const published = await createTx('pub', {
       _status: 'published',
       workflowState: 'published',
+      claimTrustOk: true,
+      claimBindings,
     })
     const archived = await createTx('arch', {
       _status: 'published',
@@ -181,6 +214,8 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
     const published2 = await createTx('pub2', {
       _status: 'published',
       workflowState: 'published',
+      claimTrustOk: true,
+      claimBindings,
     })
 
     const orderedIds = [

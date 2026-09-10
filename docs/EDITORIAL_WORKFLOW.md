@@ -42,6 +42,8 @@ Publish requires matching `approvedContentHash`.
 
 On approve/publish: ≥1 source, ≥1 primary; each source active + `verificationStatus=verified` + HTTP(S) URL; `coveredSections` must cover populated critical sections. No URL fetching.
 
+**P0-05B1 claim gate (after source evidence):** ≥1 required `claimBindings` row; each required claim must evaluate `AUTHORITATIVE` (`evaluateClaimTrust`). Unbound transactions fail closed. `WARNING_ONLY` never satisfies required bindings. On success sets `claimTrustOk=true`. Claim/source changes recompute `claimTrustOk`; public `Where` requires `claimTrustOk === true` (transaction unavailable — no citizen warning UI yet).
+
 ## Review scheduling
 
 `reviewDueAt = lastReviewedAt + (reviewIntervalDays ?? site-settings.verificationPolicyDays)`. Health computed at read time. Admin override requires reason + audit. No cron in Phase 4.
@@ -57,13 +59,16 @@ On approve/publish: ≥1 source, ≥1 primary; each source active + `verificatio
     { active: { equals: true } },
     { markedOutdated: { not_equals: true } },
     { workflowState: { not_equals: 'archived' } },
+    { claimTrustOk: { equals: true } },
   ],
 }
 ```
 
-Anonymous list queries for archived or manually outdated records must return `docs: []` and `totalDocs: 0`. Find-by-ID must not expose those documents. Other collections keep `publicPublishedRead` (`published` + `active` only) because they lack workflow fields.
+Anonymous list queries for archived, manually outdated, or claim-trust-failed records must return `docs: []` and `totalDocs: 0`. Find-by-ID must not expose those documents. Other collections keep `publicPublishedRead` (`published` + `active` only) because they lack workflow fields.
 
-**Defense in depth only** — `stripPrivateEditorialFields` (`afterRead`) may still null archived/outdated docs and strip private fields. It is **not** the primary exclusion mechanism. GraphQL remains disabled.
+`claimTrustOk` in Where is a **fast prefilter only**. Public loaders and anonymous `afterRead` also run live Claim/Source trust (`liveEvaluatePublicTransactionClaimTrust`). Manual/`overrideAccess` setting of `claimTrustOk=true` cannot bypass that live gate.
+
+**Defense in depth only** — `stripPrivateEditorialFields` (`afterRead`) may still null archived/outdated/`claimTrustOk !== true` docs and strip private fields. It is **not** the primary exclusion mechanism. GraphQL remains disabled.
 
 ## Rule validation
 

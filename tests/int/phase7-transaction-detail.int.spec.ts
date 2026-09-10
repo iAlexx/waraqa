@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import config from '@/payload.config'
 import { loadPublicTransactionBySlug } from '@/lib/public/transaction-detail'
 import { PUBLIC_DETAIL_FORBIDDEN_KEYS } from '@/lib/public/transaction-detail-map'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 
 let payload: Payload
 const created: Array<{ collection: string; id: number | string }> = []
@@ -95,6 +96,32 @@ beforeAll(async () => {
     }),
   )
 
+  const reviewer = await track(
+    'users',
+    await payload.create({
+      collection: 'users',
+      data: {
+        email: `reviewer-p7-${stamp}@example.test`,
+        password: 'TestPassphrase-Phase7-Reviewer!',
+        role: 'reviewer',
+        name: 'Reviewer P7',
+      },
+      overrideAccess: true,
+      context: seedCtx,
+    }),
+  )
+
+  const claim = await track(
+    'claims',
+    await createAuthoritativeClaimFixture(payload, {
+      key: `claim_p7_${stamp}`,
+      sourceId: source.id,
+      reviewerId: reviewer.id,
+    }),
+  )
+
+  const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
+
   const base = {
     category: category.id,
     agency: agency.id,
@@ -138,6 +165,8 @@ beforeAll(async () => {
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        claimTrustOk: true,
+        claimBindings,
         _status: 'published',
         internalNotes: 'سري جداً',
       } as never,
@@ -232,15 +261,27 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  for (const row of [...created].reverse()) {
-    try {
-      await payload.delete({
-        collection: row.collection as 'transactions',
-        id: row.id,
-        overrideAccess: true,
-      })
-    } catch {
-      // ignore
+  const order = [
+    'transactions',
+    'claims',
+    'sources',
+    'documents',
+    'agencies',
+    'categories',
+    'users',
+  ]
+  for (const collection of order) {
+    for (const row of [...created].reverse()) {
+      if (row.collection !== collection) continue
+      try {
+        await payload.delete({
+          collection: row.collection as 'transactions',
+          id: row.id,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore
+      }
     }
   }
 })

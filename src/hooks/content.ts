@@ -102,7 +102,7 @@ export const enforceWorkflowFieldGuard: CollectionBeforeChangeHook = ({
   originalDoc,
   operation,
 }) => {
-  if (allowSeedBypass(req) || isWorkflowContext(req)) {
+  if (allowSeedBypass(req) || isWorkflowContext(req) || req.context?.claimTrustRecompute === true) {
     return data
   }
 
@@ -111,6 +111,7 @@ export const enforceWorkflowFieldGuard: CollectionBeforeChangeHook = ({
 
   if (operation === 'create') {
     next.workflowState = 'draft'
+    next.claimTrustOk = false
     return next
   }
 
@@ -135,6 +136,7 @@ export const enforceWorkflowFieldGuard: CollectionBeforeChangeHook = ({
   delete next.archivedBy
   delete next.reviewDueAt
   delete next.markedOutdated
+  delete next.claimTrustOk
 
   return next
 }
@@ -147,7 +149,9 @@ export const invalidateApprovalOnCriticalEdit: CollectionBeforeChangeHook = asyn
   operation,
 }) => {
   if (operation !== 'update' || !originalDoc) return data
-  if (allowSeedBypass(req) || isWorkflowContext(req)) return data
+  if (allowSeedBypass(req) || isWorkflowContext(req) || req.context?.claimTrustRecompute === true) {
+    return data
+  }
 
   const next = { ...(data as StatusData) }
   const { invalidate, patch } = maybeInvalidateApproval({

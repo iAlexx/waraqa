@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import config from '@/payload.config'
 import { parseSearchParams } from '@/lib/search/params'
 import { runPublicSearch } from '@/lib/search/run-search'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 
 let payload: Payload
 const created: Array<{ collection: string; id: number | string }> = []
@@ -98,6 +99,32 @@ beforeAll(async () => {
     }),
   )
 
+  const reviewer = await track(
+    'users',
+    await payload.create({
+      collection: 'users',
+      data: {
+        email: `reviewer-p6-${stamp}@example.test`,
+        password: 'TestPassphrase-Phase6-Reviewer!',
+        role: 'reviewer',
+        name: 'Reviewer P6',
+      },
+      overrideAccess: true,
+      context: seedCtx,
+    }),
+  )
+
+  const claim = await track(
+    'claims',
+    await createAuthoritativeClaimFixture(payload, {
+      key: `claim_p6_${stamp}`,
+      sourceId: source.id,
+      reviewerId: reviewer.id,
+    }),
+  )
+
+  const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
+
   const baseTx = {
     category: category.id,
     agency: agency.id,
@@ -128,6 +155,8 @@ beforeAll(async () => {
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        claimTrustOk: true,
+        claimBindings,
         _status: 'published',
       } as never,
       overrideAccess: true,
@@ -150,6 +179,8 @@ beforeAll(async () => {
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        claimTrustOk: true,
+        claimBindings,
         _status: 'published',
       } as never,
       overrideAccess: true,
@@ -257,6 +288,8 @@ beforeAll(async () => {
           active: true,
           workflowState: 'published',
           markedOutdated: false,
+          claimTrustOk: true,
+          claimBindings,
           _status: 'published',
         } as never,
         overrideAccess: true,
@@ -267,15 +300,27 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  for (const row of [...created].reverse()) {
-    try {
-      await payload.delete({
-        collection: row.collection as 'transactions',
-        id: row.id,
-        overrideAccess: true,
-      })
-    } catch {
-      // ignore
+  const order = [
+    'transactions',
+    'claims',
+    'sources',
+    'service-centers',
+    'agencies',
+    'categories',
+    'users',
+  ]
+  for (const collection of order) {
+    for (const row of [...created].reverse()) {
+      if (row.collection !== collection) continue
+      try {
+        await payload.delete({
+          collection: row.collection as 'transactions',
+          id: row.id,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore
+      }
     }
   }
 })

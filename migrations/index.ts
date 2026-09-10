@@ -5,6 +5,7 @@ import * as migration_20260719_034836_phase_5_site_settings_public_fields from '
 import * as migration_20260719_083000_phase_6_search_text from './20260719_083000_phase_6_search_text';
 import * as migration_20260720_041000_phase_8_interactive_guide from './20260720_041000_phase_8_interactive_guide';
 import * as migration_20260721_051000_p0_05a_claims_foundation from './20260721_051000_p0_05a_claims_foundation';
+import * as migration_20260721_120000_p0_05b1_claim_trust_publication from './20260721_120000_p0_05b1_claim_trust_publication';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260721_051000_p0_05a_claims_foundation.up,
     down: migration_20260721_051000_p0_05a_claims_foundation.down,
     name: '20260721_051000_p0_05a_claims_foundation',
+  },
+  {
+    up: migration_20260721_120000_p0_05b1_claim_trust_publication.up,
+    down: migration_20260721_120000_p0_05b1_claim_trust_publication.down,
+    name: '20260721_120000_p0_05b1_claim_trust_publication',
   },
 ]

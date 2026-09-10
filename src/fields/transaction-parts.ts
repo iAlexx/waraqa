@@ -161,6 +161,46 @@ export function sourceReferenceFields(): Field[] {
   ]
 }
 
+/**
+ * P0-05B1 — minimum transaction↔claim binding for publication governance.
+ * Transaction-level required claims (optional coveredSection for later section binding).
+ * Does not retrofit every document/step/fee/rule row yet.
+ */
+export function claimBindingFields(): Field[] {
+  return [
+    {
+      name: 'claim',
+      type: 'relationship',
+      relationTo: 'claims',
+      label: 'الادعاء',
+      required: true,
+      localized: false,
+    },
+    {
+      name: 'required',
+      type: 'checkbox',
+      label: 'مطلوب للنشر الموثوق',
+      defaultValue: true,
+      localized: false,
+      admin: {
+        description:
+          'إن وُسم مطلوباً فيجب أن يقيَّم AUTHORITATIVE عند الاعتماد/النشر. WARNING_ONLY لا يكفي.',
+      },
+    },
+    {
+      name: 'coveredSection',
+      type: 'select',
+      label: 'قسم مرتبط (اختياري)',
+      localized: false,
+      enumName: 'tx_cov_sec',
+      options: COVERED_SECTIONS.map((value) => ({ label: value, value })),
+      admin: {
+        description: 'تلميح انتقالي لربط القسم — ليس بديلاً عن تغطية المصادر.',
+      },
+    },
+  ]
+}
+
 /** Phase 4 editorial workflow fields on transactions. */
 export function workflowFields(): Field[] {
   return [

@@ -131,6 +131,7 @@ describe('result mapping sanitization', () => {
       active: true,
       markedOutdated: false,
       workflowState: 'published',
+      claimTrustOk: true,
       title: 'معاملة تجريبية',
       slug: 'qa-demo',
       summary: 'ملخص',

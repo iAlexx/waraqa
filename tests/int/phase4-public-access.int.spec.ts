@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
 import { publicTransactionWhere } from '@/access'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 import { runTransactionWorkflowAction } from '@/lib/workflow/transaction-workflow'
 
 let payload: Payload
@@ -27,6 +28,7 @@ afterAll(async () => {
   const order = [
     'audit-events',
     'transactions',
+    'claims',
     'sources',
     'documents',
     'agencies',
@@ -56,6 +58,7 @@ describe('Phase 4 public transaction access (query layer)', () => {
   let agencyId: number
   let documentId: number
   let sourceId: number
+  let claimId: number
   let stamp: number
 
   async function createPublishableDraft(slugSuffix: string) {
@@ -81,6 +84,7 @@ describe('Phase 4 public transaction access (query layer)', () => {
               coveredSections: ['summary', 'required_documents', 'steps', 'fees', 'other'],
             },
           ],
+          claimBindings: [{ claim: claimId, required: true, coveredSection: 'summary' }],
           lastReviewedAt: new Date().toISOString(),
           active: true,
           workflowState: 'draft',
@@ -220,12 +224,23 @@ describe('Phase 4 public transaction access (query layer)', () => {
     )
     sourceId = Number(src.id)
 
+    const claim = await track(
+      'claims',
+      await createAuthoritativeClaimFixture(payload, {
+        key: `claim_access_${stamp}`,
+        sourceId,
+        reviewerId: reviewer.id,
+      }),
+    )
+    claimId = Number(claim.id)
+
     expect(publicTransactionWhere).toMatchObject({
       and: expect.arrayContaining([
         { _status: { equals: 'published' } },
         { active: { equals: true } },
         { markedOutdated: { not_equals: true } },
         { workflowState: { not_equals: 'archived' } },
+        { claimTrustOk: { equals: true } },
       ]),
     })
   })

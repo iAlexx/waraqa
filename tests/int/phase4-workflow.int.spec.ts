@@ -5,6 +5,7 @@ import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 import { runTransactionWorkflowAction } from '@/lib/workflow/transaction-workflow'
 import { WorkflowError } from '@/lib/workflow/types'
 import { signPreviewToken, verifyPreviewToken } from '@/lib/workflow/preview-token'
@@ -26,6 +27,7 @@ afterAll(async () => {
   const order = [
     'audit-events',
     'transactions',
+    'claims',
     'sources',
     'documents',
     'service-centers',
@@ -57,6 +59,7 @@ describe('Phase 4 editorial workflow', () => {
   let agencyId: number
   let documentId: number
   let sourceId: number
+  let claimId: number
   let txId: number
 
   it('bootstraps users and verified source chain', async () => {
@@ -178,6 +181,16 @@ describe('Phase 4 editorial workflow', () => {
       }),
     )
     sourceId = Number(src.id)
+
+    const claim = await track(
+      'claims',
+      await createAuthoritativeClaimFixture(payload, {
+        key: `claim_p4_${stamp}`,
+        sourceId,
+        reviewerId: reviewer.id,
+      }),
+    )
+    claimId = Number(claim.id)
   })
 
   it('researcher creates draft and submits for review', async () => {
@@ -210,6 +223,7 @@ describe('Phase 4 editorial workflow', () => {
               ],
             },
           ],
+          claimBindings: [{ claim: claimId, required: true, coveredSection: 'summary' }],
           lastReviewedAt: new Date().toISOString(),
           active: true,
           workflowState: 'draft',
@@ -242,6 +256,49 @@ describe('Phase 4 editorial workflow', () => {
     })
     expect(audits.totalDocs).toBeGreaterThanOrEqual(1)
     created.push(...audits.docs.map((d) => ({ collection: 'audit-events', id: d.id })))
+  })
+
+  it('approve fails closed without required claim binding', async () => {
+    const stamp = Date.now()
+    const unbound = await track(
+      'transactions',
+      await payload.create({
+        collection: 'transactions',
+        locale: 'ar',
+        draft: true,
+        data: {
+          title: 'معاملة بلا ادعاء',
+          slug: `tx-p4-unbound-${stamp}`,
+          summary: 'ملخص',
+          category: categoryId,
+          agency: agencyId,
+          steps: [{ title: 'خطوة', description: 'وصف' }],
+          requiredDocuments: [{ document: documentId, requirementType: 'required', quantity: 1 }],
+          fees: [{ label: 'رسم', amount: 10, currency: 'SYP' }],
+          sources: [
+            {
+              source: sourceId,
+              primary: true,
+              coveredSections: ['summary', 'required_documents', 'steps', 'fees', 'other'],
+            },
+          ],
+          claimBindings: [],
+          lastReviewedAt: new Date().toISOString(),
+          active: true,
+          workflowState: 'in_review',
+        },
+        overrideAccess: true,
+        context: seedCtx,
+      }),
+    )
+    await expect(
+      runTransactionWorkflowAction({
+        payload,
+        id: unbound.id,
+        action: 'approve',
+        user: reviewer as never,
+      }),
+    ).rejects.toBeInstanceOf(WorkflowError)
   })
 
   it('researcher cannot publish via workflow', async () => {
@@ -402,6 +459,7 @@ describe('Phase 4 editorial workflow', () => {
             ],
           },
         ],
+        claimBindings: [{ claim: claimId, required: true, coveredSection: 'summary' }],
         lastReviewedAt: new Date().toISOString(),
       },
       draft: true,

@@ -28,6 +28,8 @@ export const publicTransactionWhere: Where = {
     { markedOutdated: { not_equals: true } },
     // Public must never list archived.
     { workflowState: { not_equals: 'archived' } },
+    // P0-05B1: only transactions with currently valid required claim trust.
+    { claimTrustOk: { equals: true } },
   ],
 }
 

@@ -10,6 +10,7 @@ import { PHASE6_QA_STABLE } from '@/lib/search/qa-fixture-markers'
 import { parseSearchParams } from '@/lib/search/params'
 import { formatSearchResultCount } from '@/lib/search/result-count'
 import { runPublicSearch } from '@/lib/search/run-search'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 
 let payload: Payload
 const created: Array<{ collection: string; id: number | string }> = []
@@ -22,6 +23,11 @@ async function track<T extends { id: number | string }>(collection: string, doc:
 
 function nextStamp(): string {
   return `uniq-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+/** Claim keys must match STABLE_KEY_RE (lowercase letters, digits, underscore only). */
+function claimKey(prefix: string, stamp: string): string {
+  return `${prefix}_${stamp.replace(/[^a-z0-9_]/gi, '_').toLowerCase()}`.slice(0, 64)
 }
 
 async function seedMinimalSupport(stamp = nextStamp()) {
@@ -77,7 +83,29 @@ async function seedMinimalSupport(stamp = nextStamp()) {
       context: seedCtx,
     }),
   )
-  return { category, agency, source, stamp }
+  const reviewer = await track(
+    'users',
+    await payload.create({
+      collection: 'users',
+      data: {
+        email: `reviewer-p6-uniq-${stamp}@example.test`,
+        password: 'TestPassphrase-Phase6-Uniq-Reviewer!',
+        role: 'reviewer',
+        name: 'Reviewer P6 Uniq',
+      },
+      overrideAccess: true,
+      context: seedCtx,
+    }),
+  )
+  const claim = await track(
+    'claims',
+    await createAuthoritativeClaimFixture(payload, {
+      key: claimKey('claim_p6_uniq', stamp),
+      sourceId: source.id,
+      reviewerId: reviewer.id,
+    }),
+  )
+  return { category, agency, source, claim, stamp }
 }
 
 async function createPublishedTx(
@@ -99,6 +127,7 @@ async function createPublishedTx(
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        claimTrustOk: true,
         _status: 'published',
       } as never,
       overrideAccess: true,
@@ -108,6 +137,7 @@ async function createPublishedTx(
 }
 
 async function seedStablePublishedSet() {
+  const seedStamp = nextStamp()
   const cat = await track(
     'categories',
     await payload.create({
@@ -181,6 +211,32 @@ async function seedStablePublishedSet() {
     }),
   )
 
+  const reviewer = await track(
+    'users',
+    await payload.create({
+      collection: 'users',
+      data: {
+        email: `reviewer-p6-r1-${seedStamp}@example.test`,
+        password: 'TestPassphrase-Phase6-R1-Reviewer!',
+        role: 'reviewer',
+        name: 'Reviewer P6 R1',
+      },
+      overrideAccess: true,
+      context: seedCtx,
+    }),
+  )
+
+  const claim = await track(
+    'claims',
+    await createAuthoritativeClaimFixture(payload, {
+      key: claimKey('claim_p6_r1', seedStamp),
+      sourceId: src.id,
+      reviewerId: reviewer.id,
+    }),
+  )
+
+  const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
+
   const txBase = {
     category: cat.id,
     agency: ag.id,
@@ -197,6 +253,8 @@ async function seedStablePublishedSet() {
     active: true,
     workflowState: 'published' as const,
     markedOutdated: false,
+    claimTrustOk: true,
+    claimBindings,
     _status: 'published' as const,
   }
 
@@ -248,15 +306,27 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  for (const row of [...created].reverse()) {
-    try {
-      await payload.delete({
-        collection: row.collection as 'transactions',
-        id: row.id,
-        overrideAccess: true,
-      })
-    } catch {
-      // ignore
+  const order = [
+    'transactions',
+    'claims',
+    'sources',
+    'service-centers',
+    'agencies',
+    'categories',
+    'users',
+  ]
+  for (const collection of order) {
+    for (const row of [...created].reverse()) {
+      if (row.collection !== collection) continue
+      try {
+        await payload.delete({
+          collection: row.collection as 'transactions',
+          id: row.id,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore
+      }
     }
   }
   try {
@@ -270,7 +340,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
   it(
     'cleanup + stable reseed produces the same published eligible count twice',
     async () => {
-      const { category, agency, source } = await seedMinimalSupport()
+      const { category, agency, source, claim } = await seedMinimalSupport()
       const base = {
         category: category.id,
         agency: agency.id,
@@ -282,6 +352,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
             coveredSections: ['summary', 'required_documents', 'steps', 'fees', 'other'],
           },
         ],
+        claimBindings: [{ claim: claim.id, required: true, coveredSection: 'summary' as const }],
         lastReviewedAt: new Date().toISOString(),
       }
 
@@ -298,6 +369,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
           active: true,
           workflowState: 'published',
           markedOutdated: false,
+          claimTrustOk: true,
           _status: 'published',
         } as never,
         overrideAccess: true,
@@ -347,7 +419,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
   )
 
   it('search results have unique document IDs and non-overlapping pages', async () => {
-    const { category, agency, source, stamp } = await seedMinimalSupport()
+    const { category, agency, source, claim, stamp } = await seedMinimalSupport()
     const base = {
       category: category.id,
       agency: agency.id,
@@ -359,6 +431,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
           coveredSections: ['summary', 'required_documents', 'steps', 'fees', 'other'],
         },
       ],
+      claimBindings: [{ claim: claim.id, required: true, coveredSection: 'summary' as const }],
       lastReviewedAt: new Date().toISOString(),
     }
 
@@ -386,7 +459,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
   }, 60_000)
 
   it('two different transactions with the same title both appear', async () => {
-    const { category, agency, source, stamp } = await seedMinimalSupport()
+    const { category, agency, source, claim, stamp } = await seedMinimalSupport()
     const base = {
       category: category.id,
       agency: agency.id,
@@ -398,6 +471,7 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
           coveredSections: ['summary', 'required_documents', 'steps', 'fees', 'other'],
         },
       ],
+      claimBindings: [{ claim: claim.id, required: true, coveredSection: 'summary' as const }],
       lastReviewedAt: new Date().toISOString(),
     }
     const sharedTitle = `عنوان مكرر فريد تجريبي ${stamp}`

@@ -124,6 +124,22 @@ export function buildCriticalCanonical(data: Record<string, unknown>): unknown {
     outcome: loc(data.outcome as Localized),
     prerequisiteProcedures: sortedIds(data.prerequisiteProcedures),
     sources,
+    claimBindings: Array.isArray(data.claimBindings)
+      ? data.claimBindings.map((row) => {
+          const r = row as Record<string, unknown>
+          const claim =
+            r.claim && typeof r.claim === 'object' && r.claim !== null && 'id' in r.claim
+              ? String((r.claim as { id: unknown }).id)
+              : r.claim != null
+                ? String(r.claim)
+                : null
+          return {
+            claim,
+            required: r.required !== false,
+            coveredSection: typeof r.coveredSection === 'string' ? r.coveredSection : null,
+          }
+        })
+      : [],
     guideEnabled: Boolean(data.guideEnabled),
     questions: Array.isArray(data.questions)
       ? data.questions.map((row) => {

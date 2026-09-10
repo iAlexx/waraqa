@@ -72,6 +72,18 @@ export const Claims: CollectionConfig = {
   hooks: {
     beforeValidate: [enforceClaimGovernanceAndValidate],
     beforeChange: [enforcePublishAuthorization, populateAuditFields],
+    afterChange: [
+      async ({ doc, req, context }) => {
+        if (context?.claimTrustRecompute === true) return doc
+        try {
+          const { recomputeClaimTrustForClaimId } = await import('@/lib/claims/recompute-claim-trust')
+          await recomputeClaimTrustForClaimId(req.payload, doc.id, req)
+        } catch {
+          // Do not block claim save if recompute fails — public gate still fail-closes on next publish.
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {

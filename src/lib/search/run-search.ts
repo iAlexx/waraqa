@@ -2,6 +2,7 @@ import { getPayload, type Where } from 'payload'
 
 import config from '@payload-config'
 import { publicTransactionWhere, publishedActiveWhere } from '@/access'
+import { filterDocsByLivePublicClaimTrust } from '@/lib/claims/public-claim-trust'
 import {
   extractRankInput,
   mapPublicSearchResult,
@@ -126,8 +127,8 @@ async function loadFilterOptions(): Promise<SearchPageResult['filterOptions']> {
 }
 
 /**
- * Public search: eligibility enforced via `overrideAccess: false` + `publicTransactionWhere`.
- * Ranking is deterministic in-process (not semantic / AI).
+ * Public search: `publicTransactionWhere` (incl. claimTrustOk) is a prefilter only.
+ * Candidates are live-validated for Claim/Source trust before ranking/results.
  */
 export async function runPublicSearch(
   parsed: ParsedSearchParams,
@@ -236,6 +237,8 @@ export async function runPublicSearch(
         })
       ).docs as unknown as Record<string, unknown>[]
     }
+
+    docs = await filterDocsByLivePublicClaimTrust(payload, docs)
 
     type Ranked = PublicSearchResultCard & { score: number }
     const ranked: Ranked[] = []

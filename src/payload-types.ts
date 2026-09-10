@@ -485,6 +485,39 @@ export interface Transaction {
     id?: string | null;
   }[];
   /**
+   * P0-05B1: ادعاءات مطلوبة للاعتماد/النشر الموثوق. المحتوى بلا ربط مطلوب يفشل عند الاعتماد/النشر والعرض العام.
+   */
+  claimBindings?:
+    | {
+        claim: number | Claim;
+        /**
+         * إن وُسم مطلوباً فيجب أن يقيَّم AUTHORITATIVE عند الاعتماد/النشر. WARNING_ONLY لا يكفي.
+         */
+        required?: boolean | null;
+        /**
+         * تلميح انتقالي لربط القسم — ليس بديلاً عن تغطية المصادر.
+         */
+        coveredSection?:
+          | (
+              | 'summary'
+              | 'eligibility'
+              | 'required_documents'
+              | 'steps'
+              | 'fees'
+              | 'duration'
+              | 'service_centers'
+              | 'outcome'
+              | 'other'
+            )
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * ذاكرة تخزين مؤقتة / مؤشر تحريري فقط — ليست سلطة الثقة النهائية. العرض العام يتطلب claimTrustOk=true وإعادة تقييم حيّ للادعاءات والمصادر.
+   */
+  claimTrustOk?: boolean | null;
+  /**
    * مطلوب قبل النشر.
    */
   lastReviewedAt?: string | null;
@@ -710,7 +743,7 @@ export interface Claim {
    */
   scopeKey?: string | null;
   /**
-   * UNKNOWN و CONFLICTED حالتان صالحتان — لا تُختزلان إلى verified boolean.
+   * UNKNOWN و CONFLICTED حالتان صالحتان — لا تُختزلان إلى verified boolean. VERIFIED للمراجع/المدير فقط.
    */
   status:
     | 'DRAFT'
@@ -723,7 +756,7 @@ export interface Claim {
     | 'SUPERSEDED'
     | 'REJECTED';
   /**
-   * بيانات فقط في P0-05A — لا تغيّر سلوك النشر العام بعد.
+   * بيانات فقط في P0-05A. PUBLIC / PUBLIC_WITH_WARNING / BLOCKED للمراجع/المدير فقط.
    */
   publicationPermission: 'INTERNAL_ONLY' | 'PUBLIC' | 'PUBLIC_WITH_WARNING' | 'BLOCKED';
   /**
@@ -739,7 +772,13 @@ export interface Claim {
         id?: string | null;
       }[]
     | null;
+  /**
+   * يُعيَّن تلقائياً عند التوثيق من المراجع/المدير النشط.
+   */
   reviewedBy?: (number | null) | User;
+  /**
+   * طابع زمني من الخادم عند الانتقال إلى VERIFIED.
+   */
   verifiedAt?: string | null;
   validFrom?: string | null;
   validUntil?: string | null;
@@ -1131,6 +1170,15 @@ export interface TransactionsSelect<T extends boolean = true> {
         citationNote?: T;
         id?: T;
       };
+  claimBindings?:
+    | T
+    | {
+        claim?: T;
+        required?: T;
+        coveredSection?: T;
+        id?: T;
+      };
+  claimTrustOk?: T;
   lastReviewedAt?: T;
   internalNotes?: T;
   guideEnabled?: T;

@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { publicTransactionWhere } from '@/access'
+import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
 import {
   mapPublicTransactionDetail,
   type PublicTransactionDetail,
@@ -14,7 +15,8 @@ export type LoadPublicTransactionResult =
 
 /**
  * Public transaction detail loader.
- * Always `overrideAccess: false` + Phase 4 public Where. Maps to DTO only.
+ * Always `overrideAccess: false` + Phase 4 public Where.
+ * Final trust: live Claim/Source evaluation (`claimTrustOk` is prefilter only).
  */
 export const loadPublicTransactionBySlug = cache(
   async (slug: string): Promise<LoadPublicTransactionResult> => {
@@ -38,6 +40,10 @@ export const loadPublicTransactionBySlug = cache(
 
       const doc = found.docs[0] as unknown as Record<string, unknown> | undefined
       if (!doc) return { ok: false, reason: 'not_found' }
+
+      if (!(await liveEvaluatePublicTransactionClaimTrust(payload, doc))) {
+        return { ok: false, reason: 'not_found' }
+      }
 
       const mapped = mapPublicTransactionDetail(doc)
       if (!mapped) return { ok: false, reason: 'not_found' }

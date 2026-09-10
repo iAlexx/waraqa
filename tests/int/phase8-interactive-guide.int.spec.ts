@@ -11,6 +11,7 @@ import {
   transactionHasPublicGuide,
 } from '@/lib/guide/public-guide'
 import { isPublicGuideAvailable } from '@/lib/guide/validate-guide'
+import { createAuthoritativeClaimFixture } from '../helpers/claim-trust-fixture'
 
 let payload: Payload
 const created: Array<{ collection: string; id: number | string }> = []
@@ -98,6 +99,32 @@ beforeAll(async () => {
       context: seedCtx,
     }),
   )
+
+  const reviewer = await track(
+    'users',
+    await payload.create({
+      collection: 'users',
+      data: {
+        email: `reviewer-p8-${stamp}@example.test`,
+        password: 'TestPassphrase-Phase8-Reviewer!',
+        role: 'reviewer',
+        name: 'Reviewer P8',
+      },
+      overrideAccess: true,
+      context: seedCtx,
+    }),
+  )
+
+  const claim = await track(
+    'claims',
+    await createAuthoritativeClaimFixture(payload, {
+      key: `claim_p8_${stamp}`,
+      sourceId: source.id,
+      reviewerId: reviewer.id,
+    }),
+  )
+
+  const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
 
   const guideConfig = {
     guideEnabled: true,
@@ -197,6 +224,8 @@ beforeAll(async () => {
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        claimTrustOk: true,
+        claimBindings,
         _status: 'published',
         internalNotes: 'سري جداً',
       } as never,
@@ -221,6 +250,8 @@ beforeAll(async () => {
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        claimTrustOk: true,
+        claimBindings,
         _status: 'published',
       } as never,
       overrideAccess: true,
@@ -252,15 +283,27 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  for (const row of [...created].reverse()) {
-    try {
-      await payload.delete({
-        collection: row.collection as 'transactions',
-        id: row.id,
-        overrideAccess: true,
-      })
-    } catch {
-      // ignore
+  const order = [
+    'transactions',
+    'claims',
+    'sources',
+    'documents',
+    'agencies',
+    'categories',
+    'users',
+  ]
+  for (const collection of order) {
+    for (const row of [...created].reverse()) {
+      if (row.collection !== collection) continue
+      try {
+        await payload.delete({
+          collection: row.collection as 'transactions',
+          id: row.id,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore
+      }
     }
   }
 })

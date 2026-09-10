@@ -17,6 +17,7 @@ import {
 } from '@/fields/common'
 import { guideFields } from '@/fields/guide-fields'
 import {
+  claimBindingFields,
   feeFields,
   requiredDocumentFields,
   sourceReferenceFields,
@@ -327,6 +328,38 @@ export const Transactions: CollectionConfig = {
       required: true,
       minRows: 1,
       fields: sourceReferenceFields(),
+    },
+    {
+      name: 'claimBindings',
+      dbName: 'clm_b',
+      type: 'array',
+      label: 'ربط الادعاءات',
+      labels: { singular: 'ربط ادعاء', plural: 'ربط ادعاءات' },
+      admin: {
+        description:
+          'P0-05B1: ادعاءات مطلوبة للاعتماد/النشر الموثوق. المحتوى بلا ربط مطلوب يفشل عند الاعتماد/النشر والعرض العام.',
+      },
+      fields: claimBindingFields(),
+    },
+    {
+      name: 'claimTrustOk',
+      type: 'checkbox',
+      label: 'ثقة الادعاءات سليمة',
+      defaultValue: false,
+      localized: false,
+      index: true,
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description:
+          'ذاكرة تخزين مؤقتة / مؤشر تحريري فقط — ليست سلطة الثقة النهائية. العرض العام يتطلب claimTrustOk=true وإعادة تقييم حيّ للادعاءات والمصادر.',
+        components: {
+          Cell: '/components/admin/BooleanArCell#BooleanArCell',
+        },
+      },
     },
     {
       name: 'lastReviewedAt',

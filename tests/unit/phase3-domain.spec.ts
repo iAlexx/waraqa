@@ -133,6 +133,7 @@ describe('access helpers', () => {
         { active: { equals: true } },
         { markedOutdated: { not_equals: true } },
         { workflowState: { not_equals: 'archived' } },
+        { claimTrustOk: { equals: true } },
       ],
     })
   })

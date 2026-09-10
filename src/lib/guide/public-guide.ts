@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { publicTransactionWhere } from '@/access'
+import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
 import { isPubliclyEligibleTransaction } from '@/lib/public/featured-transactions'
 import { mapPublicGuide, type PublicGuideDTO } from '@/lib/guide/public-guide-map'
 import { isPublicGuideAvailable } from '@/lib/guide/validate-guide'
@@ -33,6 +34,9 @@ export const loadPublicGuideBySlug = cache(
 
       const doc = found.docs[0] as unknown as Record<string, unknown> | undefined
       if (!doc || !isPubliclyEligibleTransaction(doc)) {
+        return { ok: false, reason: 'not_found' }
+      }
+      if (!(await liveEvaluatePublicTransactionClaimTrust(payload, doc))) {
         return { ok: false, reason: 'not_found' }
       }
 
