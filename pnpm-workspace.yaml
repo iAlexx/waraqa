@@ -2,7 +2,21 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@payloadcms/db-postgres@3.89.0'
+  - '@payloadcms/drizzle@3.89.0'
+  - '@payloadcms/graphql@3.89.0'
+  - '@payloadcms/next@3.89.0'
+  - '@payloadcms/richtext-lexical@3.89.0'
+  - '@payloadcms/translations@3.89.0'
+  - '@payloadcms/ui@3.89.0'
+  - payload@3.89.0
 onlyBuiltDependencies:
   - sharp
   - esbuild
   - unrs-resolver
+overrides:
+  browserslist: 4.28.7
+  fast-uri: 3.1.6
+  js-yaml: 4.3.2
+  nanoid: 3.3.18
