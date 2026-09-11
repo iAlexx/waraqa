@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, afterEach } from 'vitest'
 
+import { setPublicContentModeForTests } from '@/lib/content-class/public-content-policy'
 import {
   buildNormalizedSearchBlob,
   normalizeArabicQuery,
@@ -14,6 +15,10 @@ import {
 } from '@/lib/search/map-result'
 import { formatSearchResultCount } from '@/lib/search/result-count'
 import { dedupeRankedByDocumentId } from '@/lib/search/dedupe'
+
+afterEach(() => {
+  setPublicContentModeForTests(null)
+})
 
 describe('Arabic search normalization', () => {
   it('trims and collapses whitespace', () => {
@@ -125,6 +130,7 @@ describe('search params', () => {
 
 describe('result mapping sanitization', () => {
   it('maps eligible docs and omits private keys', () => {
+    setPublicContentModeForTests('demo')
     const card = mapPublicSearchResult({
       id: 1,
       _status: 'published',
@@ -132,6 +138,7 @@ describe('result mapping sanitization', () => {
       markedOutdated: false,
       workflowState: 'published',
       claimTrustOk: true,
+      contentClass: 'DEMO',
       title: 'معاملة تجريبية',
       slug: 'qa-demo',
       summary: 'ملخص',
@@ -145,6 +152,25 @@ describe('result mapping sanitization', () => {
     expect(assertNoPrivateKeys(card as unknown as Record<string, unknown>)).toEqual([])
     expect(card!.demoLabeled).toBe(true)
     expect(card!.href).toBe('/transactions/qa-demo')
+  })
+
+  it('maps PRODUCTION without demoLabeled', () => {
+    const card = mapPublicSearchResult({
+      id: 2,
+      _status: 'published',
+      active: true,
+      markedOutdated: false,
+      workflowState: 'published',
+      claimTrustOk: true,
+      contentClass: 'PRODUCTION',
+      title: 'معاملة تجريبية',
+      slug: 'qa-demo',
+      summary: 'ملخص',
+      category: { name: 'تصنيف' },
+      agency: { name: 'جهة' },
+    })
+    expect(card).toBeTruthy()
+    expect(card!.demoLabeled).toBe(false)
   })
 
   it('rejects draft and archived', () => {

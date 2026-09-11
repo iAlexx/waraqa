@@ -83,10 +83,6 @@ export type PublicSourceRef = {
   lastVerifiedLabel: string | null
 }
 
-function isDemoLabel(text: string): boolean {
-  return /تجريب|demo|test|qa-|fixture/i.test(text)
-}
-
 function isPopulatedObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value) && 'id' in value)
 }
@@ -287,7 +283,7 @@ export function mapPublicTransactionDetail(
     title,
     slug,
     summary,
-    demoLabeled: isDemoLabel(title) || isDemoLabel(slug),
+    demoLabeled: doc.contentClass === 'DEMO',
     lastReviewedAt,
     lastReviewedLabel: formatPublicDate(lastReviewedAt),
     category: categorySafe,

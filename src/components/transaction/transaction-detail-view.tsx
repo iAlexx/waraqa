@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { DEMO_PUBLIC_LABEL_AR } from '@/lib/content-class/types'
 import type { PublicTransactionDetail } from '@/lib/public/transaction-detail-map'
 import { cn } from '@/lib/utils/cn'
 
@@ -112,7 +113,7 @@ function TransactionDetailView({
         <header className="border-b border-border/60 pb-8">
           {t.demoLabeled ? (
             <span className="mb-3 inline-flex rounded border border-warning/40 bg-warning/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-warning">
-              بيانات تجريبية
+              {DEMO_PUBLIC_LABEL_AR}
             </span>
           ) : null}
           <h1

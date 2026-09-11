@@ -5,7 +5,7 @@ import {
   canEditContent,
   contentUpdateAccess,
   editorialFieldAccess,
-  publicPublishedRead,
+  publicSourceRead,
 } from '@/access'
 import {
   activeField,
@@ -14,8 +14,10 @@ import {
   localizedText,
   officialUrlField,
 } from '@/fields/common'
+import { contentClassField } from '@/fields/content-class'
 import { enforcePublishAuthorization, populateAuditFields } from '@/hooks/content'
 import { stripPrivateEditorialFields } from '@/hooks/public-strip'
+import { enforceContentClassGovernance } from '@/lib/content-class/content-class-governance'
 
 export const Sources: CollectionConfig = {
   slug: 'sources',
@@ -41,12 +43,13 @@ export const Sources: CollectionConfig = {
     maxPerDoc: 20,
   },
   access: {
-    read: publicPublishedRead,
+    read: publicSourceRead,
     create: canEditContent,
     update: contentUpdateAccess,
     delete: adminOnlyDelete,
   },
   hooks: {
+    beforeValidate: [enforceContentClassGovernance],
     beforeChange: [enforcePublishAuthorization, populateAuditFields],
     afterRead: [stripPrivateEditorialFields],
     afterChange: [
@@ -140,6 +143,7 @@ export const Sources: CollectionConfig = {
         description: 'ملاحظات تحريرية — لا تُعرض للعامة.',
       },
     },
+    contentClassField(),
     activeField(),
     ...auditFields(),
   ],

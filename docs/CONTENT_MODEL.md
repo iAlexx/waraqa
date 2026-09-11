@@ -2,11 +2,11 @@
 
 **Status:** Phase 3–7 COMPLETE — OWNER APPROVED
 
-**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` + P0-05A `20260721_051000_p0_05a_claims_foundation`
+**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` + P0-05A `20260721_051000_p0_05a_claims_foundation` + P0-06 `20260722_100000_p0_06_content_class_isolation`
 
-**Last updated:** 2026-09-10
+**Last updated:** 2026-09-11
 
-**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md)
+**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md)
 
 ## Naming / scope decisions (documented)
 
@@ -25,6 +25,7 @@
 | Canonical slug | Non-localized, unique, normalized; Arabic/Latin lowercase + hyphens |
 | Drafts / versions | Content collections use `versions.drafts` (`autosave: false`, `maxPerDoc: 20`) |
 | Public read | Anonymous and `viewer`: `_status = published` **and** `active = true` |
+| Content class (P0-06) | `transactions` / `claims` / `sources`: required `contentClass` (`PRODUCTION` \| `DEMO` \| `QA_TEST`, column `content_class`). Default create `QA_TEST`. Public surface filters via `WARAQA_PUBLIC_CONTENT_MODE` — see [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md). **IMPLEMENTED.** |
 | Delete | **Admin only** (`adminOnlyDelete`) |
 | Audit fields | `createdBy`, `lastUpdatedBy`, `publishedBy`, `publishedAt` (hook-populated, read-only in admin) |
 | No Media uploads | No upload/Media collection — identity files out of scope; Vercel FS ephemeral |

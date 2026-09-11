@@ -90,6 +90,7 @@ beforeAll(async () => {
         active: true,
         _status: 'published',
         notes: 'ملاحظة داخلية يجب ألا تظهر',
+        contentClass: 'PRODUCTION',
       },
       overrideAccess: true,
       context: seedCtx,
@@ -114,10 +115,12 @@ beforeAll(async () => {
   const claim = await track(
     'claims',
     await createAuthoritativeClaimFixture(payload, {
+
       key: `claim_p7_${stamp}`,
       sourceId: source.id,
       reviewerId: reviewer.id,
-    }),
+      contentClass: 'PRODUCTION',
+      }),
   )
 
   const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
@@ -165,6 +168,7 @@ beforeAll(async () => {
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        contentClass: 'PRODUCTION',
         claimTrustOk: true,
         claimBindings,
         _status: 'published',
@@ -188,6 +192,7 @@ beforeAll(async () => {
         summary: 'مخفية',
         active: true,
         workflowState: 'draft',
+        contentClass: 'PRODUCTION',
         markedOutdated: false,
         _status: 'draft',
       } as never,
@@ -209,6 +214,7 @@ beforeAll(async () => {
         summary: 'مخفية',
         active: false,
         workflowState: 'published',
+        contentClass: 'PRODUCTION',
         markedOutdated: false,
         _status: 'published',
       } as never,
@@ -230,6 +236,7 @@ beforeAll(async () => {
         summary: 'مخفية',
         active: true,
         workflowState: 'archived',
+        contentClass: 'PRODUCTION',
         markedOutdated: false,
         _status: 'published',
       } as never,
@@ -251,6 +258,7 @@ beforeAll(async () => {
         summary: 'مخفية',
         active: true,
         workflowState: 'published',
+        contentClass: 'PRODUCTION',
         markedOutdated: true,
         _status: 'published',
       } as never,

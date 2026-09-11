@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
 
 import { hasActiveRole, type UserLike } from '@/access/roles'
+import { applyContentClassGovernance } from '@/lib/content-class/content-class-governance'
 import { allowSeedBypass } from '@/lib/qa-seed-guard'
 import type { ClaimPublicationPermission, ClaimStatus } from '@/lib/claims/types'
 import { validateClaimData } from '@/lib/claims/validate-claim'
@@ -116,10 +117,30 @@ export const enforceClaimGovernanceAndValidate: CollectionBeforeValidateHook = (
   if (!data) return data
 
   if (allowSeedBypass(req)) {
+    const seeded = data as Record<string, unknown>
+    // Seed may set an explicit contentClass; default QA_TEST when omitted.
+    if (
+      operation === 'create' &&
+      (seeded.contentClass == null || seeded.contentClass === '')
+    ) {
+      seeded.contentClass = 'QA_TEST'
+    }
     const errors = validateClaimData(data as never)
     if (errors.length) throw new APIError(errors.join(' '), 400)
     return data
   }
+
+  const classGoverned = applyContentClassGovernance({
+    data: data as Record<string, unknown>,
+    originalDoc: originalDoc as Record<string, unknown> | null | undefined,
+    user: req.user as UserLike,
+    operation: operation === 'create' ? 'create' : 'update',
+  })
+
+  if (!classGoverned.ok) {
+    throw new APIError(classGoverned.error, 403)
+  }
+  Object.assign(data, classGoverned.data)
 
   const governed = applyClaimGovernance({
     data: data as Record<string, unknown>,

@@ -18,6 +18,10 @@ export type ClaimPublicationGateResult = {
   evaluations: ClaimTrustEvaluation[]
 }
 
+export type ClaimPublicationGateOptions = {
+  transactionContentClass?: unknown
+}
+
 function relationId(value: unknown): string | null {
   if (value == null || value === '') return null
   if (typeof value === 'number' || typeof value === 'string') return String(value)
@@ -29,7 +33,7 @@ function relationId(value: unknown): string | null {
 }
 
 /**
- * Approve/publish gate for transaction claim bindings (P0-05B1).
+ * Approve/publish gate for transaction claim bindings (P0-05B1 + P0-06 class deps).
  *
  * Legacy unbound (no required bindings) → fail closed.
  * Each required binding must evaluate AUTHORITATIVE.
@@ -39,6 +43,7 @@ export function validateClaimBindingsForPublication(
   bindings: ClaimBindingRow[] | null | undefined,
   resolvedClaims: Map<string, ClaimDocLike>,
   resolvedSources: Map<string, SourceDocLike>,
+  opts?: ClaimPublicationGateOptions,
 ): ClaimPublicationGateResult {
   const rows = bindings ?? []
   const errors: string[] = []
@@ -69,7 +74,9 @@ export function validateClaimBindingsForPublication(
     seen.add(id)
 
     const claim = resolvedClaims.get(id)
-    const evaluation = evaluateClaimTrust(claim, resolvedSources)
+    const evaluation = evaluateClaimTrust(claim, resolvedSources, {
+      transactionContentClass: opts?.transactionContentClass,
+    })
     evaluations.push(evaluation)
 
     if (evaluation.level !== 'AUTHORITATIVE') {
@@ -89,6 +96,7 @@ export function evaluateTransactionClaimTrustOk(
   bindings: ClaimBindingRow[] | null | undefined,
   resolvedClaims: Map<string, ClaimDocLike>,
   resolvedSources: Map<string, SourceDocLike>,
+  opts?: ClaimPublicationGateOptions,
 ): boolean {
-  return validateClaimBindingsForPublication(bindings, resolvedClaims, resolvedSources).ok
+  return validateClaimBindingsForPublication(bindings, resolvedClaims, resolvedSources, opts).ok
 }

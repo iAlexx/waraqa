@@ -28,12 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const settings = await loadPublicSiteSettings()
   const siteName = settings.siteName || 'ورقة'
-  const { title, summary } = result.transaction
+  const { title, summary, demoLabeled } = result.transaction
   const description = summary.length > 160 ? `${summary.slice(0, 157)}…` : summary
 
   return {
     title,
     description,
+    ...(demoLabeled ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       title: `${title} — ${siteName}`,
       description,

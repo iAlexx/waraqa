@@ -188,6 +188,7 @@ describe('Phase 3 collections', () => {
           verificationStatus: 'needs_review',
           notes: 'ملاحظة داخلية سرية',
           active: true,
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -218,6 +219,7 @@ describe('Phase 3 collections', () => {
           requiredDocuments: [{ document: documentId, requirementType: 'required', quantity: 1 }],
           internalNotes: 'ملاحظات داخلية للاختبار فقط',
           active: true,
+          contentClass: 'PRODUCTION',
           lastReviewedAt: new Date().toISOString(),
         },
         overrideAccess: true,
@@ -281,9 +283,11 @@ describe('Phase 3 collections', () => {
     const claim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_p3_${Date.now()}`,
         sourceId,
         reviewerId,
+        contentClass: 'PRODUCTION',
       }),
     )
     claimId = Number(claim.id)
@@ -295,6 +299,7 @@ describe('Phase 3 collections', () => {
         _status: 'published',
         workflowState: 'published',
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
         claimBindings: [{ claim: claimId, required: true, coveredSection: 'summary' }],
       },
       draft: false,
@@ -375,6 +380,7 @@ describe('Phase 3 collections', () => {
           sources: [{ source: sourceId }],
           lastReviewedAt: new Date().toISOString(),
           active: true,
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,

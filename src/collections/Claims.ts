@@ -13,6 +13,7 @@ import {
   localizedText,
   localizedTextarea,
 } from '@/fields/common'
+import { contentClassField } from '@/fields/content-class'
 import { enforcePublishAuthorization, populateAuditFields } from '@/hooks/content'
 import {
   claimReviewerFieldAccess,
@@ -51,6 +52,7 @@ export const Claims: CollectionConfig = {
       'statement',
       'status',
       'publicationPermission',
+      'contentClass',
       'transaction',
       'updatedAt',
     ],
@@ -299,6 +301,7 @@ export const Claims: CollectionConfig = {
         date: { pickerAppearance: 'dayOnly' },
       },
     },
+    contentClassField(),
     activeField(),
     ...auditFields(),
   ],

@@ -27,5 +27,12 @@ export default defineConfig({
     reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1',
     url: 'http://localhost:3000',
     timeout: 180_000,
+    // Forward explicitly so Next/Payload do not silently bind a different local DB/mode.
+    env: {
+      ...process.env,
+      DATABASE_URL: process.env.DATABASE_URL || '',
+      DATABASE_URL_DIRECT: process.env.DATABASE_URL_DIRECT || process.env.DATABASE_URL || '',
+      WARAQA_PUBLIC_CONTENT_MODE: process.env.WARAQA_PUBLIC_CONTENT_MODE || 'production',
+    },
   },
 })

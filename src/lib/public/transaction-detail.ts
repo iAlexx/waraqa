@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
-import { publicTransactionWhere } from '@/access'
+import { getPublicTransactionWhere } from '@/access'
 import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
 import {
   mapPublicTransactionDetail,
@@ -34,7 +34,7 @@ export const loadPublicTransactionBySlug = cache(
         limit: 1,
         overrideAccess: false,
         where: {
-          and: [{ slug: { equals: normalized } }, publicTransactionWhere],
+          and: [{ slug: { equals: normalized } }, getPublicTransactionWhere()],
         },
       })
 

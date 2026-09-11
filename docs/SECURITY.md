@@ -23,6 +23,7 @@
 | `PAYLOAD_SECRET` | Server-only | **Required** |
 | `NEXT_PUBLIC_SERVER_URL` | Public | **Required** — canonical base URL (includes protocol) |
 | `PREVIEW_SECRET` | Server-only | **Only when draft preview is implemented** — not in the initial contract |
+| `WARAQA_PUBLIC_CONTENT_MODE` | Server-only | **Optional (P0-06)** — `production` (default) \| `demo`; invalid → production. See [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md) |
 | `CRON_SECRET` | — | **Removed** from initial MVP contract; add only if a cron feature is introduced |
 | `VERCEL_URL` | System-provided | Host without `https://`; do not use alone as canonical production URL |
 | `NODE_ENV` | Runtime | Framework-managed — **owner must not configure manually** |
@@ -57,7 +58,8 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 ## 5. Published-content-only public APIs
 
 - Public queries filter to published **and** `active` records only.
-- **Transactions (Phase 4+):** also exclude `markedOutdated` and `workflowState = archived` via `publicTransactionWhere` (search and Phase 7 detail use the same gate — [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)).
+- **Transactions (Phase 4+):** also exclude `markedOutdated` and `workflowState = archived` via `getPublicTransactionWhere()` (search and Phase 7 detail use the same gate — [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)).
+- **P0-06 contentClass (IMPLEMENTED):** public transaction/source reads also require `contentClass` in the mode-allowed set (`PRODUCTION` only by default; `DEMO` only when `WARAQA_PUBLIC_CONTENT_MODE=demo`). `QA_TEST` is never public. See [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md).
 - **Phase 7 detail:** `loadPublicTransactionBySlug` always uses `overrideAccess: false`, maps to a public DTO (no raw Payload document in React), and returns a uniform not-found for draft/inactive/archived/outdated/missing slugs (no existence leak; no outdated warning page).
 - Draft preview requires authenticated admin session or a signed preview secret **after** preview is implemented.
 - `internalNotes` (transactions), generated `searchText`, and editorial source `notes` are never returned to anonymous/viewer reads.

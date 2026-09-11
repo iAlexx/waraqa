@@ -120,6 +120,7 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
           verificationStatus: 'verified',
           active: true,
           _status: 'published',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -144,9 +145,11 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
     const claim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_p5_${stamp}`,
         sourceId: source.id,
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
 
@@ -166,6 +169,7 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
         active: true,
         workflowState: 'draft',
         markedOutdated: false,
+        contentClass: 'PRODUCTION',
         lastReviewedAt: new Date().toISOString(),
         steps: [{ title: 'خطوة', description: 'وصف' }],
         sources: [
@@ -195,6 +199,7 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
       _status: 'published',
       workflowState: 'published',
       claimTrustOk: true,
+      contentClass: 'PRODUCTION',
       claimBindings,
     })
     const archived = await createTx('arch', {
@@ -215,6 +220,7 @@ describe('Phase 5 public Site Settings + featured filtering (int)', () => {
       _status: 'published',
       workflowState: 'published',
       claimTrustOk: true,
+      contentClass: 'PRODUCTION',
       claimBindings,
     })
 

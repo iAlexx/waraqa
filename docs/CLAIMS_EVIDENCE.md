@@ -5,8 +5,9 @@
 **Migrations:**
 - `20260721_051000_p0_05a_claims_foundation`
 - `20260721_120000_p0_05b1_claim_trust_publication`
+- `20260722_100000_p0_06_content_class_isolation` (contentClass isolation — see [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md))
 
-**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [ARCHITECTURE.md](./ARCHITECTURE.md)
+**Related:** [CONTENT_MODEL.md](./CONTENT_MODEL.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md)
 
 ## Trust chain
 
@@ -36,6 +37,7 @@ Transaction
 - **Dynamic fail-closed:** claim/source `afterChange` recomputes `claimTrustOk`; public Where uses `claimTrustOk === true` as a **prefilter only**
 - **Live public trust authority:** `liveEvaluatePublicTransactionClaimTrust` re-resolves Claims/Sources on public loaders + anonymous `afterRead` — stored `claimTrustOk` alone never authorizes public guidance
 - Existing section-level Source evidence gate retained and composed with claim policy
+- **P0-06 contentClass:** public trust also requires compatible content classes (tx/claim/source) and `isContentClassPubliclyAllowed` — see [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md)
 
 ### About `claimTrustOk`
 
@@ -49,6 +51,7 @@ Transaction
 - Per-document / per-step / per-fee claim retrofit
 - Separate Evidence collection
 - Deploy
+- Full production cutover of contentClass promotion workflows (admin UX beyond sidebar select) — **IMPLEMENTED:** field + governance + public filters; **NOT:** bulk tools / demo host
 
 ## Binding level (why transaction-level)
 

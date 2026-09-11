@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { GuideClient } from '@/components/guide/guide-client'
+import { DEMO_PUBLIC_LABEL_AR } from '@/lib/content-class/types'
 import { loadPublicGuideBySlug } from '@/lib/guide/public-guide'
 import { loadPublicSiteSettings } from '@/lib/public/site-settings'
 
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `الدليل التفاعلي — ${result.guide.title}`,
     description: result.guide.summary.slice(0, 160),
+    ...(result.guide.demoLabeled ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       title: `الدليل التفاعلي — ${result.guide.title} — ${siteName}`,
       description: result.guide.summary.slice(0, 160),
@@ -127,6 +129,15 @@ export default async function TransactionGuidePage({ params, searchParams }: Pro
       </nav>
 
       <header className="mx-auto w-full max-w-5xl border-b border-border/60 pb-6">
+        {guide.demoLabeled ? (
+          <p
+            className="mb-3 rounded-[0.8125rem] border border-warning/40 bg-warning/10 px-3 py-2 text-sm font-semibold text-warning"
+            data-demo-content-label
+            role="status"
+          >
+            {DEMO_PUBLIC_LABEL_AR}
+          </p>
+        ) : null}
         <h1 className="font-display text-2xl font-bold text-ink-950 md:text-[1.75rem]">
           الدليل التفاعلي — {guide.title}
         </h1>

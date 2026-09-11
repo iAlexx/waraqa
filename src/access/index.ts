@@ -7,30 +7,54 @@ import {
   type UserLike,
   type WaraqaRole,
 } from './roles'
+import { getPubliclyAllowedContentClasses } from '@/lib/content-class/public-content-policy'
 
 type Args = AccessArgs
 
-/** Published + active — used by content collections without workflow fields. */
+/** Published + active — used by content collections without workflow/contentClass. */
 export const publishedActiveWhere: Where = {
   and: [{ _status: { equals: 'published' } }, { active: { equals: true } }],
 }
 
 /**
  * Anonymous / viewer public read for `transactions`.
- * Query-layer exclusion (primary): published + active + not archived + not manually outdated.
- * `afterRead` may still strip private fields / null-out as defense in depth only.
+ * Includes contentClass filter from WARAQA_PUBLIC_CONTENT_MODE (P0-06).
+ * Prefer `getPublicTransactionWhere()` — the static export is production-mode snapshot for tests.
  */
+export function getPublicTransactionWhere(): Where {
+  return {
+    and: [
+      { _status: { equals: 'published' } },
+      { active: { equals: true } },
+      { markedOutdated: { not_equals: true } },
+      { workflowState: { not_equals: 'archived' } },
+      { claimTrustOk: { equals: true } },
+      { contentClass: { in: getPubliclyAllowedContentClasses() } },
+    ],
+  }
+}
+
+/** @deprecated Prefer getPublicTransactionWhere() for mode-aware filtering. */
 export const publicTransactionWhere: Where = {
   and: [
     { _status: { equals: 'published' } },
     { active: { equals: true } },
-    // Checkbox may be null/false — exclude only explicit true (owner gate).
     { markedOutdated: { not_equals: true } },
-    // Public must never list archived.
     { workflowState: { not_equals: 'archived' } },
-    // P0-05B1: only transactions with currently valid required claim trust.
     { claimTrustOk: { equals: true } },
+    { contentClass: { in: ['PRODUCTION'] } },
   ],
+}
+
+/** Sources (and similar) public read with content-class isolation. */
+export function getPublicPublishedContentWhere(): Where {
+  return {
+    and: [
+      { _status: { equals: 'published' } },
+      { active: { equals: true } },
+      { contentClass: { in: getPubliclyAllowedContentClasses() } },
+    ],
+  }
 }
 
 export const isAuthenticated: Access = ({ req: { user } }: Args) => {
@@ -61,7 +85,7 @@ export function isEditorialUser(user: UserLike): boolean {
 }
 
 /**
- * Anonymous: published + active only (categories, agencies, sources, documents, centers).
+ * Anonymous: published + active only (categories, agencies, documents, centers).
  * Editorial roles: full read. Viewer: same as anonymous.
  */
 export const publicPublishedRead: Access = ({ req: { user } }: Args) => {
@@ -77,12 +101,24 @@ export const publicPublishedRead: Access = ({ req: { user } }: Args) => {
   return publishedActiveWhere
 }
 
+/** Sources: published + active + contentClass allowed for public mode. */
+export const publicSourceRead: Access = ({ req: { user } }: Args) => {
+  if (!user || !isUserActive(user as UserLike)) {
+    return getPublicPublishedContentWhere()
+  }
+  const role = getActiveUserRole(user as UserLike)
+  if (role === 'admin' || role === 'reviewer' || role === 'researcher') {
+    return true
+  }
+  return getPublicPublishedContentWhere()
+}
+
 /**
- * Transactions public read — includes archived / outdated exclusion at the Where layer.
+ * Transactions public read — includes archived / outdated / contentClass exclusion.
  */
 export const publicTransactionRead: Access = ({ req: { user } }: Args) => {
   if (!user || !isUserActive(user as UserLike)) {
-    return publicTransactionWhere
+    return getPublicTransactionWhere()
   }
 
   const role = getActiveUserRole(user as UserLike)
@@ -90,7 +126,7 @@ export const publicTransactionRead: Access = ({ req: { user } }: Args) => {
     return true
   }
 
-  return publicTransactionWhere
+  return getPublicTransactionWhere()
 }
 
 export const authenticatedEditorialRead: Access = ({ req: { user } }: Args) => {

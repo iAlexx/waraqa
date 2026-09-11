@@ -50,7 +50,7 @@ On approve/publish: ≥1 source, ≥1 primary; each source active + `verificatio
 
 ## Public visibility
 
-**Primary (query / access layer)** — `publicTransactionRead` → `publicTransactionWhere` on `transactions` only:
+**Primary (query / access layer)** — `publicTransactionRead` → `getPublicTransactionWhere()` on `transactions` only:
 
 ```ts
 {
@@ -60,11 +60,14 @@ On approve/publish: ≥1 source, ≥1 primary; each source active + `verificatio
     { markedOutdated: { not_equals: true } },
     { workflowState: { not_equals: 'archived' } },
     { claimTrustOk: { equals: true } },
+    { contentClass: { in: getPubliclyAllowedContentClasses() } }, // P0-06
   ],
 }
 ```
 
-Anonymous list queries for archived, manually outdated, or claim-trust-failed records must return `docs: []` and `totalDocs: 0`. Find-by-ID must not expose those documents. Other collections keep `publicPublishedRead` (`published` + `active` only) because they lack workflow fields.
+Anonymous list queries for archived, manually outdated, claim-trust-failed, or disallowed `contentClass` records must return `docs: []` and `totalDocs: 0`. Find-by-ID must not expose those documents. Sources use `publicSourceRead` (published + active + contentClass). Other collections keep `publicPublishedRead` (`published` + `active` only) because they lack workflow/contentClass fields.
+
+**P0-06:** see [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md) — **IMPLEMENTED** field/governance/public filters; **NOT** bulk promote UI / demo host.
 
 `claimTrustOk` in Where is a **fast prefilter only**. Public loaders and anonymous `afterRead` also run live Claim/Source trust (`liveEvaluatePublicTransactionClaimTrust`). Manual/`overrideAccess` setting of `claimTrustOk=true` cannot bypass that live gate.
 

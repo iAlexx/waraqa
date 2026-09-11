@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { getPublicTransactionWhere } from '@/access'
 import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
 import { localizedString, type LocalizedLike } from '@/lib/public/localized'
 
@@ -10,17 +11,13 @@ export type PublicCategoryCard = {
   slug: string
   description: string
   procedureCount: number | null
-  /** True when category name/slug looks like QA/demo fixture content. */
+  /** Categories have no contentClass — always false (P0-06). */
   demoLabeled: boolean
-}
-
-function isDemoLabel(text: string): boolean {
-  return /تجريب|demo|test|qa-|r2|r3|r4|fixture/i.test(text)
 }
 
 /**
  * Public categories: published + active only (collection access + explicit filter).
- * Procedure counts use claimTrustOk as a DB prefilter, then live Claim/Source trust.
+ * Procedure counts use getPublicTransactionWhere as a DB prefilter, then live Claim/Source trust.
  */
 export async function loadPublicCategories(): Promise<{
   categories: PublicCategoryCard[]
@@ -54,14 +51,7 @@ export async function loadPublicCategories(): Promise<{
           limit: 500,
           overrideAccess: false,
           where: {
-            and: [
-              { category: { equals: doc.id } },
-              { _status: { equals: 'published' } },
-              { active: { equals: true } },
-              { markedOutdated: { not_equals: true } },
-              { workflowState: { not_equals: 'archived' } },
-              { claimTrustOk: { equals: true } },
-            ],
+            and: [{ category: { equals: doc.id } }, getPublicTransactionWhere()],
           },
         })
         let liveCount = 0
@@ -86,7 +76,7 @@ export async function loadPublicCategories(): Promise<{
         slug,
         description: localizedString(doc.description as LocalizedLike),
         procedureCount,
-        demoLabeled: isDemoLabel(name) || isDemoLabel(slug),
+        demoLabeled: false,
       })
     }
 

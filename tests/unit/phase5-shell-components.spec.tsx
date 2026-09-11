@@ -90,7 +90,7 @@ describe('Phase 5 shell semantics', () => {
       />,
     )
     expect(screen.getByText('معاملة تجريبية')).toBeTruthy()
-    expect(screen.getByText('بيانات تجريبية')).toBeTruthy()
+    expect(screen.getByText(/بيانات تجريبية/)).toBeTruthy()
     expect(screen.getByRole('link', { name: 'اعرف شو المطلوب' })).toHaveAttribute(
       'href',
       '/transactions/demo-tx',

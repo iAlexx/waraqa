@@ -6,6 +6,11 @@ import {
   type ClaimStatus,
 } from '@/lib/claims/types'
 import { evaluateSourceTrust } from '@/lib/claims/source-trust'
+import {
+  claimClassSupportsTransaction,
+  sourceClassSupportsClaim,
+} from '@/lib/content-class/public-content-policy'
+import { isContentClass } from '@/lib/content-class/types'
 import type { SourceDocLike } from '@/lib/workflow/source-evidence'
 
 export const CLAIM_TRUST_LEVELS = ['AUTHORITATIVE', 'WARNING_ONLY', 'BLOCKED'] as const
@@ -26,6 +31,8 @@ export type ClaimDocLike = {
   reviewedBy?: unknown
   verifiedAt?: string | Date | null
   evidence?: ClaimEvidenceRowLike[] | null
+  /** P0-06 content isolation class */
+  contentClass?: string | null
 }
 
 export type ClaimTrustEvaluation = {
@@ -34,6 +41,11 @@ export type ClaimTrustEvaluation = {
   status: string
   publicationPermission: string
   reasons: string[]
+}
+
+export type EvaluateClaimTrustOptions = {
+  /** When set, claim contentClass must support this transaction class for AUTHORITATIVE. */
+  transactionContentClass?: unknown
 }
 
 function relationId(value: unknown): string | null {
@@ -53,13 +65,14 @@ const WARNING_STATUSES: ReadonlySet<string> = new Set([
 ])
 
 /**
- * Central Claim trust policy for public authoritative guidance (P0-05B1).
+ * Central Claim trust policy for public authoritative guidance (P0-05B1 + P0-06 class deps).
  * UNKNOWN / CONFLICTED / NEEDS_OFFICIAL_CONFIRMATION never become AUTHORITATIVE.
  * Unrecognized enum combinations fail closed → BLOCKED.
  */
 export function evaluateClaimTrust(
   claim: ClaimDocLike | null | undefined,
   resolvedSources: Map<string, SourceDocLike>,
+  opts?: EvaluateClaimTrustOptions,
 ): ClaimTrustEvaluation {
   const claimKey =
     typeof claim?.key === 'string' && claim.key.trim() ? claim.key.trim() : String(claim?.id ?? '?')
@@ -100,12 +113,22 @@ export function evaluateClaimTrust(
     reasons.push(`الحالة ${status} غير صالحة للاعتماد العام`)
   }
 
+  if (!isContentClass(claim.contentClass)) {
+    reasons.push('تصنيف محتوى الادعاء غير صالح أو مفقود')
+  }
+
+  if (
+    opts?.transactionContentClass !== undefined &&
+    !claimClassSupportsTransaction(opts.transactionContentClass, claim.contentClass)
+  ) {
+    reasons.push('تصنيف الادعاء غير متوافق مع تصنيف المعاملة')
+  }
+
   const evidence = Array.isArray(claim.evidence) ? claim.evidence : []
   const supporting = evidence.filter(
     (row) => row.relationType === 'SUPPORTS' || row.relationType === 'PARTIALLY_SUPPORTS',
   )
 
-  // Supporting evidence usability for AUTHORITATIVE path
   let supportingOk = false
   if (supporting.length > 0) {
     supportingOk = true
@@ -116,11 +139,13 @@ export function evaluateClaimTrust(
       if (!trust.ok) {
         supportingOk = false
         reasons.push(`دليل داعم غير موثوق: ${trust.reason ?? 'مصدر غير صالح'} (ادعاء ${claimKey})`)
+      } else if (!sourceClassSupportsClaim(claim.contentClass, src?.contentClass)) {
+        supportingOk = false
+        reasons.push(`تصنيف المصدر غير متوافق مع تصنيف الادعاء (${claimKey})`)
       }
     }
   }
 
-  // AUTHORITATIVE only when every safety condition holds with zero blocking reasons so far.
   const hasReviewer = relationId(claim.reviewedBy) != null
   const hasVerifiedAt = claim.verifiedAt != null && String(claim.verifiedAt).trim() !== ''
 
@@ -148,7 +173,6 @@ export function evaluateClaimTrust(
     }
   }
 
-  // WARNING_ONLY: explicit PUBLIC_WITH_WARNING communicating uncertainty — never AUTHORITATIVE.
   if (
     claim.active !== false &&
     claim._status === 'published' &&

@@ -1,5 +1,6 @@
 import { ParentCategoryCell as ParentCategoryCell_dafb28cd182551fc95074402eda73d70 } from '../../../components/admin/ParentCategoryCell'
 import { BooleanArCell as BooleanArCell_a6e47cf76538dfe8a702fd25c85185fe } from '../../../components/admin/BooleanArCell'
+import { ContentClassCell as ContentClassCell_264a7bdfaa18d8c1b30d501059f5a593 } from '../../../components/admin/ContentClassCell'
 import { PublicationStatusCell as PublicationStatusCell_add71b93b02da4ac598970fe358e5a93 } from '../../../components/admin/PublicationStatusCell'
 import { PublicationStatusField as PublicationStatusField_1c844a0abb765e13da33be1fb1b24768 } from '../../../components/admin/PublicationStatusField'
 import { WorkflowStateCell as WorkflowStateCell_15f91c50ae75085511b472ba3c06c839 } from '../../../components/admin/WorkflowStateCell'
@@ -14,6 +15,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 export const importMap = {
   "/components/admin/ParentCategoryCell#ParentCategoryCell": ParentCategoryCell_dafb28cd182551fc95074402eda73d70,
   "/components/admin/BooleanArCell#BooleanArCell": BooleanArCell_a6e47cf76538dfe8a702fd25c85185fe,
+  "/components/admin/ContentClassCell#ContentClassCell": ContentClassCell_264a7bdfaa18d8c1b30d501059f5a593,
   "/components/admin/PublicationStatusCell#PublicationStatusCell": PublicationStatusCell_add71b93b02da4ac598970fe358e5a93,
   "/components/admin/PublicationStatusField#PublicationStatusField": PublicationStatusField_1c844a0abb765e13da33be1fb1b24768,
   "/components/admin/WorkflowStateCell#WorkflowStateCell": WorkflowStateCell_15f91c50ae75085511b472ba3c06c839,

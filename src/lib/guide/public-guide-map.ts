@@ -41,10 +41,6 @@ export type PublicGuideDTO = {
   detailHref: string
 }
 
-function isDemo(text: string): boolean {
-  return /تجريب|demo|test|qa-/i.test(text)
-}
-
 function asRows(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value) ? (value as Array<Record<string, unknown>>) : []
 }
@@ -254,7 +250,7 @@ export function mapPublicGuide(doc: Record<string, unknown>): PublicGuideDTO | n
     summary,
     lastReviewedLabel: formatPublicDate(lastReviewedAt),
     lastReviewedAt,
-    demoLabeled: isDemo(title) || isDemo(slug),
+    demoLabeled: doc.contentClass === 'DEMO',
     questions,
     variants,
     notices,

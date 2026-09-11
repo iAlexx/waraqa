@@ -144,6 +144,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           verificationStatus: 'verified',
           active: true,
           _status: 'published',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -154,9 +155,11 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const claim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_b1_${stamp}`,
         sourceId,
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     claimId = Number(claim.id)
@@ -200,6 +203,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           active: true,
           workflowState: opts.workflowState ?? 'draft',
           markedOutdated: false,
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -251,6 +255,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           statement: 'ادعاء مسودة محظور للنشر',
           status: 'DRAFT',
           publicationPermission: 'INTERNAL_ONLY',
+          contentClass: 'PRODUCTION',
           evidence: [{ source: sourceId, relationType: 'SUPPORTS' }],
           active: true,
           _status: 'draft',
@@ -280,10 +285,12 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const liveClaim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_b1_dyn_${stamp}`,
         sourceId,
         reviewerId: reviewer.id,
         statement: 'ادعاء ديناميكي للسحب',
+        contentClass: 'PRODUCTION',
       }),
     )
     const tx = await createTx({
@@ -350,6 +357,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           verificationStatus: 'verified',
           active: true,
           _status: 'published',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -358,9 +366,11 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const liveClaim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_b1_src_${stamp}`,
         sourceId: Number(src2.id),
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     const tx = await createTx({
@@ -455,9 +465,11 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const liveClaim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_b1_stale_${stamp}`,
         sourceId,
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     const tx = await createTx({
@@ -570,6 +582,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const graphOk = await liveEvaluatePublicTransactionClaimTrust(payload, {
       ...(row as object),
       claimTrustOk: true,
+      contentClass: 'PRODUCTION',
     } as never)
     expect(graphOk).toBe(true)
     expect(await liveEvaluatePublicTransactionClaimTrust(payload, row as never)).toBe(false)
@@ -580,9 +593,11 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const doomed = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_b1_doomed_${stamp}`,
         sourceId,
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     await track(
@@ -612,6 +627,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           active: true,
           workflowState: 'published',
           markedOutdated: false,
+          contentClass: 'PRODUCTION',
           _status: 'published',
           claimTrustOk: true,
         },
@@ -629,6 +645,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     expect(
       await liveEvaluatePublicTransactionClaimTrust(payload, {
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
         claimBindings: [{ claim: Number(doomed.id), required: true }],
       }),
     ).toBe(false)
@@ -647,6 +664,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           statement: 'ادعاء تحذيري فقط',
           status: 'UNKNOWN',
           publicationPermission: 'PUBLIC_WITH_WARNING',
+          contentClass: 'PRODUCTION',
           evidence: [{ source: sourceId, relationType: 'SUPPORTS' }],
           active: true,
           _status: 'published',
@@ -682,6 +700,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           active: true,
           workflowState: 'published',
           markedOutdated: false,
+          contentClass: 'PRODUCTION',
           _status: 'published',
           claimTrustOk: true,
         },
@@ -707,6 +726,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           verificationStatus: 'verified',
           active: true,
           _status: 'published',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -715,9 +735,11 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
     const liveClaim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_b1_f_${stamp}`,
         sourceId: Number(srcF.id),
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     const tx = await createTx({
@@ -786,6 +808,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
           active: true,
           workflowState: 'published',
           markedOutdated: false,
+          contentClass: 'PRODUCTION',
           _status: 'published',
           claimTrustOk: true,
         },

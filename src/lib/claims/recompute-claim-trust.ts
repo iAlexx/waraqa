@@ -89,7 +89,9 @@ export async function recomputeTransactionClaimTrustOk(
     (doc.claimBindings as Array<{ claim?: number | string | ClaimDocLike | null; required?: boolean }> | null) ??
     []
   const { claims, sources } = await resolveClaimGraph(payload, bindings, req)
-  const ok = evaluateTransactionClaimTrustOk(bindings, claims, sources)
+  const ok = evaluateTransactionClaimTrustOk(bindings, claims, sources, {
+    transactionContentClass: doc.contentClass,
+  })
 
   const prev = doc.claimTrustOk === true
   if (prev !== ok) {

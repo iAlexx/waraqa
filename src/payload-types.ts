@@ -369,6 +369,10 @@ export interface Source {
    */
   notes?: string | null;
   /**
+   * عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.
+   */
+  contentClass: 'PRODUCTION' | 'DEMO' | 'QA_TEST';
+  /**
    * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
    */
   active?: boolean | null;
@@ -695,6 +699,10 @@ export interface Transaction {
   archiveReason?: string | null;
   workflowSchemaVersion?: number | null;
   /**
+   * عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.
+   */
+  contentClass: 'PRODUCTION' | 'DEMO' | 'QA_TEST';
+  /**
    * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
    */
   active?: boolean | null;
@@ -783,6 +791,10 @@ export interface Claim {
   validFrom?: string | null;
   validUntil?: string | null;
   reviewDueAt?: string | null;
+  /**
+   * عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.
+   */
+  contentClass: 'PRODUCTION' | 'DEMO' | 'QA_TEST';
   /**
    * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
    */
@@ -1087,6 +1099,7 @@ export interface SourcesSelect<T extends boolean = true> {
   lastVerifiedAt?: T;
   verificationStatus?: T;
   notes?: T;
+  contentClass?: T;
   active?: T;
   createdBy?: T;
   lastUpdatedBy?: T;
@@ -1293,6 +1306,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   archivedBy?: T;
   archiveReason?: T;
   workflowSchemaVersion?: T;
+  contentClass?: T;
   active?: T;
   createdBy?: T;
   lastUpdatedBy?: T;
@@ -1331,6 +1345,7 @@ export interface ClaimsSelect<T extends boolean = true> {
   validFrom?: T;
   validUntil?: T;
   reviewDueAt?: T;
+  contentClass?: T;
   active?: T;
   createdBy?: T;
   lastUpdatedBy?: T;

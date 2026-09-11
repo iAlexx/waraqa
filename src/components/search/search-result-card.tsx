@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { DEMO_PUBLIC_LABEL_AR } from '@/lib/content-class/types'
 import type { PublicSearchResultCard } from '@/lib/search/map-result'
 import { cn } from '@/lib/utils/cn'
 
@@ -43,7 +44,7 @@ function SearchResultCard({ item }: SearchResultCardProps) {
     >
       {item.demoLabeled ? (
         <span className="self-start rounded border border-warning/40 bg-warning/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-warning">
-          بيانات تجريبية
+          {DEMO_PUBLIC_LABEL_AR}
         </span>
       ) : null}
 

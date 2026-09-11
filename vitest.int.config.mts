@@ -10,5 +10,7 @@ export default defineConfig({
     include: ['tests/int/**/*.int.spec.ts'],
     fileParallelism: false,
     testTimeout: 60_000,
+    // Payload boot + fixture cleanup routinely exceeds Vitest's 10s default under serial load.
+    hookTimeout: 120_000,
   },
 })

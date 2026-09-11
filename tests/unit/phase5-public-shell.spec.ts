@@ -70,7 +70,7 @@ describe('mapPublicSiteSettings', () => {
 })
 
 describe('isPubliclyEligibleTransaction', () => {
-  it('accepts published active non-archived non-outdated with claimTrustOk', () => {
+  it('accepts published active non-archived non-outdated with claimTrustOk and public contentClass', () => {
     expect(
       isPubliclyEligibleTransaction({
         _status: 'published',
@@ -78,6 +78,7 @@ describe('isPubliclyEligibleTransaction', () => {
         markedOutdated: false,
         workflowState: 'published',
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
       }),
     ).toBe(true)
   })
@@ -90,6 +91,7 @@ describe('isPubliclyEligibleTransaction', () => {
         markedOutdated: false,
         workflowState: 'draft',
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
       }),
     ).toBe(false)
     expect(
@@ -99,6 +101,7 @@ describe('isPubliclyEligibleTransaction', () => {
         markedOutdated: false,
         workflowState: 'published',
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
       }),
     ).toBe(false)
     expect(
@@ -108,6 +111,7 @@ describe('isPubliclyEligibleTransaction', () => {
         markedOutdated: true,
         workflowState: 'published',
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
       }),
     ).toBe(false)
     expect(
@@ -117,6 +121,7 @@ describe('isPubliclyEligibleTransaction', () => {
         markedOutdated: false,
         workflowState: 'archived',
         claimTrustOk: true,
+        contentClass: 'PRODUCTION',
       }),
     ).toBe(false)
   })
@@ -128,6 +133,7 @@ describe('isPubliclyEligibleTransaction', () => {
         active: true,
         markedOutdated: false,
         workflowState: 'published',
+        contentClass: 'PRODUCTION',
       }),
     ).toBe(false)
     expect(
@@ -137,6 +143,20 @@ describe('isPubliclyEligibleTransaction', () => {
         markedOutdated: false,
         workflowState: 'published',
         claimTrustOk: false,
+        contentClass: 'PRODUCTION',
+      }),
+    ).toBe(false)
+  })
+
+  it('rejects QA_TEST contentClass in production mode', () => {
+    expect(
+      isPubliclyEligibleTransaction({
+        _status: 'published',
+        active: true,
+        markedOutdated: false,
+        workflowState: 'published',
+        claimTrustOk: true,
+        contentClass: 'QA_TEST',
       }),
     ).toBe(false)
   })

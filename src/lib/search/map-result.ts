@@ -35,10 +35,6 @@ const PRIVATE_KEYS = [
   '_status',
 ] as const
 
-function isDemoLabel(text: string): boolean {
-  return /تجريب|demo|test|qa-|fixture/i.test(text)
-}
-
 function relationName(value: unknown): string | null {
   if (!value || typeof value !== 'object') return null
   const name = localizedString((value as { name?: LocalizedLike }).name)
@@ -87,7 +83,7 @@ export function mapPublicSearchResult(
     categoryName,
     agencyName,
     lastReviewedAt: typeof doc.lastReviewedAt === 'string' ? doc.lastReviewedAt : null,
-    demoLabeled: isDemoLabel(title) || isDemoLabel(slug),
+    demoLabeled: doc.contentClass === 'DEMO',
     href: `/transactions/${encodeURIComponent(slug)}`,
   }
 }

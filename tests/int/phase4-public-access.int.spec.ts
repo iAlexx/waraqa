@@ -89,6 +89,7 @@ describe('Phase 4 public transaction access (query layer)', () => {
           active: true,
           workflowState: 'draft',
           markedOutdated: false,
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -217,6 +218,7 @@ describe('Phase 4 public transaction access (query layer)', () => {
           verificationStatus: 'verified',
           active: true,
           _status: 'published',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -227,9 +229,11 @@ describe('Phase 4 public transaction access (query layer)', () => {
     const claim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_access_${stamp}`,
         sourceId,
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     claimId = Number(claim.id)
@@ -241,6 +245,7 @@ describe('Phase 4 public transaction access (query layer)', () => {
         { markedOutdated: { not_equals: true } },
         { workflowState: { not_equals: 'archived' } },
         { claimTrustOk: { equals: true } },
+        { contentClass: { in: ['PRODUCTION'] } },
       ]),
     })
   })
@@ -352,6 +357,7 @@ describe('Phase 4 public transaction access (query layer)', () => {
         active: true,
         _status: 'published',
         markedOutdated: false,
+        contentClass: 'PRODUCTION',
       },
       draft: false,
       overrideAccess: true,

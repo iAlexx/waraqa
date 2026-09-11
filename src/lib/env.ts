@@ -17,6 +17,12 @@ const serverEnvSchema = z.object({
     .string()
     .min(32, 'PREVIEW_SECRET must be at least 32 characters')
     .optional(),
+  /**
+   * P0-06 public content mode. Safe default: production (DEMO + QA_TEST blocked).
+   * `demo` allows PRODUCTION + DEMO. Invalid / omitted → production.
+   * Do not infer from NODE_ENV alone — see public-content-policy.ts.
+   */
+  WARAQA_PUBLIC_CONTENT_MODE: z.enum(['production', 'demo']).optional(),
 })
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -38,6 +44,7 @@ export function getServerEnv(): ServerEnv {
     PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
     NEXT_PUBLIC_SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL,
     PREVIEW_SECRET: process.env.PREVIEW_SECRET || undefined,
+    WARAQA_PUBLIC_CONTENT_MODE: process.env.WARAQA_PUBLIC_CONTENT_MODE || undefined,
   })
 
   if (!parsed.success) {

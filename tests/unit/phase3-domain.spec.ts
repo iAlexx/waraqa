@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { normalizeSlug, isValidSlug } from '@/lib/slug'
 import { isHttpUrl } from '@/lib/urls'
@@ -6,10 +6,22 @@ import { validateProcedureData } from '@/lib/procedure-validation'
 import { getUserRole, type UserLike } from '@/access/roles'
 import {
   canPublishContent,
+  getPublicTransactionWhere,
   publicPublishedRead,
   publicTransactionRead,
   publicTransactionWhere,
 } from '@/access'
+import { setPublicContentModeForTests } from '@/lib/content-class/public-content-policy'
+
+beforeEach(() => {
+  vi.stubEnv('WARAQA_PUBLIC_CONTENT_MODE', 'production')
+  setPublicContentModeForTests('production')
+})
+
+afterEach(() => {
+  setPublicContentModeForTests(null)
+  vi.unstubAllEnvs()
+})
 
 describe('normalizeSlug', () => {
   it('lowercases, hyphenates, and collapses repeats', () => {
@@ -126,7 +138,7 @@ describe('access helpers', () => {
     const result = publicTransactionRead({
       req: { user: null },
     } as never)
-    expect(result).toEqual(publicTransactionWhere)
+    expect(result).toEqual(getPublicTransactionWhere())
     expect(publicTransactionWhere).toEqual({
       and: [
         { _status: { equals: 'published' } },
@@ -134,6 +146,7 @@ describe('access helpers', () => {
         { markedOutdated: { not_equals: true } },
         { workflowState: { not_equals: 'archived' } },
         { claimTrustOk: { equals: true } },
+        { contentClass: { in: ['PRODUCTION'] } },
       ],
     })
   })

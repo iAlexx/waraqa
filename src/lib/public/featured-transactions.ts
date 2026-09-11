@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { liveEvaluatePublicTransactionClaimTrust } from '@/lib/claims/public-claim-trust'
+import { isContentClassPubliclyAllowed } from '@/lib/content-class/public-content-policy'
 import { localizedString, type LocalizedLike } from '@/lib/public/localized'
 
 export type PublicFeaturedCard = {
@@ -15,7 +16,7 @@ export type PublicFeaturedCard = {
 }
 
 /**
- * Sync public prefilter (status + stored claimTrustOk cache).
+ * Sync public prefilter (status + stored claimTrustOk cache + contentClass).
  * Not the final trust authority — public loaders also run
  * `liveEvaluatePublicTransactionClaimTrust` before exposure.
  */
@@ -25,11 +26,8 @@ export function isPubliclyEligibleTransaction(doc: Record<string, unknown>): boo
   if (doc.markedOutdated === true) return false
   if (doc.workflowState === 'archived') return false
   if (doc.claimTrustOk !== true) return false
+  if (!isContentClassPubliclyAllowed(doc.contentClass)) return false
   return true
-}
-
-function isDemoLabel(text: string): boolean {
-  return /تجريب|demo|test|qa-|r2|r3|r4|fixture/i.test(text)
 }
 
 /**
@@ -76,7 +74,7 @@ export async function loadFeaturedTransactions(
           slug,
           categoryName,
           lastReviewedAt: typeof doc.lastReviewedAt === 'string' ? doc.lastReviewedAt : null,
-          demoLabeled: isDemoLabel(title) || isDemoLabel(slug),
+          demoLabeled: doc.contentClass === 'DEMO',
         })
       } catch {
         // Missing / inaccessible / draft — skip silently

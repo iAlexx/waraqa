@@ -102,6 +102,7 @@ export function buildCriticalCanonical(data: Record<string, unknown>): unknown {
     title: loc(data.title as Localized),
     slug: typeof data.slug === 'string' ? data.slug : '',
     summary: loc(data.summary as Localized),
+    contentClass: typeof data.contentClass === 'string' ? data.contentClass : null,
     category: relId(data.category),
     agency: relId(data.agency),
     serviceCenters: sortedIds(data.serviceCenters),

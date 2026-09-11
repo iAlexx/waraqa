@@ -190,6 +190,7 @@ export async function runTransactionWorkflowAction(input: WorkflowRunInput) {
         doc.claimBindings as never,
         claimGraph.claims,
         claimGraph.sources,
+        { transactionContentClass: (doc as { contentClass?: unknown }).contentClass },
       )
       if (!claimGate.ok) throw new WorkflowError(claimGate.errors.join(' '), 422)
       const hash = hashCriticalContent(doc)
@@ -231,6 +232,7 @@ export async function runTransactionWorkflowAction(input: WorkflowRunInput) {
         doc.claimBindings as never,
         claimGraph.claims,
         claimGraph.sources,
+        { transactionContentClass: (doc as { contentClass?: unknown }).contentClass },
       )
       if (!claimGate.ok) throw new WorkflowError(claimGate.errors.join(' '), 422)
       const hash = hashCriticalContent(doc)

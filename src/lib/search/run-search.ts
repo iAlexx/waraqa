@@ -1,7 +1,7 @@
 import { getPayload, type Where } from 'payload'
 
 import config from '@payload-config'
-import { publicTransactionWhere, publishedActiveWhere } from '@/access'
+import { getPublicTransactionWhere, publishedActiveWhere } from '@/access'
 import { filterDocsByLivePublicClaimTrust } from '@/lib/claims/public-claim-trust'
 import {
   extractRankInput,
@@ -127,7 +127,7 @@ async function loadFilterOptions(): Promise<SearchPageResult['filterOptions']> {
 }
 
 /**
- * Public search: `publicTransactionWhere` (incl. claimTrustOk) is a prefilter only.
+ * Public search: `getPublicTransactionWhere()` (incl. claimTrustOk + contentClass) is a prefilter only.
  * Candidates are live-validated for Claim/Source trust before ranking/results.
  */
 export async function runPublicSearch(
@@ -137,7 +137,7 @@ export async function runPublicSearch(
     const payload = await getPayload({ config })
     const filterOptions = await loadFilterOptions()
 
-    const andClause: Where[] = [publicTransactionWhere]
+    const andClause: Where[] = [getPublicTransactionWhere()]
     const appliedFilterLabels = {
       category: null as string | null,
       agency: null as string | null,

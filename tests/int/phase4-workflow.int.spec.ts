@@ -175,6 +175,7 @@ describe('Phase 4 editorial workflow', () => {
           verificationStatus: 'verified',
           active: true,
           _status: 'published',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,
@@ -185,9 +186,11 @@ describe('Phase 4 editorial workflow', () => {
     const claim = await track(
       'claims',
       await createAuthoritativeClaimFixture(payload, {
+
         key: `claim_p4_${stamp}`,
         sourceId,
         reviewerId: reviewer.id,
+        contentClass: 'PRODUCTION',
       }),
     )
     claimId = Number(claim.id)
@@ -227,6 +230,7 @@ describe('Phase 4 editorial workflow', () => {
           lastReviewedAt: new Date().toISOString(),
           active: true,
           workflowState: 'draft',
+          contentClass: 'PRODUCTION',
         },
         user: researcher as never,
         overrideAccess: false,
@@ -286,6 +290,7 @@ describe('Phase 4 editorial workflow', () => {
           lastReviewedAt: new Date().toISOString(),
           active: true,
           workflowState: 'in_review',
+          contentClass: 'PRODUCTION',
         },
         overrideAccess: true,
         context: seedCtx,

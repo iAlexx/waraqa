@@ -24,7 +24,7 @@ describe('SearchResultCard visual structure', () => {
     expect(card).toBeTruthy()
     expect(card?.className).toMatch(/border/)
     expect(card?.className).toMatch(/bg-surface|w-full/)
-    expect(screen.getByText('بيانات تجريبية')).toBeTruthy()
+    expect(screen.getByText(/بيانات تجريبية/)).toBeTruthy()
     expect(screen.getByText(sampleItem.title)).toBeTruthy()
     expect(screen.getByText(sampleItem.summary)).toBeTruthy()
     expect(screen.getByText('تصنيف تجريبي')).toBeTruthy()

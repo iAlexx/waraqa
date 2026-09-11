@@ -78,6 +78,7 @@ async function seedMinimalSupport(stamp = nextStamp()) {
         verificationStatus: 'verified',
         active: true,
         _status: 'published',
+        contentClass: 'PRODUCTION',
       },
       overrideAccess: true,
       context: seedCtx,
@@ -100,10 +101,12 @@ async function seedMinimalSupport(stamp = nextStamp()) {
   const claim = await track(
     'claims',
     await createAuthoritativeClaimFixture(payload, {
+
       key: claimKey('claim_p6_uniq', stamp),
       sourceId: source.id,
       reviewerId: reviewer.id,
-    }),
+      contentClass: 'PRODUCTION',
+      }),
   )
   return { category, agency, source, claim, stamp }
 }
@@ -127,6 +130,7 @@ async function createPublishedTx(
         active: true,
         workflowState: 'published',
         markedOutdated: false,
+        contentClass: 'PRODUCTION',
         claimTrustOk: true,
         _status: 'published',
       } as never,
@@ -185,6 +189,7 @@ async function seedStablePublishedSet() {
         verificationStatus: 'verified',
         active: true,
         _status: 'published',
+        contentClass: 'PRODUCTION',
       },
       overrideAccess: true,
       context: seedCtx,
@@ -229,10 +234,12 @@ async function seedStablePublishedSet() {
   const claim = await track(
     'claims',
     await createAuthoritativeClaimFixture(payload, {
+
       key: claimKey('claim_p6_r1', seedStamp),
       sourceId: src.id,
       reviewerId: reviewer.id,
-    }),
+      contentClass: 'PRODUCTION',
+      }),
   )
 
   const claimBindings = [{ claim: claim.id, required: true, coveredSection: 'summary' as const }]
@@ -253,7 +260,8 @@ async function seedStablePublishedSet() {
     active: true,
     workflowState: 'published' as const,
     markedOutdated: false,
-    claimTrustOk: true,
+    contentClass: 'PRODUCTION',
+        claimTrustOk: true,
     claimBindings,
     _status: 'published' as const,
   }
@@ -369,7 +377,8 @@ describe('Phase 6 search uniqueness + fixture cleanup (int)', () => {
           active: true,
           workflowState: 'published',
           markedOutdated: false,
-          claimTrustOk: true,
+          contentClass: 'PRODUCTION',
+        claimTrustOk: true,
           _status: 'published',
         } as never,
         overrideAccess: true,

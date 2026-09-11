@@ -15,7 +15,9 @@ import {
   localizedText,
   localizedTextarea,
 } from '@/fields/common'
+import { contentClassField } from '@/fields/content-class'
 import { guideFields } from '@/fields/guide-fields'
+import { enforceContentClassGovernance } from '@/lib/content-class/content-class-governance'
 import {
   claimBindingFields,
   feeFields,
@@ -118,6 +120,7 @@ export const Transactions: CollectionConfig = {
       'title',
       'slug',
       'workflowState',
+      'contentClass',
       'category',
       'agency',
       'publicationStatus',
@@ -150,7 +153,12 @@ export const Transactions: CollectionConfig = {
     delete: adminOnlyDelete,
   },
   hooks: {
-    beforeValidate: [preventSelfPrerequisite, validateProcedure, validateGuideOnTransaction],
+    beforeValidate: [
+      enforceContentClassGovernance,
+      preventSelfPrerequisite,
+      validateProcedure,
+      validateGuideOnTransaction,
+    ],
     beforeChange: [
       ensureStableContentKeys,
       enforceWorkflowFieldGuard,
@@ -386,6 +394,7 @@ export const Transactions: CollectionConfig = {
     },
     ...guideFields(),
     ...workflowFields(),
+    contentClassField(),
     activeField(),
     ...auditFields(),
   ],

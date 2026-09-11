@@ -27,6 +27,8 @@ export type SourceDocLike = {
   verificationStatus?: string | null
   officialUrl?: string | null
   sourceType?: string | null
+  /** P0-06 content isolation class */
+  contentClass?: string | null
 }
 
 export type TxSourceRow = {

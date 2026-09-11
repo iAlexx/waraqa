@@ -10,6 +10,7 @@ function source(partial: Partial<SourceDocLike> & { id: number }): SourceDocLike
     active: true,
     verificationStatus: 'verified',
     officialUrl: 'https://example.test/official',
+    contentClass: 'QA_TEST',
     ...partial,
   }
 }
@@ -22,6 +23,7 @@ function baseVerifiedClaim(overrides: Record<string, unknown> = {}) {
     _status: 'published' as const,
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
+    contentClass: 'QA_TEST',
     reviewedBy: 9,
     verifiedAt: '2026-07-01T00:00:00.000Z',
     evidence: [{ source: 10, relationType: 'SUPPORTS' as const }],
