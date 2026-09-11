@@ -40,8 +40,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * Phase 8 — interactive guide.
- * Answers stay in client memory only (no URL/localStorage/DB).
+ * Phase 8 / Phase 9 — interactive guide.
+ * Answers + checklist progress may persist in device-local storage (P9-B).
+ * Never sent to the server; public eligibility still uses P0-05/P0-06 loaders.
  * Hidden transactions → same not-found as Phase 7.
  */
 export default async function TransactionGuidePage({ params, searchParams }: Props) {
@@ -143,7 +144,7 @@ export default async function TransactionGuidePage({ params, searchParams }: Pro
         </h1>
         <p className="mt-2 max-w-[40rem] text-ink-700">{guide.summary}</p>
         <p className="mt-4 rounded-[0.8125rem] border border-border/80 bg-ivory/80 px-4 py-3 text-sm text-ink-700">
-          ورقة منصة إرشادية مستقلة. إجاباتك تبقى على جهازك أثناء الجلسة فقط ولا تُحفظ على الخادم.
+          ورقة منصة إرشادية مستقلة. تقدّمك يُحفظ على جهازك فقط ولا يُرسل إلى الخادم.
         </p>
       </header>
 

@@ -1,6 +1,6 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 
 import { GuideClient } from '@/components/guide/guide-client'
@@ -10,8 +10,21 @@ import {
 } from '@/lib/guide/checklist-state'
 import type { PublicGuideDTO } from '@/lib/guide/public-guide-map'
 
+beforeEach(() => {
+  try {
+    window.localStorage.clear()
+  } catch {
+    // ignore
+  }
+})
+
 afterEach(() => {
   cleanup()
+  try {
+    window.localStorage.clear()
+  } catch {
+    // ignore
+  }
 })
 
 function buildGuide(): PublicGuideDTO {
@@ -80,7 +93,14 @@ function buildGuide(): PublicGuideDTO {
   }
 }
 
+async function waitForStorageReady() {
+  await vi.waitFor(() => {
+    expect(document.querySelector('[data-guide-storage-ready="true"]')).toBeTruthy()
+  })
+}
+
 async function reachResult(user: ReturnType<typeof userEvent.setup>, answer: 'yes' | 'no') {
+  await waitForStorageReady()
   const label = answer === 'yes' ? /^نعم$/ : /^لا$/
   await user.click(screen.getByText(label))
   await user.click(screen.getByRole('button', { name: 'عرض النتيجة' }))

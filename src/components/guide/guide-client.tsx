@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
 import type { PublicGuideDTO } from '@/lib/guide/public-guide-map'
@@ -14,6 +14,11 @@ import {
   pruneCheckedDocumentKeys,
   toggleCheckedDocumentKey,
 } from '@/lib/guide/checklist-state'
+import {
+  clearGuideLocalState,
+  readGuideLocalState,
+  writeGuideLocalState,
+} from '@/lib/guide/guide-local-storage'
 import type { GuideAnswers, GuideChecklistItem, GuideNotice } from '@/lib/guide/types'
 import { cn } from '@/lib/utils/cn'
 
@@ -39,9 +44,16 @@ function GuideClient({ guide }: GuideClientProps) {
   const [stepIndex, setStepIndex] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  /** P9-A: local-only checked document keys (never persisted / never sent). */
+  /** P9-A/B: checked document keys — device-local only (never sent to server). */
   const [checkedDocKeys, setCheckedDocKeys] = useState<Set<string>>(() => new Set())
   const [prunedForSignature, setPrunedForSignature] = useState<string | null>(null)
+  /**
+   * P9-B persistence gate: writes are blocked until restore has finished.
+   * Ref is the authoritative arming flag (survives awkward effect reordering);
+   * state drives re-render + `data-guide-storage-ready` for tests.
+   */
+  const hasRestoredLocalState = useRef(false)
+  const [persistenceReady, setPersistenceReady] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const statusId = useId()
 
@@ -85,11 +97,46 @@ function GuideClient({ guide }: GuideClientProps) {
     })
   }
 
+  // P9-B: restore in useLayoutEffect so it always completes before any useEffect write.
+  // Lifecycle: localStorage → apply React state → arm persistenceReady (never write first).
+  useLayoutEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- P9-B device-local restore after SSR */
+    hasRestoredLocalState.current = false
+    setPersistenceReady(false)
+
+    const restored = readGuideLocalState(guide)
+    if (restored) {
+      setAnswers(restored.answers)
+      setCheckedDocKeys(new Set(restored.checkedDocumentKeys))
+      setStepIndex(restored.stepIndex)
+      setShowResult(restored.showResult)
+      setPrunedForSignature(null)
+      setError(null)
+    }
+
+    hasRestoredLocalState.current = true
+    setPersistenceReady(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed once per mounted guide identity
+  }, [guide.slug, guide.transactionId])
+
+  // P9-B: persist only after restore has armed the gate (ref + state).
+  useEffect(() => {
+    if (!hasRestoredLocalState.current || !persistenceReady) return
+    writeGuideLocalState(guide, {
+      answers,
+      checkedDocumentKeys: checkedDocKeys,
+      stepIndex,
+      showResult,
+    })
+  }, [persistenceReady, guide, answers, checkedDocKeys, stepIndex, showResult])
+
   useEffect(() => {
     headingRef.current?.focus()
   }, [stepIndex, showResult])
 
   function restart() {
+    clearGuideLocalState(guide.slug)
     setAnswers({})
     setStepIndex(0)
     setShowResult(false)
@@ -138,7 +185,11 @@ function GuideClient({ guide }: GuideClientProps) {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-5xl" data-guide-client>
+    <div
+      className="mx-auto w-full min-w-0 max-w-5xl"
+      data-guide-client
+      data-guide-storage-ready={persistenceReady ? 'true' : 'false'}
+    >
       <p className="text-sm text-ink-600" aria-live="polite" id={statusId}>
         {progressLabel}
       </p>

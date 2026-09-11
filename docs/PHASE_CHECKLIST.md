@@ -213,15 +213,26 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 
 ### Owner decisions (Phase 8)
 
-- [x] Answers in-memory only — no localStorage/sessionStorage/cookies/DB/analytics/URL answer params
-- [x] No WhatsApp/print/saved checklists/export/accounts (deferred Phase 9+)
+- [x] Phase 8 shipped in-memory answers only (persistence deferred; see Phase 9)
+- [x] No WhatsApp/print/export/accounts in Phase 8
 - [x] Variants + `selectVariant`; conflicting variant keys fail validation
 
 ### Not started (later phases)
 
-- Phase 9 share / print / local persistence
+- Phase 9 remaining: WhatsApp / print / share URLs / Edit Answers summary
 - Phase 10 reporting
 - Phase 11 sitemap / structured data / advanced revalidation
+
+## Phase 9 — Result checklist + local persistence (partial)
+
+- [x] P9-A: interactive local documents checklist + clear-all (in `GuideClient`)
+- [x] P9-B: schema-versioned `localStorage` for answers + checklist (`waraqa:guide:<slug>`)
+- [ ] WhatsApp share
+- [ ] Print stylesheet
+- [ ] Edit Answers summary UX
+- [ ] Share URLs
+
+See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1.
 
 ### QA evidence
 

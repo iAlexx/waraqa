@@ -1,8 +1,8 @@
-# Interactive Guide Architecture (Phase 8)
+# Interactive Guide Architecture (Phase 8–9)
 
-**Status:** Phase 8 — **TECHNICAL PASS — AWAITING OWNER VISUAL APPROVAL**
+**Status:** Phase 8 technical pass + P9-A checklist + P9-B local persistence
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-09-11
 
 **Related:** [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [CONTENT_MODEL.md](./CONTENT_MODEL.md), [SECURITY.md](./SECURITY.md), [PHASE_CHECKLIST.md](./PHASE_CHECKLIST.md)
 
@@ -10,18 +10,33 @@
 
 Phase 8 delivers an anonymous, in-session **interactive guide** on eligible public transactions. Visitors answer structured questions; a pure rule engine produces a personalized preparation checklist (documents, steps, fees, notices, optional variant) with explanations. Waraqa does not submit applications or guarantee outcomes.
 
+Phase 9-A adds an interactive **documents checklist**. Phase 9-B adds **device-local** persistence of answers + checklist progress.
+
 ## 2. Owner decisions (authoritative)
 
-These override conflicting roadmap wording about persistence:
-
-| Topic | Phase 8 contract |
+| Topic | Contract |
 | --- | --- |
-| Answer state | **In-memory React state only** — no `localStorage`, `sessionStorage`, cookies, DB, analytics, or URL query parameters for answers |
-| Refresh / reopen | Restarts the guide (no saved progress) |
-| Result scope | In-session checklist + kinds + why + steps/fees/notices + variant + disclaimer + last-reviewed + official sources + link back to Phase 7 detail |
-| Explicitly deferred | WhatsApp share, print, saved checklists, export/download, user accounts, server-side answer storage (**Phase 9+**) |
+| Answer / checklist state | Client-only. **P9-B:** schema-versioned `localStorage` on the citizen device. Never cookies, DB, Payload, server actions, analytics, or URL query params for answers/checklist |
+| Refresh / reopen | **P9-B:** restores compatible local progress; incompatible payloads are ignored and cleared |
+| Restart | **ابدأ من جديد** clears React state **and** deletes this transaction’s local payload |
+| Result scope | Checklist + kinds + why + steps/fees/notices + variant + disclaimer + last-reviewed + official sources + link back to Phase 7 detail |
+| Explicitly deferred | WhatsApp share, print, share URLs, Edit Answers summary UX, user accounts, server-side citizen state |
 | Variants | Minimal additive model + `selectVariant`; at most one final variant; conflicting variant keys fail validation (fail closed) |
 | Rule format | Stable `key` references only — no Payload row IDs, array indices, eval, or executable code |
+
+## 2.1 Local persistence (P9-B)
+
+| Item | Detail |
+| --- | --- |
+| Key | `waraqa:guide:<transactionSlug>` — stable public slug identity (not Arabic title) |
+| Envelope | `storageVersion` (blob format; currently `1`), `guideSchemaVersion` (fingerprint of current public guide structure: question/option/document/rule/step/fee/variant/notice keys — derived from loaded DTO, not a separate CMS version field), `transactionKey`, `transactionId`, `answers`, `checkedDocumentKeys`, `stepIndex`, `showResult`, `updatedAt` |
+| Invalidation | Fail closed on storage version mismatch, schema fingerprint mismatch, wrong transaction identity, or malformed JSON/shape — ignore and remove key |
+| Answer validation | Untrusted input: whitelist active `boolean` / `single` / `multi` only; drop unknown keys and invalid option values |
+| Checklist | Restore catalog keys only; after evaluation, reuse P9-A `pruneCheckedDocumentKeys` for active result docs |
+| Trust | Persisted state cannot bypass `loadPublicGuideBySlug` (P0-05 claim trust + P0-06 contentClass). If the public guide does not load, local blobs are useless |
+| Privacy | No national IDs, free text, uploads, contacts, auth, or claim/editorial fields. Device-local only — no server sync |
+
+Implementation: `src/lib/guide/guide-local-storage.ts` + `GuideClient` post-mount restore/write.
 
 ## 3. Public routes
 
@@ -88,13 +103,14 @@ Checklist item kinds:
 
 ## 8. Privacy and security
 
-- Answers never sent to the server in Phase 8.
-- No answer persistence APIs.
-- Guide page metadata may describe the transaction; answers stay client-side for the session.
+- Answers / checklist are never sent to the server.
+- **P9-B:** device-local `localStorage` only; no answer persistence APIs.
+- Guide page metadata may describe the transaction; citizen progress stays on-device.
 - GraphQL remains disabled (`404`).
 - QA fixtures use `qa-p8-r1-*` slugs and fictional Arabic labels.
+- Public loaders still enforce P0-05 claim trust and P0-06 contentClass on every request.
 
-See [SECURITY.md](./SECURITY.md) §7 (updated for Phase 8 in-memory policy).
+See [SECURITY.md](./SECURITY.md).
 
 ## 9. UI behavior
 
@@ -103,13 +119,13 @@ See [SECURITY.md](./SECURITY.md) §7 (updated for Phase 8 in-memory policy).
 - `<noscript>` honest fallback on guide route (no empty interactive shell).
 - Reduced-motion safe; keyboard-operable radios/checkboxes and focus management on step change.
 
-## 10. Explicit non-goals (Phase 8)
+## 10. Explicit non-goals (remaining Phase 9+)
 
-- Phase 9: WhatsApp, print stylesheet, local persistence, share URLs
+- WhatsApp, print stylesheet, share URLs, Edit Answers summary UX
 - Phase 10: outdated-information reporting from guide
 - Phase 11: sitemap/structured data for guide paths
 - AI inference, arbitrary expressions, admin live rule preview (deferred)
-- Media uploads, citizen accounts
+- Media uploads, citizen accounts, server-side citizen state
 
 ## 11. QA
 

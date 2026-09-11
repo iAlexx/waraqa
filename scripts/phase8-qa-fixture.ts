@@ -363,7 +363,7 @@ async function main() {
       `/transactions/${PHASE8_QA_STABLE.txGuide}/guide`,
       `/transactions/${PHASE8_QA_STABLE.txNoGuide}`,
     ],
-    note: 'Owner decision: answers are in-memory only (no localStorage). DEMO contentClass — use WARAQA_PUBLIC_CONTENT_MODE=demo for public E2E.',
+    note: 'P9-B: answers+checklist may persist in device localStorage (waraqa:guide:<slug>). DEMO contentClass — use WARAQA_PUBLIC_CONTENT_MODE=demo for public E2E. Never sent to server.',
   }
 
   fs.writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')

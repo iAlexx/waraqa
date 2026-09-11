@@ -503,7 +503,7 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.locator('[data-guide-client]').getByRole('heading', { name: 'الوثائق' })).toBeVisible()
     expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
 
-    // P9-A: interactive document checklist (in-memory only)
+    // P9-A: interactive document checklist (+ P9-B may persist locally; still never in URL)
     const checklist = page.locator('[data-guide-documents-checklist]')
     await expect(checklist).toBeVisible()
     await expect(checklist.getByText(/التحديد هون بس لمساعدتك بالتحضير/)).toBeVisible()
@@ -519,6 +519,70 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
     await expect(page.locator('#guide-question-heading')).toBeVisible()
     expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
+  })
+
+  test('P9-B local persistence restores progress and restart clears storage', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    const firstDoc = checklist.getByRole('checkbox').first()
+    await firstDoc.check()
+    await expect(firstDoc).toBeChecked()
+
+    const stored = await page.evaluate((slug) => {
+      const raw = window.localStorage.getItem(`waraqa:guide:${slug}`)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as {
+        answers?: Record<string, unknown>
+        checkedDocumentKeys?: string[]
+      }
+      return {
+        hasAnswers: Boolean(parsed.answers && Object.keys(parsed.answers).length > 0),
+        checkedCount: parsed.checkedDocumentKeys?.length ?? 0,
+        keys: Object.keys(parsed),
+      }
+    }, guideSlug)
+    expect(stored?.hasAnswers).toBe(true)
+    expect(stored?.checkedCount).toBeGreaterThan(0)
+    expect(stored?.keys).not.toEqual(expect.arrayContaining(['claimTrustOk', 'contentClass']))
+
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+    expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers|doc_|checked)=/)
+
+    await page.getByRole('button', { name: 'ابدأ من جديد' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await expect(page.locator('#guide-question-heading')).toBeVisible()
+
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await expect(page.locator('#guide-question-heading')).toBeVisible()
+    const afterRestart = await page.evaluate(
+      (slug) => window.localStorage.getItem(`waraqa:guide:${slug}`),
+      guideSlug,
+    )
+    expect(afterRestart).toBeNull()
   })
 
   test('hidden transaction guide slug returns not found', async ({ page }) => {
