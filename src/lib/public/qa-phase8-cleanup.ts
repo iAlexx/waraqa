@@ -17,6 +17,9 @@ const DELETE_ORDER: TrackedCollection[] = [
   'categories',
 ]
 
+const CLAIM_KEY_PREFIX = 'claim_qa_p8_r1_'
+const REVIEWER_EMAIL_PREFIX = 'qa-p8-r1-reviewer@'
+
 /** Deletes only Phase 8 QA rows (`qa-p8-r1-*`). */
 export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ deleted: number }> {
   let deleted = 0
@@ -36,6 +39,31 @@ export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ delete
       deleted += 1
     }
   }
+
+  const claims = await payload.find({
+    collection: 'claims',
+    depth: 0,
+    limit: 100,
+    overrideAccess: true,
+    where: { key: { contains: CLAIM_KEY_PREFIX } },
+  })
+  for (const doc of claims.docs) {
+    await payload.delete({ collection: 'claims', id: doc.id, overrideAccess: true })
+    deleted += 1
+  }
+
+  const users = await payload.find({
+    collection: 'users',
+    depth: 0,
+    limit: 20,
+    overrideAccess: true,
+    where: { email: { contains: REVIEWER_EMAIL_PREFIX } },
+  })
+  for (const doc of users.docs) {
+    await payload.delete({ collection: 'users', id: doc.id, overrideAccess: true })
+    deleted += 1
+  }
+
   return { deleted }
 }
 

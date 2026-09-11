@@ -8,6 +8,12 @@ import {
   runPublicGuideEvaluation,
 } from '@/lib/guide/public-guide-map'
 import { visibleQuestions } from '@/lib/guide/evaluate'
+import {
+  CHECKLIST_CLEAR_ALL_LABEL_AR,
+  CHECKLIST_SAFETY_COPY_AR,
+  pruneCheckedDocumentKeys,
+  toggleCheckedDocumentKey,
+} from '@/lib/guide/checklist-state'
 import type { GuideAnswers, GuideChecklistItem, GuideNotice } from '@/lib/guide/types'
 import { cn } from '@/lib/utils/cn'
 
@@ -33,6 +39,9 @@ function GuideClient({ guide }: GuideClientProps) {
   const [stepIndex, setStepIndex] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** P9-A: local-only checked document keys (never persisted / never sent). */
+  const [checkedDocKeys, setCheckedDocKeys] = useState<Set<string>>(() => new Set())
+  const [prunedForSignature, setPrunedForSignature] = useState<string | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const statusId = useId()
 
@@ -49,6 +58,33 @@ function GuideClient({ guide }: GuideClientProps) {
       ? `السؤال ${Math.min(stepIndex + 1, total)} من ${total}`
       : 'لا أسئلة'
 
+  const evaluation = showResult ? runPublicGuideEvaluation(guide, answers) : null
+
+  // Prune stale checks while a successful result is visible (React “adjust state
+  // during render” pattern — keep in-memory checks when editing answers).
+  const activeDocKeysSignature =
+    evaluation && evaluation.ok
+      ? evaluation.documents.map((d) => d.key).join('\0')
+      : null
+  if (activeDocKeysSignature !== null && activeDocKeysSignature !== prunedForSignature) {
+    setPrunedForSignature(activeDocKeysSignature)
+    const keys = activeDocKeysSignature.length > 0 ? activeDocKeysSignature.split('\0') : []
+    setCheckedDocKeys((prev) => {
+      const pruned = pruneCheckedDocumentKeys(prev, keys)
+      if (pruned.size === prev.size) {
+        let same = true
+        for (const k of prev) {
+          if (!pruned.has(k)) {
+            same = false
+            break
+          }
+        }
+        if (same) return prev
+      }
+      return pruned
+    })
+  }
+
   useEffect(() => {
     headingRef.current?.focus()
   }, [stepIndex, showResult])
@@ -58,6 +94,8 @@ function GuideClient({ guide }: GuideClientProps) {
     setStepIndex(0)
     setShowResult(false)
     setError(null)
+    setCheckedDocKeys(new Set())
+    setPrunedForSignature(null)
   }
 
   function setAnswer(questionKey: string, value: string | string[]) {
@@ -91,7 +129,13 @@ function GuideClient({ guide }: GuideClientProps) {
     setStepIndex((i) => Math.max(0, i - 1))
   }
 
-  const evaluation = showResult ? runPublicGuideEvaluation(guide, answers) : null
+  function clearAllChecks() {
+    setCheckedDocKeys(new Set())
+  }
+
+  function setDocumentChecked(key: string, checked: boolean) {
+    setCheckedDocKeys((prev) => toggleCheckedDocumentKey(prev, key, checked))
+  }
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-5xl" data-guide-client>
@@ -258,7 +302,12 @@ function GuideClient({ guide }: GuideClientProps) {
                 </div>
               ) : null}
 
-              <ResultList title="الوثائق" items={evaluation.documents} />
+              <DocumentsChecklist
+                items={evaluation.documents}
+                checkedKeys={checkedDocKeys}
+                onCheckedChange={setDocumentChecked}
+                onClearAll={clearAllChecks}
+              />
               <ResultList title="الخطوات" items={evaluation.steps} />
               <ResultList title="الرسوم" items={evaluation.fees} />
 
@@ -354,6 +403,96 @@ function GuideClient({ guide }: GuideClientProps) {
           العودة لتفاصيل المعاملة
         </Link>
       </div>
+    </div>
+  )
+}
+
+type DocumentsChecklistProps = {
+  items: GuideChecklistItem[]
+  checkedKeys: ReadonlySet<string>
+  onCheckedChange: (key: string, checked: boolean) => void
+  onClearAll: () => void
+}
+
+function DocumentsChecklist({
+  items,
+  checkedKeys,
+  onCheckedChange,
+  onClearAll,
+}: DocumentsChecklistProps) {
+  if (items.length < 1) return null
+
+  const checkedCount = items.reduce(
+    (n, item) => n + (checkedKeys.has(item.key) ? 1 : 0),
+    0,
+  )
+  const headingId = 'guide-documents-checklist-heading'
+  const safetyId = 'guide-documents-checklist-safety'
+
+  return (
+    <div data-guide-documents-checklist data-testid="guide-documents-checklist">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h3 id={headingId} className="font-display text-lg font-bold text-ink-950">
+          الوثائق
+        </h3>
+        <button
+          type="button"
+          onClick={onClearAll}
+          disabled={checkedCount === 0}
+          data-checklist-clear-all
+          className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border bg-surface px-3 text-sm font-semibold text-ink-800 hover:bg-ivory disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {CHECKLIST_CLEAR_ALL_LABEL_AR}
+        </button>
+      </div>
+      <p id={safetyId} className="mt-2 max-w-[40rem] text-sm leading-relaxed text-ink-600" data-checklist-safety>
+        {CHECKLIST_SAFETY_COPY_AR}
+      </p>
+      <ul className="mt-3 flex flex-col gap-3" aria-labelledby={headingId} aria-describedby={safetyId}>
+        {items.map((item) => {
+          const inputId = `guide-doc-check-${item.key}`
+          const checked = checkedKeys.has(item.key)
+          return (
+            <li key={item.key}>
+              <label
+                htmlFor={inputId}
+                data-checklist-item={item.key}
+                data-checklist-checked={checked ? 'true' : 'false'}
+                className={cn(
+                  'flex min-h-12 cursor-pointer items-start gap-3 rounded-[0.8125rem] border bg-surface px-4 py-3',
+                  checked
+                    ? 'border-brand-800/50 bg-brand-50/40'
+                    : 'border-border/80 hover:bg-ivory/60',
+                )}
+              >
+                <input
+                  id={inputId}
+                  type="checkbox"
+                  className="mt-1 size-5 shrink-0 rounded border-border text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40 focus-visible:ring-offset-2"
+                  checked={checked}
+                  onChange={(e) => onCheckedChange(item.key, e.target.checked)}
+                  data-checklist-checkbox={item.key}
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-ink-950">{item.title}</span>
+                  <span className="mt-1 block text-xs font-medium text-ink-600">
+                    {kindLabel(item.kind)}
+                    {checked ? ' — محدّد للتحضير' : ''}
+                  </span>
+                  {item.detail ? (
+                    <span className="mt-2 block whitespace-pre-wrap text-sm text-ink-700">
+                      {item.detail}
+                    </span>
+                  ) : null}
+                  {item.why ? (
+                    <span className="mt-2 block text-xs text-ink-500">لماذا: {item.why}</span>
+                  ) : null}
+                </span>
+              </label>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

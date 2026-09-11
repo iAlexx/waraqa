@@ -23,6 +23,7 @@ const { cleanupPhase8QaFixture, countPhase8QaPublishedEligible } = await import(
   '../src/lib/public/qa-phase8-cleanup.ts'
 )
 const { PHASE8_QA_STABLE, PHASE8_QA_SLUG_PREFIX } = await import('../src/lib/public/qa-phase8-markers.ts')
+const { createAuthoritativeClaimFixture } = await import('../tests/helpers/claim-trust-fixture.ts')
 
 const STATE_DIR = path.join(ROOT, 'docs/qa/phase-8/fixture-state')
 const MANIFEST = path.join(STATE_DIR, 'fixture-manifest.json')
@@ -33,6 +34,18 @@ async function main() {
   const payload = await getPayload({ config })
   const cleaned = await cleanupPhase8QaFixture(payload)
   console.log('Cleaned Phase 8 QA rows:', cleaned.deleted)
+
+  const reviewer = await payload.create({
+    collection: 'users',
+    data: {
+      email: 'qa-p8-r1-reviewer@example.test',
+      password: 'TestPassphrase-P8-QA-Reviewer!',
+      role: 'reviewer',
+      name: 'Phase 8 QA Reviewer',
+    },
+    overrideAccess: true,
+    context: seed,
+  })
 
   const category = await payload.create({
     collection: 'categories',
@@ -108,6 +121,7 @@ async function main() {
       verificationStatus: 'verified',
       lastVerifiedAt: new Date().toISOString(),
       active: true,
+      contentClass: 'DEMO',
       _status: 'published',
       notes: 'ملاحظة داخلية — لا تُعرض للعامة',
     },
@@ -115,8 +129,19 @@ async function main() {
     context: seed,
   })
 
+  const claim = await createAuthoritativeClaimFixture(payload, {
+    key: 'claim_qa_p8_r1_summary',
+    sourceId: Number(source.id),
+    reviewerId: Number(reviewer.id),
+    statement: 'ادعاء تجريبي للدليل التفاعلي — ليس رسمياً.',
+    contentClass: 'DEMO',
+  })
+
   const reviewedAt = new Date().toISOString()
   const covered = ['summary', 'required_documents', 'steps', 'fees', 'other'] as const
+  const claimBindings = [
+    { claim: Number(claim.id), required: true, coveredSection: 'summary' as const },
+  ]
 
   const guideConfig = {
     guideEnabled: true,
@@ -209,6 +234,9 @@ async function main() {
     category: category.id,
     agency: agency.id,
     lastReviewedAt: reviewedAt,
+    contentClass: 'DEMO' as const,
+    claimBindings,
+    claimTrustOk: true,
     steps: [
       { key: 'step_prepare', title: 'حضّر الوثائق', description: 'جهّز الهوية حسب القائمة.' },
       { key: 'step_submit', title: 'راجع المركز', description: 'قدّم الطلب في المركز المناسب.' },
@@ -302,6 +330,7 @@ async function main() {
       active: true,
       workflowState: 'draft',
       markedOutdated: false,
+      claimTrustOk: false,
       _status: 'draft',
     } as never,
     overrideAccess: true,
@@ -334,7 +363,7 @@ async function main() {
       `/transactions/${PHASE8_QA_STABLE.txGuide}/guide`,
       `/transactions/${PHASE8_QA_STABLE.txNoGuide}`,
     ],
-    note: 'Owner decision: answers are in-memory only (no localStorage). QA/demo labeled content.',
+    note: 'Owner decision: answers are in-memory only (no localStorage). DEMO contentClass — use WARAQA_PUBLIC_CONTENT_MODE=demo for public E2E.',
   }
 
   fs.writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')

@@ -503,6 +503,18 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.locator('[data-guide-client]').getByRole('heading', { name: 'الوثائق' })).toBeVisible()
     expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
 
+    // P9-A: interactive document checklist (in-memory only)
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await expect(checklist).toBeVisible()
+    await expect(checklist.getByText(/التحديد هون بس لمساعدتك بالتحضير/)).toBeVisible()
+    const firstDoc = checklist.getByRole('checkbox').first()
+    await expect(firstDoc).toBeVisible()
+    await firstDoc.check()
+    await expect(firstDoc).toBeChecked()
+    await checklist.getByRole('button', { name: 'إلغاء تحديد الكل' }).click()
+    await expect(firstDoc).not.toBeChecked()
+    expect(page.url()).not.toMatch(/[?&](doc_|checked|checklist)=/)
+
     await page.getByRole('button', { name: 'ابدأ من جديد' }).click()
     await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
     await expect(page.locator('#guide-question-heading')).toBeVisible()
