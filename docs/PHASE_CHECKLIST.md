@@ -219,7 +219,7 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 
 ### Not started (later phases)
 
-- Phase 9 remaining: WhatsApp / print / share URLs / Edit Answers summary
+- Phase 9 remaining: WhatsApp / share URLs / Edit Answers summary
 - Phase 10 reporting
 - Phase 11 sitemap / structured data / advanced revalidation
 
@@ -227,12 +227,14 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 
 - [x] P9-A: interactive local documents checklist + clear-all (in `GuideClient`)
 - [x] P9-B: schema-versioned `localStorage` for answers + checklist (`waraqa:guide:<slug>`)
+- [x] P9-C: browser-native A4 RTL print (`window.print` + `@media print`; preparation sheet only)
+  - Accepted: **PASS WITH PRINT-PREVIEW LIMITATION** — real OS/browser Print Preview not manually inspected (not a commit blocker).
+  - **Required Phase 13 / pre-production:** manual Print Preview QA (A4 RTL, margins, page breaks, checklist marks, DEMO/disclaimer/sources).
 - [ ] WhatsApp share
-- [ ] Print stylesheet
 - [ ] Edit Answers summary UX
 - [ ] Share URLs
 
-See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1.
+See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.2.
 
 ### QA evidence
 

@@ -111,6 +111,7 @@ function SiteHeader({ className, settings, currentPath = '/' }: SiteHeaderProps)
       </div>
 
       <header
+        data-site-header=""
         className={cn(
           'sticky top-0 z-40 border-b border-border/70 bg-surface/95 backdrop-blur-sm',
           className,

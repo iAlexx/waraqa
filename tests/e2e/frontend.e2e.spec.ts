@@ -585,6 +585,75 @@ test.describe('Phase 8 interactive guide', () => {
     expect(afterRestart).toBeNull()
   })
 
+  test('P9-C print sheet: button, demo warning, print media hides chrome', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toHaveCount(0)
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const printBtn = page.getByRole('button', { name: 'طباعة النتيجة' })
+    await expect(printBtn).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await checklist.getByRole('checkbox').first().check()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+
+    await expect(page.locator('[data-guide-print-sheet]')).toBeVisible()
+    await expect(page.locator('[data-demo-content-label]').first()).toContainText(
+      'بيانات تجريبية للعرض — ليست معلومات رسمية',
+    )
+    await expect(page.locator('[data-print-disclaimer]')).toContainText('منصة إرشادية مستقلة')
+    await expect(page.locator('[data-guide-print-sheet]')).toContainText('المصادر الرسمية')
+
+    const overflow = await page.evaluate(() => {
+      const el = document.querySelector('[data-guide-print-sheet]')
+      if (!el) return true
+      return el.scrollWidth > el.clientWidth + 1
+    })
+    expect(overflow).toBe(false)
+
+    await page.emulateMedia({ media: 'print' })
+
+    await expect(page.locator('[data-site-header]')).toBeHidden()
+    await expect(page.locator('[data-site-footer]')).toBeHidden()
+    await expect(page.locator('[data-guide-controls]')).toBeHidden()
+    await expect(printBtn).toBeHidden()
+    await expect(page.locator('[data-guide-print-sheet]')).toBeVisible()
+    await expect(page.locator('[data-guide-print-chrome]')).toBeVisible()
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+
+    const checkedMark = await page.evaluate(() => {
+      const item = document.querySelector('[data-checklist-checked="true"]')
+      if (!item) return null
+      return getComputedStyle(item, '::before').content
+    })
+    expect(checkedMark && checkedMark !== 'none').toBeTruthy()
+    expect(String(checkedMark)).toMatch(/✓/)
+
+    await page.emulateMedia({ media: 'screen' })
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-documents-checklist]').getByRole('checkbox').first()).toBeChecked()
+  })
+
   test('hidden transaction guide slug returns not found', async ({ page }) => {
     await page.goto(`/transactions/${hiddenSlug}/guide`)
     await expect(page.locator('[data-not-found]')).toBeVisible()

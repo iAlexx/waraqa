@@ -1,6 +1,6 @@
 # Interactive Guide Architecture (Phase 8–9)
 
-**Status:** Phase 8 technical pass + P9-A checklist + P9-B local persistence
+**Status:** Phase 8 technical pass + P9-A checklist + P9-B local persistence + P9-C A4 print
 
 **Last updated:** 2026-09-11
 
@@ -10,7 +10,7 @@
 
 Phase 8 delivers an anonymous, in-session **interactive guide** on eligible public transactions. Visitors answer structured questions; a pure rule engine produces a personalized preparation checklist (documents, steps, fees, notices, optional variant) with explanations. Waraqa does not submit applications or guarantee outcomes.
 
-Phase 9-A adds an interactive **documents checklist**. Phase 9-B adds **device-local** persistence of answers + checklist progress.
+Phase 9-A adds an interactive **documents checklist**. Phase 9-B adds **device-local** persistence of answers + checklist progress. Phase 9-C adds **browser-native A4 RTL print** of the personalized result (preparation sheet only — not an official document; no server PDF).
 
 ## 2. Owner decisions (authoritative)
 
@@ -20,7 +20,8 @@ Phase 9-A adds an interactive **documents checklist**. Phase 9-B adds **device-l
 | Refresh / reopen | **P9-B:** restores compatible local progress; incompatible payloads are ignored and cleared |
 | Restart | **ابدأ من جديد** clears React state **and** deletes this transaction’s local payload |
 | Result scope | Checklist + kinds + why + steps/fees/notices + variant + disclaimer + last-reviewed + official sources + link back to Phase 7 detail |
-| Explicitly deferred | WhatsApp share, print, share URLs, Edit Answers summary UX, user accounts, server-side citizen state |
+| Print (P9-C) | Browser `window.print()` + `@media print` / `@page` A4 portrait RTL. Existing result DOM + print chrome; generated print date is not a verification date. No PDF backend, WhatsApp, share URLs, or server-stored results |
+| Explicitly deferred | WhatsApp share, share URLs, Edit Answers summary UX, user accounts, server-side citizen state |
 | Variants | Minimal additive model + `selectVariant`; at most one final variant; conflicting variant keys fail validation (fail closed) |
 | Rule format | Stable `key` references only — no Payload row IDs, array indices, eval, or executable code |
 
@@ -37,6 +38,19 @@ Phase 9-A adds an interactive **documents checklist**. Phase 9-B adds **device-l
 | Privacy | No national IDs, free text, uploads, contacts, auth, or claim/editorial fields. Device-local only — no server sync |
 
 Implementation: `src/lib/guide/guide-local-storage.ts` + `GuideClient` post-mount restore/write.
+
+## 2.2 Print (P9-C)
+
+| Item | Detail |
+| --- | --- |
+| Action | **طباعة النتيجة** on successful result only → `window.print()` |
+| Styling | `src/app/(frontend)/globals.css` `@media print` + `@page { size: A4 portrait }` |
+| DOM strategy | Existing result tree under `[data-guide-print-sheet]`; `[data-print-hide]` for chrome/controls; `[data-print-only]` for brand strip, answer summary, generated date, source URLs |
+| Generated date | Client-rendered Arabic label **تاريخ طباعة هذه النسخة** — not stored; not a source/verification date |
+| Checklist | Print uses `[✓]` / `[ ]` via `::before` on `[data-checklist-item]`; native checkboxes hidden in print |
+| Trust | DEMO warning + independence disclaimer print with the sheet; public eligibility unchanged (no QA_TEST on public routes) |
+| Non-goals | No PDF backend, no letterhead/seal imitation, no WhatsApp/share |
+| Known limitation | **OS/browser Print Preview** was not manually inspected at P9-C accept (`PASS WITH PRINT-PREVIEW LIMITATION`). Automated coverage uses Playwright `emulateMedia({ media: 'print' })` only. **Required manual QA** before production: Phase 13 / pre-production hardening — inspect real Print Preview (A4, RTL, margins, page breaks, checklist marks, DEMO/disclaimer/sources). |
 
 ## 3. Public routes
 
@@ -116,16 +130,17 @@ See [SECURITY.md](./SECURITY.md).
 
 - Step-by-step questions with back/next/restart.
 - Result: variant (if any), grouped checklist, notices, independence disclaimer, last-reviewed, official source links, link to Phase 7 detail.
+- **P9-C:** **طباعة النتيجة** on successful result; print hides site chrome/controls; A4 RTL stylesheet; generated print date separate from verification.
 - `<noscript>` honest fallback on guide route (no empty interactive shell).
 - Reduced-motion safe; keyboard-operable radios/checkboxes and focus management on step change.
 
 ## 10. Explicit non-goals (remaining Phase 9+)
 
-- WhatsApp, print stylesheet, share URLs, Edit Answers summary UX
+- WhatsApp, share URLs, Edit Answers summary UX
 - Phase 10: outdated-information reporting from guide
 - Phase 11: sitemap/structured data for guide paths
 - AI inference, arbitrary expressions, admin live rule preview (deferred)
-- Media uploads, citizen accounts, server-side citizen state
+- Media uploads, citizen accounts, server-side citizen state / PDF export service
 
 ## 11. QA
 

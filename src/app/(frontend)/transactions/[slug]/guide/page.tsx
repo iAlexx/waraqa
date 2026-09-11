@@ -109,7 +109,11 @@ export default async function TransactionGuidePage({ params, searchParams }: Pro
 
   return (
     <div className="waraqa-container py-8 md:py-12" data-guide-page data-guide-slug={guide.slug}>
-      <nav aria-label="مسار التنقل" className="mx-auto mb-6 w-full max-w-5xl text-sm text-ink-600">
+      <nav
+        aria-label="مسار التنقل"
+        data-print-hide=""
+        className="mx-auto mb-6 w-full max-w-5xl text-sm text-ink-600"
+      >
         <ol className="flex flex-wrap gap-2">
           <li>
             <Link href="/" className="hover:underline">
@@ -129,7 +133,7 @@ export default async function TransactionGuidePage({ params, searchParams }: Pro
         </ol>
       </nav>
 
-      <header className="mx-auto w-full max-w-5xl border-b border-border/60 pb-6">
+      <header className="mx-auto w-full max-w-5xl border-b border-border/60 pb-6" data-guide-page-header="">
         {guide.demoLabeled ? (
           <p
             className="mb-3 rounded-[0.8125rem] border border-warning/40 bg-warning/10 px-3 py-2 text-sm font-semibold text-warning"
@@ -142,14 +146,19 @@ export default async function TransactionGuidePage({ params, searchParams }: Pro
         <h1 className="font-display text-2xl font-bold text-ink-950 md:text-[1.75rem]">
           الدليل التفاعلي — {guide.title}
         </h1>
-        <p className="mt-2 max-w-[40rem] text-ink-700">{guide.summary}</p>
-        <p className="mt-4 rounded-[0.8125rem] border border-border/80 bg-ivory/80 px-4 py-3 text-sm text-ink-700">
+        <p className="mt-2 max-w-[40rem] text-ink-700" data-print-hide="">
+          {guide.summary}
+        </p>
+        <p
+          className="mt-4 rounded-[0.8125rem] border border-border/80 bg-ivory/80 px-4 py-3 text-sm text-ink-700"
+          data-print-hide=""
+        >
           ورقة منصة إرشادية مستقلة. تقدّمك يُحفظ على جهازك فقط ولا يُرسل إلى الخادم.
         </p>
       </header>
 
       {/* Progressive enhancement: no-JS users get an honest fallback (not an empty shell). */}
-      <noscript>
+      <noscript data-print-hide="">
         <div className="mx-auto mt-8 w-full max-w-5xl rounded-[0.8125rem] border border-border bg-surface px-4 py-5 text-ink-800">
           <p className="font-semibold">الدليل التفاعلي يحتاج جافاسكريبت في المتصفح.</p>
           <p className="mt-2 text-sm leading-relaxed">

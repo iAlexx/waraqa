@@ -2394,6 +2394,7 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - complete unit, integration, and E2E suites;
 - accessibility audit;
 - manual RTL audit;
+- **required: manual OS/browser Print Preview QA for personalized guide result (P9-C carry-over — A4 portrait, RTL, margins, page breaks, checklist `[✓]`/`[ ]`, DEMO warning, independence disclaimer, sources; Playwright `emulateMedia('print')` alone is not sufficient);**
 - security review;
 - dependency audit;
 - performance audit;

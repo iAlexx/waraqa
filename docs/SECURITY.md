@@ -84,7 +84,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 - **No** national ID collection.
 - **No** citizen accounts.
 - Change reports: optional contact only; never published automatically.
-- **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1.
+- **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. **P9-C:** browser-native print does not transmit or persist answers; generated print date is local display only. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.2.
 
 ## 8. Dependency and migration safety
 
