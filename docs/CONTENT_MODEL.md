@@ -296,6 +296,39 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 
 ---
 
+## Collection: `user-reports` — بلاغات المواطنين (Phase 10)
+
+**Purpose:** Citizens report changed/outdated information about a publicly eligible Transaction. Reports are **never** public content.
+
+| Field | Notes |
+| --- | --- |
+| `transaction` | Required relationship → `transactions` |
+| `section` | `documents` \| `fees` \| `steps` \| `location` \| `duration` \| `source` \| `other` |
+| `message` | Plain-text citizen explanation (sanitized; max 2000) |
+| `sourceUrl` | Optional http(s) URL |
+| `contactEmail` / `contactPhone` | Optional; **field-level read only for admin/reviewer** |
+| `consentAccepted` | Required at submit |
+| `status` | `open` \| `in_review` \| `resolved` \| `rejected` \| `spam` |
+| `reviewNotes` | Internal editorial notes |
+| `resolutionSummary` | Required when resolving/rejecting |
+| `resolvedAt` / `resolvedBy` | Server-stamped on resolve/reject |
+
+**Public entry:** CTA on eligible transaction detail → `/report-information?transaction=<slug>` → `POST /api/public/reports`.
+
+**Eligibility:** Same P0-05 live claim trust + P0-06 `contentClass` gate as `loadPublicTransactionBySlug`. `QA_TEST` is never reportable. `DEMO` only when `WARAQA_PUBLIC_CONTENT_MODE=demo`.
+
+**ACL:** Anonymous create only via the public submit path (`overrideAccess` + `context.publicReportSubmit`). Collection `create` is always false for clients. Read/update: active `admin` \| `reviewer` only. Delete: `admin` only. Researchers have **no** report access (minimum for roadmap: reviewers resolve reports).
+
+**Spam controls:** Invisible honeypot (`website`); filled honeypot → HTTP success without persistence. PostgreSQL fixed-window rate limit on HMAC+SHA256 identity hash (no raw IP stored). Buckets table `report_rate_buckets`; retain ~7 days.
+
+**Audit:** `report_received`, `report_in_review`, `report_resolved`, `report_rejected`, `report_marked_spam`, `report_status_changed` via `audit-events`.
+
+**Notifications:** Deferred — no email adapter configured; Admin triage is sufficient.
+
+**Out of scope:** attachments, national ID, citizen accounts, automatic content changes from reports.
+
+---
+
 ## Global: `site-settings` — إعدادات الموقع
 
 **Purpose:** Minimal platform settings for later public shell wiring. **Phase 3 ships the CMS global only**; public UI reads these fields in **Phase 5**.

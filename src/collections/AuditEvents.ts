@@ -61,6 +61,12 @@ export const AuditEvents: CollectionConfig = {
         { label: 'استعادة نسخة', value: 'revision_restored' },
         { label: 'تجاوز موعد مراجعة', value: 'review_date_overridden' },
         { label: 'وسم قديم', value: 'marked_outdated' },
+        { label: 'بلاغ مواطن', value: 'report_received' },
+        { label: 'مراجعة بلاغ', value: 'report_in_review' },
+        { label: 'إغلاق بلاغ', value: 'report_resolved' },
+        { label: 'رفض بلاغ', value: 'report_rejected' },
+        { label: 'بلاغ مزعج', value: 'report_marked_spam' },
+        { label: 'تغيير حالة بلاغ', value: 'report_status_changed' },
       ],
     },
     {

@@ -220,8 +220,18 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 ### Not started (later phases)
 
 - Share permalinks / tokens (optional post–Phase 9)
-- Phase 10 reporting
 - Phase 11 sitemap / structured data / advanced revalidation
+
+## Phase 10 — User Reports (COMPLETE)
+
+- [x] Public CTA «بلّغنا عن معلومة تغيّرت» on publicly eligible Transactions only (P0-05/P0-06)
+- [x] Arabic report form at `/report-information` (no attachments; optional protected contact)
+- [x] Zod + plain-text sanitization; honeypot; PostgreSQL rate limit (hashed identity)
+- [x] Collection `user-reports` with strict ACL (admin/reviewer triage; no public read)
+- [x] Status lifecycle `open` → `in_review` → `resolved` / `rejected` / `spam` + audit-events
+- [x] Notifications deferred (no safe email adapter in repo)
+
+See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § `user-reports`, [SECURITY.md](./SECURITY.md).
 
 ## Phase 9 — Guide result UX (P9-A…P9-E)
 

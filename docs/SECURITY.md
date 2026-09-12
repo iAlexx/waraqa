@@ -61,6 +61,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 - **Transactions (Phase 4+):** also exclude `markedOutdated` and `workflowState = archived` via `getPublicTransactionWhere()` (search and Phase 7 detail use the same gate — [SEARCH_ARCHITECTURE.md](./SEARCH_ARCHITECTURE.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md)).
 - **P0-06 contentClass (IMPLEMENTED):** public transaction/source reads also require `contentClass` in the mode-allowed set (`PRODUCTION` only by default; `DEMO` only when `WARAQA_PUBLIC_CONTENT_MODE=demo`). `QA_TEST` is never public. See [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md).
 - **Phase 7 detail:** `loadPublicTransactionBySlug` always uses `overrideAccess: false`, maps to a public DTO (no raw Payload document in React), and returns a uniform not-found for draft/inactive/archived/outdated/missing slugs (no existence leak; no outdated warning page).
+- Phase 10 reporting CTA is on eligible transaction detail pages (see CONTENT_MODEL § user-reports).
 - Draft preview requires authenticated admin session or a signed preview secret **after** preview is implemented.
 - `internalNotes` (transactions), generated `searchText`, and editorial source `notes` are never returned to anonymous/viewer reads.
 - Errors returned to clients must be safe (no stack traces, no secrets).
@@ -73,17 +74,18 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 | --- | --- |
 | CSRF | Rely on framework/Payload cookie + same-site practices; avoid cookie auth on cross-site public POSTs |
 | XSS | Sanitize / safely serialize rich text; never render raw user HTML from reports |
-| Rate limiting | Public POSTs (reports, search abuse) rate-limited |
+| Rate limiting | Public report POSTs: PostgreSQL `report_rate_buckets` + hashed identity (Phase 10); no raw IP stored |
 | Secure cookies | HTTPS-only in production; secure admin cookies |
 | Input validation | Zod at all custom input boundaries |
 | CSP | Plan and test before production demo (Phase later) |
+| User reports | Never publicly readable; plain text; honeypot; contact field ACL (admin/reviewer); no attachments |
 
 ## 7. Data minimization
 
 - **No** identity-document uploads in MVP.
 - **No** national ID collection.
 - **No** citizen accounts.
-- Change reports: optional contact only; never published automatically.
+- Change reports (Phase 10): optional contact only; never published automatically; not in public DTOs/URLs. Rate-limit identity is a one-way hash — raw IP is not persisted.
 - **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. **P9-C:** browser-native print does not transmit or persist answers; generated print date is local display only. **P9-D:** WhatsApp share is client-side text only — public transaction detail URL, no answers/checklist state, no server-stored personalized results. **P9-E:** edit-from-result prunes inapplicable answers before evaluation/persist so hidden answers cannot silently drive rules. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
 
 ## 8. Dependency and migration safety

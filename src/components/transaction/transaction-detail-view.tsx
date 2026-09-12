@@ -179,6 +179,16 @@ function TransactionDetailView({
               </Link>
             </p>
           ) : null}
+
+          <p className={hasGuide ? 'mt-3' : 'mt-5'}>
+            <Link
+              href={`/report-information?transaction=${encodeURIComponent(t.slug)}`}
+              className="inline-flex min-h-12 items-center rounded-[0.8125rem] border border-border bg-surface px-5 font-semibold text-brand-900 hover:bg-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40"
+              data-report-changed-info
+            >
+              بلّغنا عن معلومة تغيّرت
+            </Link>
+          </p>
         </header>
 
         <div className="mt-10 flex flex-col gap-10">

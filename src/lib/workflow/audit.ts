@@ -16,6 +16,12 @@ export type AuditAction =
   | 'revision_restored'
   | 'review_date_overridden'
   | 'marked_outdated'
+  | 'report_received'
+  | 'report_in_review'
+  | 'report_resolved'
+  | 'report_rejected'
+  | 'report_marked_spam'
+  | 'report_status_changed'
 
 const SAFE_META_KEYS = new Set([
   'fromState',

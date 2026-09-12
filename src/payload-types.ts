@@ -75,6 +75,7 @@ export interface Config {
     sources: Source;
     transactions: Transaction;
     claims: Claim;
+    'user-reports': UserReport;
     'audit-events': AuditEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -91,6 +92,7 @@ export interface Config {
     sources: SourcesSelect<false> | SourcesSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     claims: ClaimsSelect<false> | ClaimsSelect<true>;
+    'user-reports': UserReportsSelect<false> | UserReportsSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -934,6 +936,50 @@ export interface Claim {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * بلاغات المواطنين عن معلومات تغيّرت — ليست محتوى عاماً. بيانات التواصل محمية للمراجع/المدير فقط.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-reports".
+ */
+export interface UserReport {
+  id: number;
+  /**
+   * المعاملة التي يخصّها البلاغ.
+   */
+  transaction: number | Transaction;
+  section: 'documents' | 'fees' | 'steps' | 'location' | 'duration' | 'source' | 'other';
+  /**
+   * نص عادي من المواطن — لا يُعرض للعامة.
+   */
+  message: string;
+  sourceUrl?: string | null;
+  /**
+   * اختياري — للمتابعة بشأن البلاغ فقط. لا يُعرض للعامة. لا تُعدّل من لوحة التحرير عادةً.
+   */
+  contactEmail?: string | null;
+  /**
+   * اختياري — للمتابعة بشأن البلاغ فقط. لا يُعرض للعامة.
+   */
+  contactPhone?: string | null;
+  consentAccepted: boolean;
+  /**
+   * مفتوح → قيد المراجعة → تم الحل / مرفوض / مزعج.
+   */
+  status: 'open' | 'in_review' | 'resolved' | 'rejected' | 'spam';
+  /**
+   * ملاحظات الفريق — لا تُرسل للمواطن تلقائياً.
+   */
+  reviewNotes?: string | null;
+  /**
+   * مطلوب عند الإغلاق أو الرفض.
+   */
+  resolutionSummary?: string | null;
+  resolvedAt?: string | null;
+  resolvedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * سجل تدقيق غير قابل للتعديل — يُكتب من خادم سير العمل فقط.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -955,7 +1001,13 @@ export interface AuditEvent {
     | 'archive_restored'
     | 'revision_restored'
     | 'review_date_overridden'
-    | 'marked_outdated';
+    | 'marked_outdated'
+    | 'report_received'
+    | 'report_in_review'
+    | 'report_resolved'
+    | 'report_rejected'
+    | 'report_marked_spam'
+    | 'report_status_changed';
   entityType: string;
   entityId: string;
   transaction?: (number | null) | Transaction;
@@ -1030,6 +1082,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'claims';
         value: number | Claim;
+      } | null)
+    | ({
+        relationTo: 'user-reports';
+        value: number | UserReport;
       } | null)
     | ({
         relationTo: 'audit-events';
@@ -1480,6 +1536,26 @@ export interface ClaimsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-reports_select".
+ */
+export interface UserReportsSelect<T extends boolean = true> {
+  transaction?: T;
+  section?: T;
+  message?: T;
+  sourceUrl?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  consentAccepted?: T;
+  status?: T;
+  reviewNotes?: T;
+  resolutionSummary?: T;
+  resolvedAt?: T;
+  resolvedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

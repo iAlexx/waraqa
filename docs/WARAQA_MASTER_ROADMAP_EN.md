@@ -2344,6 +2344,8 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - submission displays a clear success state;
 - no attachment upload exists.
 
+**Status (2026-09-12):** Implemented. Notifications deferred (no email adapter). See CONTENT_MODEL § user-reports.
+
 ## Phase 11 — Admin UX Refinement
 
 ### Tasks
