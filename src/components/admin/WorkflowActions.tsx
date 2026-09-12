@@ -4,6 +4,7 @@ import { useAuth, useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getActiveUserRole, type UserLike } from '@/access/roles'
+import { TransactionReadinessPanel } from '@/components/admin/TransactionReadinessPanel'
 import {
   actorDisplayLabel,
   getVisibleWorkflowActions,
@@ -57,6 +58,7 @@ export function WorkflowActions() {
   const [draftText, setDraftText] = useState('')
   const [reviewerLabel, setReviewerLabel] = useState<string>('—')
   const [invalidated, setInvalidated] = useState(false)
+  const [readinessRefresh, setReadinessRefresh] = useState(0)
 
   const role = getActiveUserRole(user as UserLike)
   const actions = useMemo(
@@ -163,6 +165,7 @@ export function WorkflowActions() {
           }
         } else {
           setMsg('تم بنجاح — جارٍ تحديث الصفحة…')
+          setReadinessRefresh((n) => n + 1)
           window.setTimeout(() => window.location.reload(), 600)
         }
       } catch (e) {
@@ -221,6 +224,8 @@ export function WorkflowActions() {
         />
         <StatusCard title="حالة النشر" value={pubLabel} tone="neutral" />
       </div>
+
+      <TransactionReadinessPanel transactionId={id} refreshToken={readinessRefresh} />
 
       {invalidated ? (
         <div

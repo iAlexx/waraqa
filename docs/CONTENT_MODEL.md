@@ -267,6 +267,22 @@ Payload **unnamed tabs** (presentation only — stored document shape stays flat
 
 **Editorial rules (admin help only):** `contentClass` ≠ verification; `PRODUCTION` does not mean verified; claim trust remains **server-enforced** (P0-05); public filtering remains P0-06. P11-A does not add blocker widgets (P11-B).
 
+#### Admin readiness panel (P11-B)
+
+Informational panel beside WorkflowActions (`GET /api/transactions/:id/readiness`, active `admin`/`reviewer`/`researcher` only).
+
+| Axis | Meaning |
+| --- | --- |
+| جاهزية سير العمل / النشر | Same content gates as approve/publish (procedure + source evidence + required AUTHORITATIVE claims) + transition/hash notes |
+| أهلية الظهور للعامة | P0-05 live claim trust + P0-06 contentClass + published/active/outdated/archived |
+
+**Rules:**
+- Workflow readiness ≠ public eligibility (e.g. QA_TEST may pass CMS gates but never public).
+- `contentClass` ≠ verification.
+- Stored `claimTrustOk` ≠ live authority; stale `true` surfaces as blocked.
+- Panel is **informational**; approve/publish still re-run all server checks independently.
+- Evaluation uses **last saved** draft document only.
+
 ---
 
 ## Global: `site-settings` — إعدادات الموقع

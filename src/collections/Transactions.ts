@@ -45,7 +45,8 @@ import {
   type WorkflowRunInput,
 } from '@/lib/workflow/transaction-workflow'
 import { WorkflowError, type WorkflowAction } from '@/lib/workflow/types'
-import type { UserLike } from '@/access/roles'
+import { evaluateTransactionAdminReadiness } from '@/lib/admin/transaction-readiness'
+import { hasActiveRole, type UserLike } from '@/access/roles'
 
 const WORKFLOW_ACTIONS = new Set<WorkflowAction>([
   'submitForReview',
@@ -103,6 +104,24 @@ async function handleWorkflowEndpoint(req: PayloadRequest) {
   }
 }
 
+async function handleReadinessEndpoint(req: PayloadRequest) {
+  const user = req.user as UserLike
+  if (!user) throw new APIError('يجب تسجيل الدخول.', 401)
+  if (!hasActiveRole(user, 'admin', 'reviewer', 'researcher')) {
+    throw new APIError('غير مصرّح بعرض تفاصيل الجاهزية.', 403)
+  }
+
+  const id = req.routeParams?.id
+  if (id == null) throw new APIError('معرّف غير صالح.', 422)
+
+  const readiness = await evaluateTransactionAdminReadiness(
+    req.payload,
+    Array.isArray(id) ? id[0] : id,
+    req,
+  )
+  return Response.json({ readiness })
+}
+
 /**
  * Central guidance collection.
  * Roadmap slug: `transactions` (Arabic: المعاملات).
@@ -147,6 +166,11 @@ export const Transactions: CollectionConfig = {
       path: '/:id/workflow/:action',
       method: 'post',
       handler: handleWorkflowEndpoint,
+    },
+    {
+      path: '/:id/readiness',
+      method: 'get',
+      handler: handleReadinessEndpoint,
     },
   ],
   access: {

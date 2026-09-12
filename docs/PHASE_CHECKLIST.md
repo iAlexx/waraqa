@@ -241,7 +241,7 @@ Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit ans
 ## Phase 11 — Admin UX (in progress)
 
 - [x] **P11-A:** Transaction admin unnamed tabs + Arabic editorial help (schema shape / RBAC / public behavior unchanged). See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § transactions Admin IA.
-- [ ] P11-B: claimTrust / contentClass blocker surfacing
+- [x] **P11-B:** Transaction Admin readiness panel (workflow publish readiness ≠ public eligibility; informational; server-enforced publish unchanged).
 - [ ] Later P11: fired-rule preview, dashboards, review-due filters, safer delete confirmations, tablet Admin QA
 
 ### QA evidence
