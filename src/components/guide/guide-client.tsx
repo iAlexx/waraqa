@@ -26,6 +26,7 @@ import {
   PRINT_RESULT_BUTTON_LABEL_AR,
   PRINT_SHEET_KIND_LABEL_AR,
 } from '@/lib/guide/print-labels'
+import { buildWhatsAppShare, WHATSAPP_SHARE_BUTTON_LABEL_AR } from '@/lib/guide/whatsapp-share'
 import type {
   GuideAnswers,
   GuideChecklistItem,
@@ -242,6 +243,24 @@ function GuideClient({ guide }: GuideClientProps) {
   const printAnswerRows =
     showResult && evaluation?.ok ? buildPrintAnswerRows(guide.questions, answers) : []
 
+  const whatsappShare = useMemo(() => {
+    if (!showResult || !evaluation || !evaluation.ok) return null
+    return buildWhatsAppShare({
+      title: guide.title,
+      detailHref: guide.detailHref,
+      siteOrigin: process.env.NEXT_PUBLIC_SERVER_URL,
+      documents: evaluation.documents.map((d) => ({ title: d.title })),
+      steps: evaluation.steps.map((s) => ({ title: s.title })),
+      notices: evaluation.notices.map((n) => ({
+        title: n.title,
+        body: n.body,
+        severity: n.severity,
+      })),
+      lastReviewedLabel: guide.lastReviewedLabel,
+      demoLabeled: guide.demoLabeled,
+    })
+  }, [showResult, evaluation, guide.title, guide.detailHref, guide.lastReviewedLabel, guide.demoLabeled])
+
   return (
     <div
       className="mx-auto w-full min-w-0 max-w-5xl"
@@ -421,6 +440,18 @@ function GuideClient({ guide }: GuideClientProps) {
                 >
                   {PRINT_RESULT_BUTTON_LABEL_AR}
                 </button>
+                {whatsappShare?.ok ? (
+                  <a
+                    href={whatsappShare.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-guide-whatsapp-share=""
+                    data-guide-whatsapp-public-url={whatsappShare.publicUrl}
+                    className="inline-flex min-h-11 items-center rounded-md border border-border bg-surface px-4 text-sm font-semibold text-brand-900 hover:bg-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40 focus-visible:ring-offset-2"
+                  >
+                    {WHATSAPP_SHARE_BUTTON_LABEL_AR}
+                  </a>
+                ) : null}
               </div>
 
               {evaluation.variant ? (

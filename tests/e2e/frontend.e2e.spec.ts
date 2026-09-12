@@ -654,6 +654,60 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.locator('[data-guide-documents-checklist]').getByRole('checkbox').first()).toBeChecked()
   })
 
+  test('P9-D WhatsApp share: href message is Arabic-safe and omits checklist/answers', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'مشاركة عبر واتساب' })).toHaveCount(0)
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const share = page.getByRole('link', { name: 'مشاركة عبر واتساب' })
+    await expect(share).toBeVisible()
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await checklist.getByRole('checkbox').first().check()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+
+    const href = await share.getAttribute('href')
+    expect(href).toMatch(/^https:\/\/wa\.me\/\?text=/)
+    const decoded = decodeURIComponent(new URL(href!).searchParams.get('text') || '')
+    expect(decoded).toContain('هاي قائمة معاملتي من ورقة:')
+    expect(decoded).toContain('بيانات تجريبية للعرض — ليست معلومات رسمية')
+    expect(decoded).toContain('ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً.')
+    expect(decoded).toMatch(/\/transactions\/qa-p8-r1-tx-guide/)
+    expect(decoded).not.toMatch(/needs_guardian|include-|doc_|rule_|claim_|contentClass|QA_TEST/)
+    expect(decoded).not.toContain('محدّد للتحضير')
+    expect(decoded).not.toContain('[✓]')
+    expect(decoded).not.toMatch(/[?&](answers|age_group|issuance)=/)
+
+    // Do not open external WhatsApp — inspect href only.
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'مشاركة عبر واتساب' })).toBeVisible()
+  })
+
   test('hidden transaction guide slug returns not found', async ({ page }) => {
     await page.goto(`/transactions/${hiddenSlug}/guide`)
     await expect(page.locator('[data-not-found]')).toBeVisible()
