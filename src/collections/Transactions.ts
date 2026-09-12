@@ -16,7 +16,7 @@ import {
   localizedTextarea,
 } from '@/fields/common'
 import { contentClassField } from '@/fields/content-class'
-import { guideFields } from '@/fields/guide-fields'
+import { guideAuthoringFields, guideEnabledField } from '@/fields/guide-fields'
 import { enforceContentClassGovernance } from '@/lib/content-class/content-class-governance'
 import {
   claimBindingFields,
@@ -24,7 +24,8 @@ import {
   requiredDocumentFields,
   sourceReferenceFields,
   stepFields,
-  workflowFields,
+  workflowPanelFields,
+  workflowSidebarFields,
 } from '@/fields/transaction-parts'
 import {
   enforcePublishAuthorization,
@@ -106,6 +107,7 @@ async function handleWorkflowEndpoint(req: PayloadRequest) {
  * Central guidance collection.
  * Roadmap slug: `transactions` (Arabic: المعاملات).
  * Phase 4 extends workflow only — does not rebuild Phase 3 schema.
+ * P11-A: admin tabs/groups + editorial help only (unnamed tabs — flat stored shape).
  */
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -128,7 +130,8 @@ export const Transactions: CollectionConfig = {
       'updatedAt',
     ],
     group: 'المحتوى',
-    description: 'المعاملات الإدارية — سير تحريري Phase 4 على نموذج Phase 3.',
+    description:
+      'المعاملات الإدارية — نظّم المحتوى عبر التبويبات. التصنيف والنشر وسير العمل في الشريط الجانبي. المحتوى المعبّأ ليس موثّقاً تلقائياً.',
     components: {
       edit: {
         beforeDocumentControls: ['/components/admin/WorkflowActions#WorkflowActions'],
@@ -170,24 +173,289 @@ export const Transactions: CollectionConfig = {
     afterRead: [attachPublicationStatusLabel, stripPrivateEditorialFields],
   },
   fields: [
-    localizedText('title', 'العنوان', { required: true }),
-    canonicalSlugField(),
-    localizedTextarea('summary', 'الملخص', {
-      required: true,
-      admin: { description: 'ملخص قصير للعرض العام.' },
-    }),
     {
-      name: 'searchText',
-      type: 'textarea',
-      label: 'نص البحث (مولَّد)',
-      localized: false,
-      index: true,
-      admin: {
-        hidden: true,
-        readOnly: true,
-        description:
-          'Phase 6 — نص مطبَّع مولَّد تلقائياً للمرشّحين. يُزال من الاستجابات العامة عبر afterRead.',
-      },
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'الأساسيات',
+          description: 'هوية المعاملة كما تظهر في القوائم والبحث — أبقِ المعرّف (slug) مستقراً.',
+          fields: [
+            localizedText('title', 'العنوان', {
+              required: true,
+              admin: { description: 'يظهر هذا النص للمواطن في العنوان والقوائم.' },
+            }),
+            canonicalSlugField(),
+            localizedTextarea('summary', 'الملخص', {
+              required: true,
+              admin: {
+                description: 'ملخص قصير يظهر للمواطن. تعبئته لا تعني أن المعلومة موثّقة.',
+              },
+            }),
+            {
+              name: 'category',
+              type: 'relationship',
+              relationTo: 'categories',
+              label: 'التصنيف',
+              required: true,
+              index: true,
+              localized: false,
+              admin: {
+                description: 'تصنيف للمواطن والتنقّل — قيمة تنظيمية داخل النظام أيضاً.',
+              },
+            },
+            {
+              name: 'agency',
+              type: 'relationship',
+              relationTo: 'agencies',
+              label: 'الجهة',
+              required: true,
+              index: true,
+              localized: false,
+              admin: {
+                description: 'الجهة المرتبطة بالمعاملة كما تُعرض للمواطن.',
+              },
+            },
+            {
+              name: 'serviceCenters',
+              type: 'relationship',
+              relationTo: 'service-centers',
+              label: 'مراكز الخدمة',
+              hasMany: true,
+              localized: false,
+              admin: {
+                description: 'معلومة للمواطن عن أماكن التنفيذ إن وُجدت.',
+              },
+            },
+            {
+              name: 'audiences',
+              type: 'select',
+              label: 'الجمهور',
+              hasMany: true,
+              localized: false,
+              enumName: 'tx_audience',
+              options: [
+                { label: 'مواطن', value: 'citizen' },
+                { label: 'مقيم', value: 'resident' },
+                { label: 'طالب', value: 'student' },
+                { label: 'موظف', value: 'employee' },
+                { label: 'أعمال', value: 'business' },
+                { label: 'زائر', value: 'visitor' },
+                { label: 'أخرى', value: 'other' },
+              ],
+              admin: {
+                description: 'لمن تُوجَّه هذه المعاملة — معلومة تنظيمية/عرضية للمواطن.',
+              },
+            },
+            {
+              name: 'aliases',
+              type: 'array',
+              label: 'أسماء بديلة (للبحث)',
+              admin: {
+                description: 'أسماء شائعة تساعد البحث. ليست عنواناً رسمياً بديلاً.',
+              },
+              fields: [localizedText('value', 'القيمة', { required: true })],
+            },
+          ],
+        },
+        {
+          label: 'محتوى الخدمة',
+          description: 'نصوص وشروط يراها المواطن — لا تُعدّ موثّقة لمجرد تعبئتها.',
+          fields: [
+            localizedTextarea('eligibility', 'الأهلية', {
+              admin: { description: 'معلومة للمواطن عن من يحق له تقديم الطلب.' },
+            }),
+            localizedTextarea('outcome', 'النتيجة', {
+              admin: { description: 'معلومة للمواطن عن ناتج المعاملة المتوقع.' },
+            }),
+            {
+              name: 'estimatedDuration',
+              type: 'group',
+              label: 'المدة المتوقعة',
+              admin: {
+                description: 'تقدير للمواطن — ليس تعهداً رسمياً من الجهة.',
+              },
+              fields: [
+                {
+                  name: 'minimum',
+                  type: 'number',
+                  label: 'الحد الأدنى',
+                  min: 0,
+                  localized: false,
+                },
+                {
+                  name: 'maximum',
+                  type: 'number',
+                  label: 'الحد الأقصى',
+                  min: 0,
+                  localized: false,
+                },
+                {
+                  name: 'unit',
+                  dbName: 'unit',
+                  type: 'select',
+                  label: 'الوحدة',
+                  localized: false,
+                  options: [
+                    { label: 'دقائق', value: 'minutes' },
+                    { label: 'ساعات', value: 'hours' },
+                    { label: 'أيام عمل', value: 'business_days' },
+                    { label: 'أيام تقويمية', value: 'calendar_days' },
+                    { label: 'أسابيع', value: 'weeks' },
+                  ],
+                },
+                localizedText('note', 'ملاحظة'),
+              ],
+            },
+            {
+              name: 'prerequisiteProcedures',
+              type: 'relationship',
+              relationTo: 'transactions',
+              label: 'معاملات سابقة مطلوبة',
+              hasMany: true,
+              localized: false,
+              filterOptions: ({ id }) => {
+                if (!id) return true
+                return { id: { not_equals: id } }
+              },
+              admin: {
+                description: 'معلومة للمواطن عن معاملات يجب إنجازها أولاً.',
+              },
+            },
+          ],
+        },
+        {
+          label: 'المتطلبات والخطوات',
+          description: 'وثائق وخطوات ورسوم للمواطن. النوع/المفتاح التقني قيم داخلية للنظام.',
+          fields: [
+            {
+              name: 'requiredDocuments',
+              dbName: 'req_docs',
+              type: 'array',
+              label: 'الوثائق المطلوبة',
+              labels: { singular: 'وثيقة', plural: 'وثائق' },
+              admin: {
+                description:
+                  'قائمة للمواطن. نوع المتطلب والمفتاح المستقر قيم داخلية للدليل — لا تعني موافقة رسمية.',
+              },
+              fields: requiredDocumentFields(),
+            },
+            {
+              name: 'steps',
+              dbName: 'steps',
+              type: 'array',
+              label: 'الخطوات',
+              labels: { singular: 'خطوة', plural: 'خطوات' },
+              required: true,
+              minRows: 1,
+              admin: {
+                description: 'خطوات يراها المواطن. المفتاح المستقر تقني للدليل التفاعلي.',
+              },
+              fields: stepFields(),
+            },
+            {
+              name: 'fees',
+              dbName: 'fees',
+              type: 'array',
+              label: 'الرسوم',
+              admin: {
+                description:
+                  'معلومة للمواطن عن الرسوم. تعبئتها لا تثبت أن الرسوم سارية دون مصدر وادعاء موثوق.',
+              },
+              fields: feeFields(),
+            },
+          ],
+        },
+        {
+          label: 'الدليل التفاعلي',
+          description:
+            'أسئلة وخيارات وقواعد ومتغيرات النتيجة. المفاتيح المستقرة تقنية — لا تغيّرها بعد الربط إلا عند الضرورة.',
+          fields: [...guideAuthoringFields()],
+        },
+        {
+          label: 'المصادر والأدلة',
+          description:
+            'المصدر ≠ الادعاء. التحقق من الادعاء ≠ تصنيف المحتوى. ملء مصدر لا يُجيز النشر وحده.',
+          fields: [
+            {
+              name: 'sources',
+              dbName: 'srcs',
+              type: 'array',
+              label: 'المصادر',
+              labels: { singular: 'مصدر', plural: 'مصادر' },
+              required: true,
+              minRows: 1,
+              admin: {
+                description:
+                  'مراجع قابلة للاقتباس. مطلوبة للنشر. لا تغني عن ربط الادعاءات المطلوبة ولا عن ثقة الادعاء الحيّة.',
+              },
+              fields: sourceReferenceFields(),
+            },
+            {
+              name: 'claimBindings',
+              dbName: 'clm_b',
+              type: 'array',
+              label: 'ربط الادعاءات',
+              labels: { singular: 'ربط ادعاء', plural: 'ربط ادعاءات' },
+              admin: {
+                description:
+                  'ادعاءات مطلوبة تشارك في فحوصات ثقة النشر (خادم). المصدر وحده لا يكفي. VERIFIED على الادعاء ≠ نشر المعاملة تلقائياً. contentClass مستقل عن هذه الروابط.',
+              },
+              fields: claimBindingFields(),
+            },
+          ],
+        },
+        {
+          label: 'المراجعة والنشر',
+          description:
+            'مراجعة تحريرية. PRODUCTION لا يعني التحقق تلقائياً. حالة التحرير وتصنيف المحتوى في الشريط الجانبي.',
+          fields: [
+            {
+              name: 'lastReviewedAt',
+              type: 'date',
+              label: 'آخر مراجعة',
+              localized: false,
+              admin: {
+                description:
+                  'تاريخ آخر مراجعة تحريرية. مطلوب قبل النشر. لا يثبت وحده صحة كل الادعاءات.',
+                date: { pickerAppearance: 'dayOnly' },
+              },
+            },
+            {
+              name: 'internalNotes',
+              type: 'textarea',
+              label: 'ملاحظات داخلية',
+              localized: false,
+              access: {
+                read: editorialFieldAccess,
+                update: editorialFieldAccess,
+              },
+              admin: {
+                description:
+                  'للفريق فقط — لا تُعاد للعامة. لا تبطل الاعتماد ولا تغيّر contentClass.',
+              },
+            },
+            ...workflowPanelFields(),
+          ],
+        },
+        {
+          label: 'إعدادات متقدمة',
+          description: 'حقول تقنية/مولَّدة — ليست جزءاً من التدفق التحريري اليومي.',
+          fields: [
+            {
+              name: 'searchText',
+              type: 'textarea',
+              label: 'نص البحث (مولَّد)',
+              localized: false,
+              index: true,
+              admin: {
+                readOnly: true,
+                description:
+                  'قيمة داخلية للنظام — مولَّدة تلقائياً للبحث. لا تُعرض للعامة عبر REST.',
+              },
+            },
+          ],
+        },
+      ],
     },
     {
       name: 'publicationStatus',
@@ -197,157 +465,12 @@ export const Transactions: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
+        description: 'ملخّص عرضي لحالة المسودة/النشر — يُشتق تلقائياً وليس بديلاً عن سير العمل.',
         components: {
           Cell: '/components/admin/PublicationStatusCell#PublicationStatusCell',
           Field: '/components/admin/PublicationStatusField#PublicationStatusField',
         },
       },
-    },
-    {
-      name: 'category',
-      type: 'relationship',
-      relationTo: 'categories',
-      label: 'التصنيف',
-      required: true,
-      index: true,
-      localized: false,
-    },
-    {
-      name: 'agency',
-      type: 'relationship',
-      relationTo: 'agencies',
-      label: 'الجهة',
-      required: true,
-      index: true,
-      localized: false,
-    },
-    {
-      name: 'serviceCenters',
-      type: 'relationship',
-      relationTo: 'service-centers',
-      label: 'مراكز الخدمة',
-      hasMany: true,
-      localized: false,
-    },
-    {
-      name: 'audiences',
-      type: 'select',
-      label: 'الجمهور',
-      hasMany: true,
-      localized: false,
-      enumName: 'tx_audience',
-      options: [
-        { label: 'مواطن', value: 'citizen' },
-        { label: 'مقيم', value: 'resident' },
-        { label: 'طالب', value: 'student' },
-        { label: 'موظف', value: 'employee' },
-        { label: 'أعمال', value: 'business' },
-        { label: 'زائر', value: 'visitor' },
-        { label: 'أخرى', value: 'other' },
-      ],
-    },
-    localizedTextarea('eligibility', 'الأهلية'),
-    {
-      name: 'aliases',
-      type: 'array',
-      label: 'أسماء بديلة (للبحث لاحقاً)',
-      fields: [localizedText('value', 'القيمة', { required: true })],
-    },
-    {
-      name: 'requiredDocuments',
-      dbName: 'req_docs',
-      type: 'array',
-      label: 'الوثائق المطلوبة',
-      labels: { singular: 'وثيقة', plural: 'وثائق' },
-      fields: requiredDocumentFields(),
-    },
-    {
-      name: 'steps',
-      dbName: 'steps',
-      type: 'array',
-      label: 'الخطوات',
-      labels: { singular: 'خطوة', plural: 'خطوات' },
-      required: true,
-      minRows: 1,
-      fields: stepFields(),
-    },
-    {
-      name: 'fees',
-      dbName: 'fees',
-      type: 'array',
-      label: 'الرسوم',
-      fields: feeFields(),
-    },
-    {
-      name: 'estimatedDuration',
-      type: 'group',
-      label: 'المدة المتوقعة',
-      fields: [
-        {
-          name: 'minimum',
-          type: 'number',
-          label: 'الحد الأدنى',
-          min: 0,
-          localized: false,
-        },
-        {
-          name: 'maximum',
-          type: 'number',
-          label: 'الحد الأقصى',
-          min: 0,
-          localized: false,
-        },
-        {
-          name: 'unit',
-          dbName: 'unit',
-          type: 'select',
-          label: 'الوحدة',
-          localized: false,
-          options: [
-            { label: 'دقائق', value: 'minutes' },
-            { label: 'ساعات', value: 'hours' },
-            { label: 'أيام عمل', value: 'business_days' },
-            { label: 'أيام تقويمية', value: 'calendar_days' },
-            { label: 'أسابيع', value: 'weeks' },
-          ],
-        },
-        localizedText('note', 'ملاحظة'),
-      ],
-    },
-    localizedTextarea('outcome', 'النتيجة'),
-    {
-      name: 'prerequisiteProcedures',
-      type: 'relationship',
-      relationTo: 'transactions',
-      label: 'معاملات سابقة مطلوبة',
-      hasMany: true,
-      localized: false,
-      filterOptions: ({ id }) => {
-        if (!id) return true
-        return { id: { not_equals: id } }
-      },
-    },
-    {
-      name: 'sources',
-      dbName: 'srcs',
-      type: 'array',
-      label: 'المصادر',
-      labels: { singular: 'مصدر', plural: 'مصادر' },
-      required: true,
-      minRows: 1,
-      fields: sourceReferenceFields(),
-    },
-    {
-      name: 'claimBindings',
-      dbName: 'clm_b',
-      type: 'array',
-      label: 'ربط الادعاءات',
-      labels: { singular: 'ربط ادعاء', plural: 'ربط ادعاءات' },
-      admin: {
-        description:
-          'P0-05B1: ادعاءات مطلوبة للاعتماد/النشر الموثوق. المحتوى بلا ربط مطلوب يفشل عند الاعتماد/النشر والعرض العام.',
-      },
-      fields: claimBindingFields(),
     },
     {
       name: 'claimTrustOk',
@@ -363,37 +486,14 @@ export const Transactions: CollectionConfig = {
         position: 'sidebar',
         readOnly: true,
         description:
-          'ذاكرة تخزين مؤقتة / مؤشر تحريري فقط — ليست سلطة الثقة النهائية. العرض العام يتطلب claimTrustOk=true وإعادة تقييم حيّ للادعاءات والمصادر.',
+          'مؤشر تحريري مخزَّن فقط — ليست سلطة الثقة النهائية. العرض العام يعيد تقييم الادعاءات والمصادر حياً. لا يغني عن contentClass.',
         components: {
           Cell: '/components/admin/BooleanArCell#BooleanArCell',
         },
       },
     },
-    {
-      name: 'lastReviewedAt',
-      type: 'date',
-      label: 'آخر مراجعة',
-      localized: false,
-      admin: {
-        description: 'مطلوب قبل النشر.',
-        date: { pickerAppearance: 'dayOnly' },
-      },
-    },
-    {
-      name: 'internalNotes',
-      type: 'textarea',
-      label: 'ملاحظات داخلية',
-      localized: false,
-      access: {
-        read: editorialFieldAccess,
-        update: editorialFieldAccess,
-      },
-      admin: {
-        description: 'لا تُعاد أبداً في طلبات REST العامة المجهولة. لا تبطل الاعتماد.',
-      },
-    },
-    ...guideFields(),
-    ...workflowFields(),
+    guideEnabledField(),
+    ...workflowSidebarFields(),
     contentClassField(),
     activeField(),
     ...auditFields(),

@@ -177,7 +177,7 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   * معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.
    */
   slug: string;
   description?: string | null;
@@ -188,7 +188,7 @@ export interface Category {
   sortOrder?: number | null;
   featured?: boolean | null;
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -208,7 +208,7 @@ export interface Agency {
   name: string;
   shortName?: string | null;
   /**
-   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   * معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.
    */
   slug: string;
   type: 'ministry' | 'directorate' | 'public_institution' | 'municipality' | 'syndicate' | 'university' | 'other';
@@ -223,7 +223,7 @@ export interface Agency {
     | null;
   mainAddress?: string | null;
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -242,7 +242,7 @@ export interface ServiceCenter {
   id: number;
   name: string;
   /**
-   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   * معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.
    */
   slug: string;
   agency: number | Agency;
@@ -277,7 +277,7 @@ export interface ServiceCenter {
   latitude?: number | null;
   longitude?: number | null;
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -298,7 +298,7 @@ export interface Document {
   id: number;
   name: string;
   /**
-   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   * معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.
    */
   slug: string;
   aliases?:
@@ -325,7 +325,7 @@ export interface Document {
   validityNote?: string | null;
   reusable?: boolean | null;
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -344,7 +344,7 @@ export interface Source {
   id: number;
   title: string;
   /**
-   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   * معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.
    */
   slug: string;
   sourceType:
@@ -369,11 +369,11 @@ export interface Source {
    */
   notes?: string | null;
   /**
-   * عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.
+   * عزل المحتوى — لا يثبت صحة المعلومة ولا يغني عن توثيق الادعاءات. PRODUCTION: للمحتوى العام المعتمد (ليس تحققاً تلقائياً). DEMO: يظهر بتحذير واضح. QA_TEST: لا يظهر للعامة أبداً. مستقل عن claimTrustOk وعن حالة التحرير. الترقية إلى PRODUCTION للمراجع/المدير فقط.
    */
   contentClass: 'PRODUCTION' | 'DEMO' | 'QA_TEST';
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -385,45 +385,87 @@ export interface Source {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * المعاملات الإدارية — سير تحريري Phase 4 على نموذج Phase 3.
+ * المعاملات الإدارية — نظّم المحتوى عبر التبويبات. التصنيف والنشر وسير العمل في الشريط الجانبي. المحتوى المعبّأ ليس موثّقاً تلقائياً.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "transactions".
  */
 export interface Transaction {
   id: number;
+  /**
+   * يظهر هذا النص للمواطن في العنوان والقوائم.
+   */
   title: string;
   /**
-   * معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.
+   * معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.
    */
   slug: string;
   /**
-   * ملخص قصير للعرض العام.
+   * ملخص قصير يظهر للمواطن. تعبئته لا تعني أن المعلومة موثّقة.
    */
   summary: string;
   /**
-   * Phase 6 — نص مطبَّع مولَّد تلقائياً للمرشّحين. يُزال من الاستجابات العامة عبر afterRead.
+   * تصنيف للمواطن والتنقّل — قيمة تنظيمية داخل النظام أيضاً.
    */
-  searchText?: string | null;
-  publicationStatus?: string | null;
   category: number | Category;
+  /**
+   * الجهة المرتبطة بالمعاملة كما تُعرض للمواطن.
+   */
   agency: number | Agency;
+  /**
+   * معلومة للمواطن عن أماكن التنفيذ إن وُجدت.
+   */
   serviceCenters?: (number | ServiceCenter)[] | null;
+  /**
+   * لمن تُوجَّه هذه المعاملة — معلومة تنظيمية/عرضية للمواطن.
+   */
   audiences?: ('citizen' | 'resident' | 'student' | 'employee' | 'business' | 'visitor' | 'other')[] | null;
-  eligibility?: string | null;
+  /**
+   * أسماء شائعة تساعد البحث. ليست عنواناً رسمياً بديلاً.
+   */
   aliases?:
     | {
         value: string;
         id?: string | null;
       }[]
     | null;
+  /**
+   * معلومة للمواطن عن من يحق له تقديم الطلب.
+   */
+  eligibility?: string | null;
+  /**
+   * معلومة للمواطن عن ناتج المعاملة المتوقع.
+   */
+  outcome?: string | null;
+  /**
+   * تقدير للمواطن — ليس تعهداً رسمياً من الجهة.
+   */
+  estimatedDuration?: {
+    minimum?: number | null;
+    maximum?: number | null;
+    unit?: ('minutes' | 'hours' | 'business_days' | 'calendar_days' | 'weeks') | null;
+    note?: string | null;
+  };
+  /**
+   * معلومة للمواطن عن معاملات يجب إنجازها أولاً.
+   */
+  prerequisiteProcedures?: (number | Transaction)[] | null;
+  /**
+   * قائمة للمواطن. نوع المتطلب والمفتاح المستقر قيم داخلية للدليل — لا تعني موافقة رسمية.
+   */
   requiredDocuments?:
     | {
         /**
-         * مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).
+         * مفتاح تقني للدليل التفاعلي (ليس نصاً للمواطن). يُملأ تلقائياً عند الحفظ إن تُرك فارغاً. لا تغيّره بعد ربطه بالقواعد إلا عند الضرورة.
          */
         key?: string | null;
+        /**
+         * معلومة للمواطن عبر بطاقة الوثيقة المرتبطة.
+         */
         document: number | Document;
+        /**
+         * يساعد الدليل والنتيجة — لا يعني بحد ذاته أن الجهة الرسمية قبلت الورقة.
+         */
         requirementType: 'required' | 'conditional' | 'alternative';
         condition?: string | null;
         quantity?: number | null;
@@ -434,22 +476,37 @@ export interface Transaction {
         id?: string | null;
       }[]
     | null;
+  /**
+   * خطوات يراها المواطن. المفتاح المستقر تقني للدليل التفاعلي.
+   */
   steps: {
     /**
-     * مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).
+     * مفتاح تقني للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً. لا تغيّره بعد ربطه بالقواعد إلا عند الضرورة.
      */
     key?: string | null;
+    /**
+     * يظهر هذا النص للمواطن.
+     */
     title: string;
+    /**
+     * يظهر هذا النص للمواطن.
+     */
     description: string;
     locationNote?: string | null;
     id?: string | null;
   }[];
+  /**
+   * معلومة للمواطن عن الرسوم. تعبئتها لا تثبت أن الرسوم سارية دون مصدر وادعاء موثوق.
+   */
   fees?:
     | {
         /**
-         * مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).
+         * مفتاح تقني للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً. لا تغيّره بعد ربطه بالقواعد إلا عند الضرورة.
          */
         key?: string | null;
+        /**
+         * يظهر هذا النص للمواطن.
+         */
         label: string;
         amount?: number | null;
         currency?: ('SYP' | 'USD' | 'EUR' | 'other') | null;
@@ -458,109 +515,58 @@ export interface Transaction {
         id?: string | null;
       }[]
     | null;
-  estimatedDuration?: {
-    minimum?: number | null;
-    maximum?: number | null;
-    unit?: ('minutes' | 'hours' | 'business_days' | 'calendar_days' | 'weeks') | null;
-    note?: string | null;
-  };
-  outcome?: string | null;
-  prerequisiteProcedures?: (number | Transaction)[] | null;
-  sources: {
-    source: number | Source;
-    primary?: boolean | null;
-    /**
-     * أقسام المحتوى التي يدعمها هذا المصدر (مفاتيح ثابتة).
-     */
-    coveredSections?:
-      | (
-          | 'summary'
-          | 'eligibility'
-          | 'required_documents'
-          | 'steps'
-          | 'fees'
-          | 'duration'
-          | 'service_centers'
-          | 'outcome'
-          | 'other'
-        )[]
-      | null;
-    citationNote?: string | null;
-    id?: string | null;
-  }[];
   /**
-   * P0-05B1: ادعاءات مطلوبة للاعتماد/النشر الموثوق. المحتوى بلا ربط مطلوب يفشل عند الاعتماد/النشر والعرض العام.
+   * أسئلة يراها المواطن في الدليل التفاعلي. المفتاح المستقر تقني؛ نص السؤال هو ما يظهر للعامة.
    */
-  claimBindings?:
-    | {
-        claim: number | Claim;
-        /**
-         * إن وُسم مطلوباً فيجب أن يقيَّم AUTHORITATIVE عند الاعتماد/النشر. WARNING_ONLY لا يكفي.
-         */
-        required?: boolean | null;
-        /**
-         * تلميح انتقالي لربط القسم — ليس بديلاً عن تغطية المصادر.
-         */
-        coveredSection?:
-          | (
-              | 'summary'
-              | 'eligibility'
-              | 'required_documents'
-              | 'steps'
-              | 'fees'
-              | 'duration'
-              | 'service_centers'
-              | 'outcome'
-              | 'other'
-            )
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * ذاكرة تخزين مؤقتة / مؤشر تحريري فقط — ليست سلطة الثقة النهائية. العرض العام يتطلب claimTrustOk=true وإعادة تقييم حيّ للادعاءات والمصادر.
-   */
-  claimTrustOk?: boolean | null;
-  /**
-   * مطلوب قبل النشر.
-   */
-  lastReviewedAt?: string | null;
-  /**
-   * لا تُعاد أبداً في طلبات REST العامة المجهولة. لا تبطل الاعتماد.
-   */
-  internalNotes?: string | null;
-  /**
-   * يظهر زر «ابدأ الدليل التفاعلي» فقط عند التفعيل ووجود إعداد دليل صالح بدون أخطاء.
-   */
-  guideEnabled?: boolean | null;
   questions?:
     | {
         /**
-         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         * قيمة تقنية للنظام (وليس نصاً للمواطن). أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط. لا تغيّره بعد ربطه بالقواعد أو بعد استخدام الدليل إلا عند الضرورة — التغيير قد يكسر القواعد أو التقدّم المحفوظ على أجهزة المواطنين.
          */
         key: string;
         questionType: 'single' | 'multi' | 'boolean';
+        /**
+         * يظهر هذا النص للمواطن.
+         */
         prompt: string;
+        /**
+         * اختياري — مساعدة قصيرة للمواطن تحت السؤال.
+         */
         helpText?: string | null;
         required?: boolean | null;
+        /**
+         * الأسئلة غير النشطة لا تظهر في الدليل العام.
+         */
         active?: boolean | null;
+        /**
+         * التسمية للمواطن؛ المفتاح تقني للقواعد.
+         */
         options?:
           | {
               /**
-               * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+               * قيمة تقنية للنظام (وليس نصاً للمواطن). أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط. لا تغيّره بعد ربطه بالقواعد أو بعد استخدام الدليل إلا عند الضرورة — التغيير قد يكسر القواعد أو التقدّم المحفوظ على أجهزة المواطنين.
                */
               key: string;
+              /**
+               * يظهر هذا النص للمواطن.
+               */
               label: string;
               id?: string | null;
             }[]
           | null;
+        /**
+         * شروط ظهور السؤال حسب إجابات سابقة (مفاتيح تقنية).
+         */
         visibleWhen?: {
           all?:
             | {
+                /**
+                 * المفتاح المستقر للسؤال (تقني) — ليس نص السؤال الظاهر للمواطن.
+                 */
                 questionKey: string;
                 operator: 'equals' | 'notEquals' | 'includes' | 'exists';
                 /**
-                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 * مطلوبة لـ equals / notEquals / includes. استخدم مفتاح الخيار أو yes/no للأسئلة المنطقية.
                  */
                 value?: string | null;
                 id?: string | null;
@@ -568,10 +574,13 @@ export interface Transaction {
             | null;
           any?:
             | {
+                /**
+                 * المفتاح المستقر للسؤال (تقني) — ليس نص السؤال الظاهر للمواطن.
+                 */
                 questionKey: string;
                 operator: 'equals' | 'notEquals' | 'includes' | 'exists';
                 /**
-                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 * مطلوبة لـ equals / notEquals / includes. استخدم مفتاح الخيار أو yes/no للأسئلة المنطقية.
                  */
                 value?: string | null;
                 id?: string | null;
@@ -581,22 +590,31 @@ export interface Transaction {
         id?: string | null;
       }[]
     | null;
+  /**
+   * مسارات نتيجة اختيارية يختارها محرك القرار عبر selectVariant.
+   */
   variants?:
     | {
         /**
-         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         * قيمة تقنية للنظام (وليس نصاً للمواطن). أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط. لا تغيّره بعد ربطه بالقواعد أو بعد استخدام الدليل إلا عند الضرورة — التغيير قد يكسر القواعد أو التقدّم المحفوظ على أجهزة المواطنين.
          */
         key: string;
+        /**
+         * يظهر هذا النص للمواطن في النتيجة عند اختيار المتغير.
+         */
         title: string;
         explanation?: string | null;
         active?: boolean | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * ملاحظات/تنبيهات يمكن تضمينها في نتيجة الدليل حسب القواعد.
+   */
   notices?:
     | {
         /**
-         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         * قيمة تقنية للنظام (وليس نصاً للمواطن). أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط. لا تغيّره بعد ربطه بالقواعد أو بعد استخدام الدليل إلا عند الضرورة — التغيير قد يكسر القواعد أو التقدّم المحفوظ على أجهزة المواطنين.
          */
         key: string;
         title: string;
@@ -606,10 +624,13 @@ export interface Transaction {
         id?: string | null;
       }[]
     | null;
+  /**
+   * منطق التضمين/الاستبعاد حسب الإجابات. استخدم مفاتيح الوثائق/الخطوات/الرسوم/الملاحظات/المتغيرات — لا تغيّر المفاتيح المرتبطة دون مراجعة.
+   */
   decisionRules?:
     | {
         /**
-         * أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.
+         * قيمة تقنية للنظام (وليس نصاً للمواطن). أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط. لا تغيّره بعد ربطه بالقواعد أو بعد استخدام الدليل إلا عند الضرورة — التغيير قد يكسر القواعد أو التقدّم المحفوظ على أجهزة المواطنين.
          */
         key: string;
         /**
@@ -617,14 +638,20 @@ export interface Transaction {
          */
         priority: number;
         active?: boolean | null;
+        /**
+         * اختياري — قد يظهر كسبب («لماذا») في نتيجة الدليل.
+         */
         explanation?: string | null;
         when?: {
           all?:
             | {
+                /**
+                 * المفتاح المستقر للسؤال (تقني) — ليس نص السؤال الظاهر للمواطن.
+                 */
                 questionKey: string;
                 operator: 'equals' | 'notEquals' | 'includes' | 'exists';
                 /**
-                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 * مطلوبة لـ equals / notEquals / includes. استخدم مفتاح الخيار أو yes/no للأسئلة المنطقية.
                  */
                 value?: string | null;
                 id?: string | null;
@@ -632,10 +659,13 @@ export interface Transaction {
             | null;
           any?:
             | {
+                /**
+                 * المفتاح المستقر للسؤال (تقني) — ليس نص السؤال الظاهر للمواطن.
+                 */
                 questionKey: string;
                 operator: 'equals' | 'notEquals' | 'includes' | 'exists';
                 /**
-                 * مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.
+                 * مطلوبة لـ equals / notEquals / includes. استخدم مفتاح الخيار أو yes/no للأسئلة المنطقية.
                  */
                 value?: string | null;
                 id?: string | null;
@@ -654,7 +684,7 @@ export interface Transaction {
             | 'excludeNotice'
             | 'selectVariant';
           /**
-           * مفتاح وثيقة / خطوة / رسم / ملاحظة / متغير.
+           * المفتاح المستقر لوثيقة / خطوة / رسم / ملاحظة / متغير.
            */
           targetKey: string;
           id?: string | null;
@@ -663,17 +693,115 @@ export interface Transaction {
       }[]
     | null;
   /**
-   * تُغيَّر عبر إجراءات سير العمل فقط — لا تُعيَّن يدوياً.
+   * مراجع قابلة للاقتباس. مطلوبة للنشر. لا تغني عن ربط الادعاءات المطلوبة ولا عن ثقة الادعاء الحيّة.
+   */
+  sources: {
+    /**
+     * مرجع قابل للاقتباس. المصدر ≠ الادعاء. ملء مصدر لا يثبت صحة المحتوى ولا يُجيز النشر وحده.
+     */
+    source: number | Source;
+    /**
+     * تلميح تحريري للمصدر الرئيسي — ليس اعتماداً رسمياً ولا بديلاً عن ربط الادعاءات.
+     */
+    primary?: boolean | null;
+    /**
+     * أقسام المحتوى التي يدعمها هذا المصدر (مفاتيح ثابتة للنظام — ليست نصاً للمواطن).
+     */
+    coveredSections?:
+      | (
+          | 'summary'
+          | 'eligibility'
+          | 'required_documents'
+          | 'steps'
+          | 'fees'
+          | 'duration'
+          | 'service_centers'
+          | 'outcome'
+          | 'other'
+        )[]
+      | null;
+    /**
+     * اختياري — يظهر للفريق التحريري؛ ليس دليلاً على التحقق.
+     */
+    citationNote?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * ادعاءات مطلوبة تشارك في فحوصات ثقة النشر (خادم). المصدر وحده لا يكفي. VERIFIED على الادعاء ≠ نشر المعاملة تلقائياً. contentClass مستقل عن هذه الروابط.
+   */
+  claimBindings?:
+    | {
+        /**
+         * الادعاء ≠ المصدر. اختر ادعاءً موثّقاً؛ المصدر وحده لا يكفي للنشر العام.
+         */
+        claim: number | Claim;
+        /**
+         * إن وُسم مطلوباً فيجب أن يقيَّم AUTHORITATIVE عند الاعتماد/النشر. WARNING_ONLY لا يكفي. هذا لا يغيّر تصنيف المحتوى (contentClass).
+         */
+        required?: boolean | null;
+        /**
+         * تلميح تحريري لربط القسم — ليس بديلاً عن تغطية المصادر ولا عن ثقة الادعاء.
+         */
+        coveredSection?:
+          | (
+              | 'summary'
+              | 'eligibility'
+              | 'required_documents'
+              | 'steps'
+              | 'fees'
+              | 'duration'
+              | 'service_centers'
+              | 'outcome'
+              | 'other'
+            )
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * تاريخ آخر مراجعة تحريرية. مطلوب قبل النشر. لا يثبت وحده صحة كل الادعاءات.
+   */
+  lastReviewedAt?: string | null;
+  /**
+   * للفريق فقط — لا تُعاد للعامة. لا تبطل الاعتماد ولا تغيّر contentClass.
+   */
+  internalNotes?: string | null;
+  /**
+   * ظاهر للباحث داخل لوحة الإدارة — غير متاح للعامة.
+   */
+  changeRequestComment?: string | null;
+  /**
+   * يُسجَّل عند تجاوز الموعد من المدير — للقراءة فقط هنا.
+   */
+  reviewDueOverrideReason?: string | null;
+  /**
+   * سبب موثّق للأرشفة عبر سير العمل — ليس حذفاً نهائياً. الأرشفة مفضّلة على الحذف.
+   */
+  archiveReason?: string | null;
+  /**
+   * قيمة داخلية للنظام — مولَّدة تلقائياً للبحث. لا تُعرض للعامة عبر REST.
+   */
+  searchText?: string | null;
+  /**
+   * ملخّص عرضي لحالة المسودة/النشر — يُشتق تلقائياً وليس بديلاً عن سير العمل.
+   */
+  publicationStatus?: string | null;
+  /**
+   * مؤشر تحريري مخزَّن فقط — ليست سلطة الثقة النهائية. العرض العام يعيد تقييم الادعاءات والمصادر حياً. لا يغني عن contentClass.
+   */
+  claimTrustOk?: boolean | null;
+  /**
+   * يظهر زر «ابدأ الدليل التفاعلي» للمواطن فقط عند التفعيل ووجود أسئلة/قواعد صالحة بدون أخطاء.
+   */
+  guideEnabled?: boolean | null;
+  /**
+   * تُغيَّر عبر أزرار سير العمل فقط — ليست تعديلاً يدوياً للحالة.
    */
   workflowState: 'draft' | 'in_review' | 'changes_requested' | 'approved' | 'published' | 'archived';
   submittedForReviewAt?: string | null;
   submittedForReviewBy?: (number | null) | User;
   changeRequestedAt?: string | null;
   changeRequestedBy?: (number | null) | User;
-  /**
-   * ظاهر للباحث داخل لوحة الإدارة — غير متاح للعامة.
-   */
-  changeRequestComment?: string | null;
   approvedAt?: string | null;
   approvedBy?: (number | null) | User;
   /**
@@ -689,21 +817,19 @@ export interface Transaction {
    * يُحسب عند الاعتماد/النشر. المدير فقط يتجاوزه بسبب موثّق.
    */
   reviewDueAt?: string | null;
-  reviewDueOverrideReason?: string | null;
   /**
-   * يخفي المعاملة عن العامة حتى عند كونها منشورة.
+   * يخفي المعاملة عن العامة حتى عند كونها منشورة. الأرشفة عبر سير العمل مفضّلة على الحذف النهائي.
    */
   markedOutdated?: boolean | null;
   archivedAt?: string | null;
   archivedBy?: (number | null) | User;
-  archiveReason?: string | null;
   workflowSchemaVersion?: number | null;
   /**
-   * عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.
+   * عزل المحتوى — لا يثبت صحة المعلومة ولا يغني عن توثيق الادعاءات. PRODUCTION: للمحتوى العام المعتمد (ليس تحققاً تلقائياً). DEMO: يظهر بتحذير واضح. QA_TEST: لا يظهر للعامة أبداً. مستقل عن claimTrustOk وعن حالة التحرير. الترقية إلى PRODUCTION للمراجع/المدير فقط.
    */
   contentClass: 'PRODUCTION' | 'DEMO' | 'QA_TEST';
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -792,11 +918,11 @@ export interface Claim {
   validUntil?: string | null;
   reviewDueAt?: string | null;
   /**
-   * عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.
+   * عزل المحتوى — لا يثبت صحة المعلومة ولا يغني عن توثيق الادعاءات. PRODUCTION: للمحتوى العام المعتمد (ليس تحققاً تلقائياً). DEMO: يظهر بتحذير واضح. QA_TEST: لا يظهر للعامة أبداً. مستقل عن claimTrustOk وعن حالة التحرير. الترقية إلى PRODUCTION للمراجع/المدير فقط.
    */
   contentClass: 'PRODUCTION' | 'DEMO' | 'QA_TEST';
   /**
-   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.
+   * المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.
    */
   active?: boolean | null;
   createdBy?: (number | null) | User;
@@ -1117,19 +1243,27 @@ export interface TransactionsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   summary?: T;
-  searchText?: T;
-  publicationStatus?: T;
   category?: T;
   agency?: T;
   serviceCenters?: T;
   audiences?: T;
-  eligibility?: T;
   aliases?:
     | T
     | {
         value?: T;
         id?: T;
       };
+  eligibility?: T;
+  outcome?: T;
+  estimatedDuration?:
+    | T
+    | {
+        minimum?: T;
+        maximum?: T;
+        unit?: T;
+        note?: T;
+      };
+  prerequisiteProcedures?: T;
   requiredDocuments?:
     | T
     | {
@@ -1164,37 +1298,6 @@ export interface TransactionsSelect<T extends boolean = true> {
         notes?: T;
         id?: T;
       };
-  estimatedDuration?:
-    | T
-    | {
-        minimum?: T;
-        maximum?: T;
-        unit?: T;
-        note?: T;
-      };
-  outcome?: T;
-  prerequisiteProcedures?: T;
-  sources?:
-    | T
-    | {
-        source?: T;
-        primary?: T;
-        coveredSections?: T;
-        citationNote?: T;
-        id?: T;
-      };
-  claimBindings?:
-    | T
-    | {
-        claim?: T;
-        required?: T;
-        coveredSection?: T;
-        id?: T;
-      };
-  claimTrustOk?: T;
-  lastReviewedAt?: T;
-  internalNotes?: T;
-  guideEnabled?: T;
   questions?:
     | T
     | {
@@ -1288,23 +1391,46 @@ export interface TransactionsSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  sources?:
+    | T
+    | {
+        source?: T;
+        primary?: T;
+        coveredSections?: T;
+        citationNote?: T;
+        id?: T;
+      };
+  claimBindings?:
+    | T
+    | {
+        claim?: T;
+        required?: T;
+        coveredSection?: T;
+        id?: T;
+      };
+  lastReviewedAt?: T;
+  internalNotes?: T;
+  changeRequestComment?: T;
+  reviewDueOverrideReason?: T;
+  archiveReason?: T;
+  searchText?: T;
+  publicationStatus?: T;
+  claimTrustOk?: T;
+  guideEnabled?: T;
   workflowState?: T;
   submittedForReviewAt?: T;
   submittedForReviewBy?: T;
   changeRequestedAt?: T;
   changeRequestedBy?: T;
-  changeRequestComment?: T;
   approvedAt?: T;
   approvedBy?: T;
   approvedContentHash?: T;
   approvedVersionId?: T;
   reviewIntervalDays?: T;
   reviewDueAt?: T;
-  reviewDueOverrideReason?: T;
   markedOutdated?: T;
   archivedAt?: T;
   archivedBy?: T;
-  archiveReason?: T;
   workflowSchemaVersion?: T;
   contentClass?: T;
   active?: T;

@@ -60,7 +60,7 @@ export function canonicalSlugField(options: { label?: Label } = {}): TextField {
     localized: false,
     admin: {
       description:
-        'معرّف ثابت غير مترجم. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية.',
+        'معرّف ثابت في الرابط العام. أحرف عربية/لاتينية صغيرة وشرطات فقط. بدون لاحقة عشوائية. أبقِه مستقراً بعد الاستخدام — تغييره يكسر الروابط المحفوظة.',
     },
     hooks: {
       beforeValidate: [
@@ -91,7 +91,7 @@ export function activeField(): CheckboxField {
     localized: false,
     admin: {
       position: 'sidebar',
-      description: 'المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً.',
+      description: 'المحتوى غير النشط لا يظهر للعامة حتى لو كان منشوراً. فضّل الأرشفة عبر سير العمل على الحذف النهائي.',
       components: {
         Cell: '/components/admin/BooleanArCell#BooleanArCell',
       },

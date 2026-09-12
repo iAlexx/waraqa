@@ -250,6 +250,23 @@ When `_status` becomes `published`, validation requires Arabic title + summary, 
 | Delete | Admin only |
 | Hooks | Publish auth, audit stamps, self-prereq guard, procedure validation, strip `internalNotes` for non-editorial reads |
 
+#### Admin information architecture (P11-A)
+
+Payload **unnamed tabs** (presentation only — stored document shape stays flat; no migration). Sidebar fields stay outside tabs.
+
+| Tab / area | Purpose |
+| --- | --- |
+| الأساسيات | Identity: title, slug, summary, category, agency, centers, audiences, aliases |
+| محتوى الخدمة | Citizen-facing eligibility, outcome, duration, prerequisites |
+| المتطلبات والخطوات | requiredDocuments, steps, fees |
+| الدليل التفاعلي | Guide questions / variants / notices / decision rules (stable keys warned) |
+| المصادر والأدلة | sources + claimBindings (`Source ≠ Claim`; filling a source does not permit publication) |
+| المراجعة والنشر | lastReviewedAt, internalNotes, changeRequestComment, reviewDueOverrideReason, archiveReason |
+| إعدادات متقدمة | Generated/internal (`searchText`) |
+| Sidebar | publicationStatus, claimTrustOk, guideEnabled, workflow*, contentClass, active, audit |
+
+**Editorial rules (admin help only):** `contentClass` ≠ verification; `PRODUCTION` does not mean verified; claim trust remains **server-enforced** (P0-05); public filtering remains P0-06. P11-A does not add blocker widgets (P11-B).
+
 ---
 
 ## Global: `site-settings` — إعدادات الموقع

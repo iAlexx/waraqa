@@ -15,7 +15,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
 | 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview → Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
 | 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
-| 11 | Preview, Revalidation, SEO | Not started | Draft safe; sitemap; robots |
+| 11 | Preview, Revalidation, SEO | P11-A in progress (Admin UX tabs); SEO later | Draft safe; sitemap; robots |
 | 12 | Seeds and Five Procedures | Not started | Labeled demo vs verified |
 | 13 | Hardening, A11y, Performance | Not started | Full test matrix |
 | 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
@@ -237,6 +237,12 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
 
 Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit answers) is implemented. Remaining known limitation: **OS Print Preview** → Phase 13.
+
+## Phase 11 — Admin UX (in progress)
+
+- [x] **P11-A:** Transaction admin unnamed tabs + Arabic editorial help (schema shape / RBAC / public behavior unchanged). See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § transactions Admin IA.
+- [ ] P11-B: claimTrust / contentClass blocker surfacing
+- [ ] Later P11: fired-rule preview, dashboards, review-due filters, safer delete confirmations, tablet Admin QA
 
 ### QA evidence
 
