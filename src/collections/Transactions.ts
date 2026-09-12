@@ -45,6 +45,10 @@ import {
   type WorkflowRunInput,
 } from '@/lib/workflow/transaction-workflow'
 import { WorkflowError, type WorkflowAction } from '@/lib/workflow/types'
+import {
+  evaluateTransactionGuidePreview,
+  loadTransactionGuidePreviewCatalog,
+} from '@/lib/admin/guide-preview'
 import { evaluateTransactionAdminReadiness } from '@/lib/admin/transaction-readiness'
 import { hasActiveRole, type UserLike } from '@/access/roles'
 
@@ -122,6 +126,44 @@ async function handleReadinessEndpoint(req: PayloadRequest) {
   return Response.json({ readiness })
 }
 
+function assertGuidePreviewAccess(req: PayloadRequest): string | number {
+  const user = req.user as UserLike
+  if (!user) throw new APIError('يجب تسجيل الدخول.', 401)
+  if (!hasActiveRole(user, 'admin', 'reviewer', 'researcher')) {
+    throw new APIError('غير مصرّح بمعاينة قواعد الدليل.', 403)
+  }
+  const id = req.routeParams?.id
+  const raw = Array.isArray(id) ? id[0] : id
+  if (typeof raw !== 'string' && typeof raw !== 'number') {
+    throw new APIError('معرّف غير صالح.', 422)
+  }
+  return raw
+}
+
+async function handleGuidePreviewCatalogEndpoint(req: PayloadRequest) {
+  const id = assertGuidePreviewAccess(req)
+  const result = await loadTransactionGuidePreviewCatalog(req.payload, id, req)
+  if ('error' in result) throw new APIError('المعاملة غير موجودة.', 404)
+  return Response.json({ preview: result })
+}
+
+async function handleGuidePreviewEvaluateEndpoint(req: PayloadRequest) {
+  const id = assertGuidePreviewAccess(req)
+
+  let body: Record<string, unknown> = {}
+  try {
+    if (typeof req.json === 'function') {
+      body = (await req.json()) as Record<string, unknown>
+    }
+  } catch {
+    body = {}
+  }
+
+  const result = await evaluateTransactionGuidePreview(req.payload, id, body.answers, req)
+  if ('error' in result) throw new APIError('المعاملة غير موجودة.', 404)
+  return Response.json({ preview: result })
+}
+
 /**
  * Central guidance collection.
  * Roadmap slug: `transactions` (Arabic: المعاملات).
@@ -171,6 +213,16 @@ export const Transactions: CollectionConfig = {
       path: '/:id/readiness',
       method: 'get',
       handler: handleReadinessEndpoint,
+    },
+    {
+      path: '/:id/guide-preview',
+      method: 'get',
+      handler: handleGuidePreviewCatalogEndpoint,
+    },
+    {
+      path: '/:id/guide-preview',
+      method: 'post',
+      handler: handleGuidePreviewEvaluateEndpoint,
     },
   ],
   access: {

@@ -283,6 +283,17 @@ Informational panel beside WorkflowActions (`GET /api/transactions/:id/readiness
 - Panel is **informational**; approve/publish still re-run all server checks independently.
 - Evaluation uses **last saved** draft document only.
 
+#### Admin guide rule preview (P11-C)
+
+Informational panel **معاينة قواعد الدليل** at the top of tab `الدليل التفاعلي` (`GET`/`POST /api/transactions/:id/guide-preview`, active `admin`/`reviewer`/`researcher` only).
+
+**Rules:**
+- Preview uses the **last saved** Transaction guide only; answers are ephemeral (not persisted to DB / localStorage / cookies).
+- Evaluation reuses the **canonical** Decision Engine (`evaluateGuide`) + Phase 9 prune/sanitize — no alternate evaluator.
+- `firedRuleKeys` are **diagnostic** only; they are not publication authority and do not bypass P0-05/P0-06.
+- Preview does **not** mutate content, workflow, claims, or `contentClass`.
+- Per-condition UNKNOWN detail is limited to rule keys whose `when` group is UNKNOWN (deeper condition diagnostics deferred).
+
 ---
 
 ## Global: `site-settings` — إعدادات الموقع

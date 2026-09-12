@@ -15,12 +15,11 @@ const created: Array<{ collection: string; id: number | string }> = []
 const seedCtx = { seed: true as const }
 
 function readinessEndpointHandler() {
-  const endpoints = Transactions.endpoints ?? []
+  const endpoints = Array.isArray(Transactions.endpoints) ? Transactions.endpoints : []
   const ep = endpoints.find(
-    (e) =>
+    (e: { path?: string; method?: string; handler?: unknown }) =>
       typeof e === 'object' &&
       e !== null &&
-      'path' in e &&
       e.path === '/:id/readiness' &&
       e.method === 'get',
   )
@@ -36,11 +35,12 @@ async function invokeReadinessEndpoint(opts: {
   user?: UserLike | Record<string, unknown> | null
 }): Promise<Response> {
   const req = (await createLocalReq(
-    {
-      user: (opts.user ?? undefined) as PayloadRequest['user'],
-    },
+    opts.user ? { user: opts.user as NonNullable<PayloadRequest['user']> } : {},
     payload,
   )) as PayloadRequest
+  if (!opts.user) {
+    req.user = null
+  }
   req.routeParams = { id: String(opts.transactionId) }
   const result = await readinessEndpointHandler()(req)
   if (!(result instanceof Response)) {

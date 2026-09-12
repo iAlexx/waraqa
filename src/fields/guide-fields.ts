@@ -114,6 +114,15 @@ export function guideEnabledField(): Field {
 export function guideAuthoringFields(): Field[] {
   return [
     {
+      name: 'guideRulePreview',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/GuideRulePreviewPanel#GuideRulePreviewPanel',
+        },
+      },
+    },
+    {
       name: 'questions',
       dbName: 'questions',
       type: 'array',

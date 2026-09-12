@@ -101,18 +101,23 @@ function mapQuestions(raw: unknown): GuideQuestion[] {
     .filter(Boolean) as GuideQuestion[]
 }
 
+/** Catalog shape fed to `evaluateGuide` (shared by public DTO + Admin preview). */
+export type GuideEngineCatalog = {
+  questions: GuideQuestion[]
+  variants: GuideVariant[]
+  notices: GuideNotice[]
+  rules: GuideDecisionRule[]
+  documents: GuideContentRef[]
+  steps: GuideContentRef[]
+  fees: GuideContentRef[]
+}
+
 /**
- * Map a publicly eligible transaction document (depth ≥ 1) to a public guide DTO.
- * Returns null if guide is unavailable or invalid.
+ * Map transaction guide fields into the deterministic engine catalog.
+ * Does not apply public eligibility gates (Admin preview may use saved drafts).
+ * Returns null when no active questions can be mapped.
  */
-export function mapPublicGuide(doc: Record<string, unknown>): PublicGuideDTO | null {
-  if (!isPublicGuideAvailable(doc)) return null
-
-  const title = localizedString(doc.title as LocalizedLike)
-  const slug = typeof doc.slug === 'string' ? doc.slug : ''
-  const summary = localizedString(doc.summary as LocalizedLike)
-  if (!title || !slug) return null
-
+export function mapGuideEngineCatalog(doc: Record<string, unknown>): GuideEngineCatalog | null {
   const questions = mapQuestions(doc.questions).filter((q) => q.active)
   if (questions.length < 1) return null
 
@@ -221,6 +226,24 @@ export function mapPublicGuide(doc: Record<string, unknown>): PublicGuideDTO | n
     })
     .filter(Boolean) as GuideContentRef[]
 
+  return { questions, variants, notices, rules, documents, steps, fees }
+}
+
+/**
+ * Map a publicly eligible transaction document (depth ≥ 1) to a public guide DTO.
+ * Returns null if guide is unavailable or invalid.
+ */
+export function mapPublicGuide(doc: Record<string, unknown>): PublicGuideDTO | null {
+  if (!isPublicGuideAvailable(doc)) return null
+
+  const title = localizedString(doc.title as LocalizedLike)
+  const slug = typeof doc.slug === 'string' ? doc.slug : ''
+  const summary = localizedString(doc.summary as LocalizedLike)
+  if (!title || !slug) return null
+
+  const catalog = mapGuideEngineCatalog(doc)
+  if (!catalog) return null
+
   const lastReviewedAt = typeof doc.lastReviewedAt === 'string' ? doc.lastReviewedAt : null
 
   const sources = asRows(doc.sources)
@@ -251,13 +274,7 @@ export function mapPublicGuide(doc: Record<string, unknown>): PublicGuideDTO | n
     lastReviewedLabel: formatPublicDate(lastReviewedAt),
     lastReviewedAt,
     demoLabeled: doc.contentClass === 'DEMO',
-    questions,
-    variants,
-    notices,
-    rules,
-    documents,
-    steps,
-    fees,
+    ...catalog,
     sources,
     detailHref: `/transactions/${encodeURIComponent(slug)}`,
   }
