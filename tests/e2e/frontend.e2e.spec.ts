@@ -708,6 +708,86 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.getByRole('link', { name: 'مشاركة عبر واتساب' })).toBeVisible()
   })
 
+  test('P9-E edit answers: summary, edit, recalculate, persist, print/share, restart', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 800 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(String(err)))
+
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await page.locator('[data-guide-client] label').filter({ hasText: /^نعم$/ }).click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page.locator('[data-guide-client] label').filter({ hasText: /^أول مرة$/ }).click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const summary = page.locator('[data-guide-answer-summary]')
+    await expect(summary).toBeVisible()
+    await expect(summary.getByRole('heading', { name: 'إجاباتك' })).toBeVisible()
+    await expect(summary.getByText('هل أنت بالغ؟')).toBeVisible()
+    await expect(summary.getByText('نعم')).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await checklist.getByRole('checkbox').first().check()
+
+    const overflow360 = await page.evaluate(
+      () =>
+        Math.max(
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          document.body.scrollWidth - document.body.clientWidth,
+        ),
+    )
+    expect(overflow360).toBeLessThanOrEqual(1)
+
+    // Edit second answer (transaction type) — fixture keys may vary; use first editable later row
+    const editButtons = summary.locator('[data-guide-edit-answer]')
+    const editCount = await editButtons.count()
+    expect(editCount).toBeGreaterThanOrEqual(2)
+    await editButtons.nth(1).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+
+    await page.locator('[data-guide-client] label').filter({ hasText: /^تجديد$/ }).click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-answer-summary]')).toContainText('تجديد')
+
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const overflow1440 = await page.evaluate(
+      () =>
+        Math.max(
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          document.body.scrollWidth - document.body.clientWidth,
+        ),
+    )
+    expect(overflow1440).toBeLessThanOrEqual(1)
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toBeVisible()
+    const share = page.getByRole('link', { name: 'مشاركة عبر واتساب' })
+    await expect(share).toBeVisible()
+    const href = await share.getAttribute('href')
+    const decoded = decodeURIComponent(new URL(href!).searchParams.get('text') || '')
+    expect(decoded).not.toMatch(/is_adult|first_time|needs_guardian|doc_/)
+    expect(decoded).toContain('ورقة منصة إرشادية مستقلة')
+
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-answer-summary]')).toContainText('تجديد')
+
+    await page.getByRole('button', { name: 'ابدأ من جديد' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    expect(errors).toEqual([])
+  })
+
   test('hidden transaction guide slug returns not found', async ({ page }) => {
     await page.goto(`/transactions/${hiddenSlug}/guide`)
     await expect(page.locator('[data-not-found]')).toBeVisible()

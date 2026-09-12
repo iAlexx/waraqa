@@ -10,6 +10,12 @@ import {
 } from '@/lib/guide/public-guide-map'
 import { visibleQuestions } from '@/lib/guide/evaluate'
 import {
+  ANSWER_SUMMARY_HEADING_AR,
+  EDIT_ANSWER_LABEL_AR,
+  buildGuideAnswerSummaryRows,
+  pruneInapplicableAnswers,
+} from '@/lib/guide/answer-labels'
+import {
   CHECKLIST_CLEAR_ALL_LABEL_AR,
   CHECKLIST_SAFETY_COPY_AR,
   pruneCheckedDocumentKeys,
@@ -17,11 +23,11 @@ import {
 } from '@/lib/guide/checklist-state'
 import {
   clearGuideLocalState,
+  clampGuideStepIndex,
   readGuideLocalState,
   writeGuideLocalState,
 } from '@/lib/guide/guide-local-storage'
 import {
-  PRINT_ANSWER_SUMMARY_HEADING_AR,
   PRINT_GENERATED_DATE_LABEL_AR,
   PRINT_RESULT_BUTTON_LABEL_AR,
   PRINT_SHEET_KIND_LABEL_AR,
@@ -31,43 +37,10 @@ import type {
   GuideAnswers,
   GuideChecklistItem,
   GuideNotice,
-  GuideQuestion,
 } from '@/lib/guide/types'
 import { DEMO_PUBLIC_LABEL_AR } from '@/lib/content-class/types'
 import { formatPublicDateTime } from '@/lib/public/transaction-labels'
 import { cn } from '@/lib/utils/cn'
-
-function formatAnswerLabel(question: GuideQuestion, answers: GuideAnswers): string | null {
-  const val = answers[question.key]
-  if (val == null || val === '') return null
-  if (question.questionType === 'boolean') {
-    if (val === 'yes') return 'نعم'
-    if (val === 'no') return 'لا'
-    return null
-  }
-  if (question.questionType === 'single' && typeof val === 'string') {
-    return question.options.find((o) => o.key === val)?.label ?? null
-  }
-  if (question.questionType === 'multi' && Array.isArray(val)) {
-    const labels = val
-      .map((k) => question.options.find((o) => o.key === k)?.label)
-      .filter((label): label is string => Boolean(label))
-    return labels.length > 0 ? labels.join('، ') : null
-  }
-  return null
-}
-
-function buildPrintAnswerRows(
-  questions: GuideQuestion[],
-  answers: GuideAnswers,
-): Array<{ prompt: string; answer: string }> {
-  return visibleQuestions(questions, answers)
-    .map((q) => {
-      const answer = formatAnswerLabel(q, answers)
-      return answer ? { prompt: q.prompt, answer } : null
-    })
-    .filter((row): row is { prompt: string; answer: string } => row != null)
-}
 
 export type GuideClientProps = {
   guide: PublicGuideDTO
@@ -193,8 +166,30 @@ function GuideClient({ guide }: GuideClientProps) {
   }
 
   function setAnswer(questionKey: string, value: string | string[]) {
-    setAnswers((prev) => ({ ...prev, [questionKey]: value }))
+    const next = pruneInapplicableAnswers(guide.questions, {
+      ...answers,
+      [questionKey]: value,
+    })
+    setAnswers(next)
+    setStepIndex((i) =>
+      clampGuideStepIndex(i, visibleQuestions(guide.questions, next).length),
+    )
     setError(null)
+  }
+
+  function editAnswer(questionKey: string) {
+    setError(null)
+    setPrunedForSignature(null)
+    const live = pruneInapplicableAnswers(guide.questions, answers)
+    setAnswers(live)
+    const visibleNow = visibleQuestions(guide.questions, live)
+    const idx = visibleNow.findIndex((q) => q.key === questionKey)
+    setShowResult(false)
+    if (idx < 0) {
+      setStepIndex(0)
+      return
+    }
+    setStepIndex(idx)
   }
 
   function goNext() {
@@ -240,8 +235,10 @@ function GuideClient({ guide }: GuideClientProps) {
     window.print()
   }
 
-  const printAnswerRows =
-    showResult && evaluation?.ok ? buildPrintAnswerRows(guide.questions, answers) : []
+  const answerSummaryRows =
+    showResult && evaluation?.ok
+      ? buildGuideAnswerSummaryRows(guide.questions, answers)
+      : []
 
   const whatsappShare = useMemo(() => {
     if (!showResult || !evaluation || !evaluation.ok) return null
@@ -427,7 +424,6 @@ function GuideClient({ guide }: GuideClientProps) {
               <PrintSheetChrome
                 title={guide.title}
                 demoLabeled={guide.demoLabeled}
-                answerRows={printAnswerRows}
                 generatedAt={printGeneratedAt}
               />
 
@@ -453,6 +449,8 @@ function GuideClient({ guide }: GuideClientProps) {
                   </a>
                 ) : null}
               </div>
+
+              <AnswerSummary rows={answerSummaryRows} onEdit={editAnswer} />
 
               {evaluation.variant ? (
                 <div
@@ -598,12 +596,10 @@ function GuideClient({ guide }: GuideClientProps) {
 function PrintSheetChrome({
   title,
   demoLabeled,
-  answerRows,
   generatedAt,
 }: {
   title: string
   demoLabeled: boolean
-  answerRows: Array<{ prompt: string; answer: string }>
   generatedAt: string | null
 }) {
   // Stable client stamp for the sheet before the citizen presses print (not a verification date).
@@ -622,19 +618,6 @@ function PrintSheetChrome({
           {DEMO_PUBLIC_LABEL_AR}
         </p>
       ) : null}
-      {answerRows.length > 0 ? (
-        <div className="mt-4" data-guide-print-answer-summary="">
-          <p className="font-semibold text-ink-950">{PRINT_ANSWER_SUMMARY_HEADING_AR}</p>
-          <ul className="mt-2 flex flex-col gap-1 text-sm text-ink-800">
-            {answerRows.map((row) => (
-              <li key={row.prompt} data-print-break-avoid="">
-                <span className="text-ink-600">{row.prompt}: </span>
-                <span className="font-medium">{row.answer}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
       <p
         className="mt-4 text-sm text-ink-700"
         data-guide-print-generated-at=""
@@ -648,6 +631,57 @@ function PrintSheetChrome({
         ) : null}
       </p>
     </div>
+  )
+}
+
+type AnswerSummaryProps = {
+  rows: ReturnType<typeof buildGuideAnswerSummaryRows>
+  onEdit: (questionKey: string) => void
+}
+
+function AnswerSummary({ rows, onEdit }: AnswerSummaryProps) {
+  if (rows.length < 1) return null
+  const headingId = 'guide-answer-summary-heading'
+
+  return (
+    <section
+      data-guide-answer-summary=""
+      data-testid="guide-answer-summary"
+      aria-labelledby={headingId}
+      className="border-b border-border/60 pb-6"
+    >
+      <h3 id={headingId} className="font-display text-lg font-bold text-ink-950">
+        {ANSWER_SUMMARY_HEADING_AR}
+      </h3>
+      <ul className="mt-3 flex flex-col gap-3">
+        {rows.map((row) => (
+          <li
+            key={row.questionKey}
+            data-guide-answer-row={row.questionKey}
+            data-print-break-avoid=""
+            className="flex flex-wrap items-start justify-between gap-3"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-ink-600" data-guide-answer-prompt="">
+                {row.prompt}
+              </p>
+              <p className="mt-0.5 font-semibold text-ink-950" data-guide-answer-value="">
+                {row.answerLabel}
+              </p>
+            </div>
+            <button
+              type="button"
+              data-print-hide=""
+              data-guide-edit-answer={row.questionKey}
+              onClick={() => onEdit(row.questionKey)}
+              className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border bg-surface px-3 text-sm font-semibold text-brand-900 hover:bg-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40 focus-visible:ring-offset-2"
+            >
+              {EDIT_ANSWER_LABEL_AR}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

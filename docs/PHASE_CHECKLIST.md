@@ -13,7 +13,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 6 | Search and Categories | **COMPLETE — OWNER APPROVED** | Arabic search, ranking, filters, pagination, unique results; QA Rounds 01–03 approved; tag `phase-6-complete` |
 | 7 | Transaction Page | Not started | Sources + verification dates |
 | 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
-| 9 | Guide and Result UX | Not started | Checklist, print, share |
+| 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview → Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
 | 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
 | 11 | Preview, Revalidation, SEO | Not started | Draft safe; sitemap; robots |
 | 12 | Seeds and Five Procedures | Not started | Labeled demo vs verified |
@@ -219,11 +219,11 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 
 ### Not started (later phases)
 
-- Phase 9 remaining: Edit Answers summary UX / share permalinks
+- Share permalinks / tokens (optional post–Phase 9)
 - Phase 10 reporting
 - Phase 11 sitemap / structured data / advanced revalidation
 
-## Phase 9 — Result checklist + local persistence (partial)
+## Phase 9 — Guide result UX (P9-A…P9-E)
 
 - [x] P9-A: interactive local documents checklist + clear-all (in `GuideClient`)
 - [x] P9-B: schema-versioned `localStorage` for answers + checklist (`waraqa:guide:<slug>`)
@@ -231,10 +231,12 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
   - Accepted: **PASS WITH PRINT-PREVIEW LIMITATION** — real OS/browser Print Preview not manually inspected (not a commit blocker).
   - **Required Phase 13 / pre-production:** manual Print Preview QA (A4 RTL, margins, page breaks, checklist marks, DEMO/disclaimer/sources).
 - [x] P9-D: client-side WhatsApp share (`wa.me` text; public transaction URL only; no answers/checklist state)
-- [ ] Edit Answers summary UX
-- [ ] Share permalinks / tokens
+- [x] P9-E: answer summary (**إجاباتك**) + per-answer **تعديل** + recalc / prune inapplicable answers
+- [ ] Share permalinks / tokens (explicitly out of Phase 9 acceptance; deferred)
 
-See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.3.
+See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
+
+Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit answers) is implemented. Remaining known limitation: **OS Print Preview** → Phase 13.
 
 ### QA evidence
 

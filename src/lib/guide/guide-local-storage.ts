@@ -12,6 +12,7 @@
 import { z } from 'zod'
 
 import { pruneCheckedDocumentKeys } from '@/lib/guide/checklist-state'
+import { pruneInapplicableAnswers } from '@/lib/guide/answer-labels'
 import { visibleQuestions } from '@/lib/guide/evaluate'
 import { runPublicGuideEvaluation } from '@/lib/guide/public-guide-map'
 import type { PublicGuideDTO } from '@/lib/guide/public-guide-map'
@@ -180,7 +181,11 @@ export function finalizeGuideLocalRestore(
   guide: PublicGuideDTO,
   draft: GuideLocalRestoreResult,
 ): GuideLocalRestoreResult {
-  const answers = sanitizePersistedAnswers(draft.answers, guide.questions)
+  // P9-E: drop answers for questions that are no longer visible under the live answers.
+  const answers = pruneInapplicableAnswers(
+    guide.questions,
+    sanitizePersistedAnswers(draft.answers, guide.questions),
+  )
   const knownDocs = guide.documents.map((d) => d.key)
   let checkedDocumentKeys = sanitizePersistedCheckedKeys(draft.checkedDocumentKeys, knownDocs)
 
@@ -226,7 +231,10 @@ export function buildGuideLocalPersistedState(
   guide: PublicGuideDTO,
   input: GuideLocalWriteInput,
 ): GuideLocalPersistedState | null {
-  const answers = sanitizePersistedAnswers(input.answers, guide.questions)
+  const answers = pruneInapplicableAnswers(
+    guide.questions,
+    sanitizePersistedAnswers(input.answers, guide.questions),
+  )
   const knownDocs = guide.documents.map((d) => d.key)
   const checked = sanitizePersistedCheckedKeys(input.checkedDocumentKeys, knownDocs)
 

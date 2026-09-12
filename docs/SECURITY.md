@@ -84,7 +84,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 - **No** national ID collection.
 - **No** citizen accounts.
 - Change reports: optional contact only; never published automatically.
-- **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. **P9-C:** browser-native print does not transmit or persist answers; generated print date is local display only. **P9-D:** WhatsApp share is client-side text only — public transaction detail URL, no answers/checklist state, no server-stored personalized results. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.3.
+- **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. **P9-C:** browser-native print does not transmit or persist answers; generated print date is local display only. **P9-D:** WhatsApp share is client-side text only — public transaction detail URL, no answers/checklist state, no server-stored personalized results. **P9-E:** edit-from-result prunes inapplicable answers before evaluation/persist so hidden answers cannot silently drive rules. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
 
 ## 8. Dependency and migration safety
 
