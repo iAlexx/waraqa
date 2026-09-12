@@ -34,7 +34,12 @@ export async function cleanupPhase7QaFixture(payload: Payload): Promise<{ delete
     for (const doc of found.docs) {
       const slug = (doc as { slug?: string }).slug
       if (!isPhase7QaFixtureSlug(slug)) continue
-      await payload.delete({ collection, id: doc.id, overrideAccess: true })
+      await payload.delete({
+        collection,
+        id: doc.id,
+        overrideAccess: true,
+        context: { seed: true },
+      })
       deleted += 1
     }
   }

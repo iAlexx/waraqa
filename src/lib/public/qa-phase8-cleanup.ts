@@ -46,7 +46,12 @@ export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ delete
       where: { transaction: { equals: tx.id } },
     })
     for (const report of reports.docs) {
-      await payload.delete({ collection: 'user-reports', id: report.id, overrideAccess: true })
+      await payload.delete({
+        collection: 'user-reports',
+        id: report.id,
+        overrideAccess: true,
+        context: { seed: true },
+      })
       deleted += 1
     }
   }
@@ -63,7 +68,12 @@ export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ delete
     for (const doc of found.docs) {
       const slug = (doc as { slug?: string }).slug
       if (!isPhase8QaFixtureSlug(slug)) continue
-      await payload.delete({ collection, id: doc.id, overrideAccess: true })
+      await payload.delete({
+        collection,
+        id: doc.id,
+        overrideAccess: true,
+        context: { seed: true },
+      })
       deleted += 1
     }
   }
@@ -76,7 +86,12 @@ export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ delete
     where: { key: { contains: CLAIM_KEY_PREFIX } },
   })
   for (const doc of claims.docs) {
-    await payload.delete({ collection: 'claims', id: doc.id, overrideAccess: true })
+    await payload.delete({
+      collection: 'claims',
+      id: doc.id,
+      overrideAccess: true,
+      context: { seed: true },
+    })
     deleted += 1
   }
 
@@ -88,7 +103,12 @@ export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ delete
     where: { email: { contains: REVIEWER_EMAIL_PREFIX } },
   })
   for (const doc of users.docs) {
-    await payload.delete({ collection: 'users', id: doc.id, overrideAccess: true })
+    await payload.delete({
+      collection: 'users',
+      id: doc.id,
+      overrideAccess: true,
+      context: { seed: true },
+    })
     deleted += 1
   }
 

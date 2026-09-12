@@ -387,7 +387,7 @@ export interface Source {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * المعاملات الإدارية — نظّم المحتوى عبر التبويبات. التصنيف والنشر وسير العمل في الشريط الجانبي. المحتوى المعبّأ ليس موثّقاً تلقائياً.
+ * المعاملات الإدارية — نظّم المحتوى عبر التبويبات. التصنيف والنشر وسير العمل في الشريط الجانبي. المحتوى المعبّأ ليس موثّقاً تلقائياً. لا تستخدم الحذف النهائي للمعاملات المنشورة — الأرشفة هي المسار الآمن.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "transactions".
@@ -816,7 +816,7 @@ export interface Transaction {
    */
   reviewIntervalDays?: number | null;
   /**
-   * يُحسب عند الاعتماد/النشر. المدير فقط يتجاوزه بسبب موثّق.
+   * يُحسب عند الاعتماد/النشر. منفصل عن جاهزية النشر (P11-B). صفّي القائمة بـ reviewDueAt ≤ الآن للمراجعات المستحقة. المدير فقط يتجاوزه بسبب موثّق.
    */
   reviewDueAt?: string | null;
   /**
@@ -936,7 +936,7 @@ export interface Claim {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * بلاغات المواطنين عن معلومات تغيّرت — ليست محتوى عاماً. بيانات التواصل محمية للمراجع/المدير فقط.
+ * بلاغات المواطنين عن معلومات تغيّرت — ليست محتوى عاماً. بيانات التواصل محمية للمراجع/المدير فقط. الحذف النهائي للمدير فقط؛ الأفضل إغلاق البلاغ بحالة نهائية.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "user-reports".
@@ -974,6 +974,10 @@ export interface UserReport {
    * مفتوح → قيد المراجعة → تم الحل / مرفوض / مزعج.
    */
   status: 'open' | 'in_review' | 'resolved' | 'rejected' | 'spam';
+  /**
+   * اختياري — مدير أو مراجع نشط فقط. المواطن لا يتحكم بالتعيين. الباحث غير قابل للتعيين.
+   */
+  assignedTo?: (number | null) | User;
   /**
    * ملاحظات الفريق — لا تُرسل للمواطن تلقائياً.
    */
@@ -1019,7 +1023,8 @@ export interface AuditEvent {
     | 'report_resolved'
     | 'report_rejected'
     | 'report_marked_spam'
-    | 'report_status_changed';
+    | 'report_status_changed'
+    | 'report_assigned';
   entityType: string;
   entityId: string;
   transaction?: (number | null) | Transaction;
@@ -1564,6 +1569,7 @@ export interface UserReportsSelect<T extends boolean = true> {
   contactPhone?: T;
   consentAccepted?: T;
   status?: T;
+  assignedTo?: T;
   reviewNotes?: T;
   resolutionSummary?: T;
   lastResolutionSummary?: T;

@@ -85,6 +85,7 @@ afterAll(async () => {
           collection: collection as 'users',
           id: item.id,
           overrideAccess: true,
+          context: { seed: true },
         })
       } catch {
         /* ignore */
@@ -365,6 +366,7 @@ describe('P11-C guide preview integration', () => {
       collection: 'users',
       id: reviewerId,
       overrideAccess: true,
+      context: { seed: true },
     })
     const res = await invokeGuidePreview({
       method: 'post',
@@ -383,6 +385,7 @@ describe('P11-C guide preview integration', () => {
       collection: 'users',
       id: researcherId,
       overrideAccess: true,
+      context: { seed: true },
     })
     const res = await invokeGuidePreview({
       method: 'get',
@@ -406,6 +409,7 @@ describe('P11-C guide preview integration', () => {
       collection: 'users',
       id: inactiveUserId,
       overrideAccess: true,
+      context: { seed: true },
     })
     await expect(
       invokeGuidePreview({
@@ -466,11 +470,13 @@ describe('P11-C guide preview integration', () => {
       draft: true,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
     const reviewer = await payload.findByID({
       collection: 'users',
       id: reviewerId,
       overrideAccess: true,
+      context: { seed: true },
     })
     await invokeGuidePreview({
       method: 'post',
@@ -484,6 +490,7 @@ describe('P11-C guide preview integration', () => {
       draft: true,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(after.updatedAt).toBe(before.updatedAt)
     expect(after.workflowState).toBe(before.workflowState)

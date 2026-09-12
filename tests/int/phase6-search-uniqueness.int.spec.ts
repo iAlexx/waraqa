@@ -331,6 +331,7 @@ afterAll(async () => {
           collection: row.collection as 'transactions',
           id: row.id,
           overrideAccess: true,
+          context: { seed: true },
         })
       } catch {
         // ignore

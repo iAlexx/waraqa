@@ -15,6 +15,7 @@ import { Sources } from './collections/Sources'
 import { Transactions } from './collections/Transactions'
 import { UserReports } from './collections/UserReports'
 import { Users } from './collections/Users'
+import { editorialDashboardEndpoint } from './endpoints/editorial-dashboard'
 import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -30,12 +31,14 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
+      beforeDashboard: ['/components/admin/EditorialDashboard#EditorialDashboard'],
       graphics: {
         Logo: '/components/admin/AdminLogo#AdminLogo',
         Icon: '/components/admin/AdminLogo#AdminLogo',
       },
     },
   },
+  endpoints: [editorialDashboardEndpoint],
   // No Media/upload collection — Vercel filesystem is ephemeral; identity uploads are out of scope.
   collections: [
     Users,

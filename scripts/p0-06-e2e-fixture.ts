@@ -53,7 +53,9 @@ async function cleanup(payload: Awaited<ReturnType<typeof getPayload>>) {
       where: { slug: { contains: PREFIX } },
     })
     for (const doc of found.docs) {
-      await payload.delete({ collection, id: doc.id, overrideAccess: true }).catch(() => undefined)
+      await payload
+        .delete({ collection, id: doc.id, overrideAccess: true, context: { seed: true } })
+        .catch(() => undefined)
     }
   }
 
@@ -64,7 +66,14 @@ async function cleanup(payload: Awaited<ReturnType<typeof getPayload>>) {
     where: { key: { contains: 'claim_e2e_p06_' } },
   })
   for (const doc of claims.docs) {
-    await payload.delete({ collection: 'claims', id: doc.id, overrideAccess: true }).catch(() => undefined)
+    await payload
+      .delete({
+        collection: 'claims',
+        id: doc.id,
+        overrideAccess: true,
+        context: { seed: true },
+      })
+      .catch(() => undefined)
   }
 
   const users = await payload.find({
@@ -74,7 +83,14 @@ async function cleanup(payload: Awaited<ReturnType<typeof getPayload>>) {
     where: { email: { contains: PREFIX } },
   })
   for (const doc of users.docs) {
-    await payload.delete({ collection: 'users', id: doc.id, overrideAccess: true }).catch(() => undefined)
+    await payload
+      .delete({
+        collection: 'users',
+        id: doc.id,
+        overrideAccess: true,
+        context: { seed: true },
+      })
+      .catch(() => undefined)
   }
 }
 

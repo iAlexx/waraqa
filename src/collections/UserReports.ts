@@ -19,9 +19,13 @@ const contactFieldAccess: FieldAccess = ({ req: { user } }) =>
  * - `encountered` = what the citizen encountered (required)
  * - `reportedValue` / `suggestedValue` intentionally omitted — collapsed into
  *   message + encountered for a simpler Arabic form
- * - `assignedTo` deferred to Phase 11 report-assignment
+ * - `assignedTo` Phase 11 — optional active admin/reviewer only; public cannot set
  * - `serviceCenter` optional; public submit only accepts centers linked to the
  *   target Transaction (server-validated)
+ *
+ * Hard delete: admin-only. Audit events are retained by entityId string after
+ * deletion (immutable audit-events collection). Prefer terminal status over
+ * delete for routine triage.
  */
 export const UserReports: CollectionConfig = {
   slug: 'user-reports',
@@ -32,10 +36,10 @@ export const UserReports: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'message',
-    defaultColumns: ['transaction', 'section', 'status', 'createdAt', 'resolvedAt'],
+    defaultColumns: ['transaction', 'section', 'status', 'assignedTo', 'createdAt', 'resolvedAt'],
     group: 'المحتوى',
     description:
-      'بلاغات المواطنين عن معلومات تغيّرت — ليست محتوى عاماً. بيانات التواصل محمية للمراجع/المدير فقط.',
+      'بلاغات المواطنين عن معلومات تغيّرت — ليست محتوى عاماً. بيانات التواصل محمية للمراجع/المدير فقط. الحذف النهائي للمدير فقط؛ الأفضل إغلاق البلاغ بحالة نهائية.',
   },
   defaultSort: '-createdAt',
   access: {
@@ -171,6 +175,22 @@ export const UserReports: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'مفتوح → قيد المراجعة → تم الحل / مرفوض / مزعج.',
+      },
+    },
+    {
+      name: 'assignedTo',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'مُعيَّن إلى',
+      localized: false,
+      index: true,
+      filterOptions: {
+        and: [{ isActive: { equals: true } }, { role: { in: ['admin', 'reviewer'] } }],
+      },
+      admin: {
+        position: 'sidebar',
+        description:
+          'اختياري — مدير أو مراجع نشط فقط. المواطن لا يتحكم بالتعيين. الباحث غير قابل للتعيين.',
       },
     },
     {

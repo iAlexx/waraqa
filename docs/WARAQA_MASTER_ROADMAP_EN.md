@@ -2348,27 +2348,35 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 
 ## Phase 11 — Admin UX Refinement
 
+**Status:** COMPLETE (closure branch — pending review merge)
+
 ### Tasks
 
-- group transaction fields logically;
-- add inline descriptions;
-- add validation messages;
-- add rule preview;
-- add missing-source indicators;
-- dashboard widgets;
-- review-due filters;
-- report assignment;
-- safer delete/archive behavior;
-- admin mobile usability at tablet width.
+- [x] group transaction fields logically (P11-A);
+- [x] add inline descriptions (P11-A);
+- [x] add validation messages (Arabic APIErrors for publish/triage/assignment/delete);
+- [x] add rule preview (P11-C);
+- [x] add missing-source indicators (P11-B readiness — canonical; no second engine);
+- [x] dashboard widgets (editorial counts + Admin list links);
+- [x] review-due filters (list column + overdue cell + due query);
+- [x] report assignment (`assignedTo` + ACL + audit);
+- [x] safer delete/archive behavior (server-enforced Transaction policy);
+- [x] admin mobile usability at tablet width (768px smoke).
 
 ### Acceptance criteria
 
-- a non-developer can create a complete draft;
-- reviewer can understand what changed;
-- dangerous actions require confirmation;
-- publication blockers are explicit;
-- no raw IDs are required for routine content entry;
-- relationships are searchable.
+- [x] a non-developer can create a complete draft (P11-A IA + help);
+- [x] reviewer can understand what changed (workflow + readiness + audit);
+- [x] dangerous actions require confirmation / server block (hard delete blocked; archive preferred);
+- [x] publication blockers are explicit (P11-B);
+- [x] no raw IDs are required for routine content entry;
+- [x] relationships are searchable.
+
+### Deferred (documented)
+
+- Payload English Admin chrome localization pack.
+- Assignment notifications.
+- Full SEO sitemap/robots/revalidation (separate track; not Admin UX acceptance).
 
 ## Phase 12 — Seed Content
 

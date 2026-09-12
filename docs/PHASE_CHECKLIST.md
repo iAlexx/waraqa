@@ -15,7 +15,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
 | 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview → Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
 | 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
-| 11 | Preview, Revalidation, SEO | P11-A in progress (Admin UX tabs); SEO later | Draft safe; sitemap; robots |
+| 11 | Admin UX Refinement | Complete (P11-A/B/C + dashboard + review-due + assignment + delete safety + tablet smoke) | See CONTENT_MODEL / PHASE_CHECKLIST |
 | 12 | Seeds and Five Procedures | Not started | Labeled demo vs verified |
 | 13 | Hardening, A11y, Performance | Not started | Full test matrix |
 | 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
@@ -250,20 +250,32 @@ See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2
 
 Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit answers) is implemented. Remaining known limitation: **OS Print Preview** → Phase 13.
 
-## Phase 11 — Admin UX (in progress)
+## Phase 11 — Admin UX Refinement — COMPLETE
 
 - [x] **P11-A:** Transaction admin unnamed tabs + Arabic editorial help (schema shape / RBAC / public behavior unchanged). See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § transactions Admin IA.
 - [x] **P11-B:** Transaction Admin readiness panel (workflow publish readiness ≠ public eligibility; informational; server-enforced publish unchanged).
 - [x] **P11-C:** Admin Decision Rule Preview (saved-guide only; canonical `evaluateGuide`; ephemeral answers; diagnostic firedRuleKeys).
-- [ ] Later P11: dashboards, review-due filters, safer delete confirmations, tablet Admin QA
+- [x] **Dashboard:** Editorial BeforeDashboard + `/api/admin-ops/dashboard` (cheap counts; active admin/reviewer only).
+- [x] **reviewDueAt UX:** List column + overdue/due-soon/future labels; native due filter; separate from publication readiness.
+- [x] **Report assignment:** `assignedTo` + ACL + `report_assigned` audit (no contact PII); public cannot set.
+- [x] **Safer delete/archive:** Server-enforced Transaction hard-delete policy; archive preferred; seed bypass explicit.
+- [x] **Tablet Admin QA (768px):** Smoke coverage in `tests/e2e/phase11-admin-ux.e2e.spec.ts` (no critical overflow blockers).
+- [x] Validation Arabic messages for assignment / unsafe delete / existing publish & triage paths.
+
+### Deferred (non-blocking)
+
+- Full Arabic Payload Admin chrome pack (documented Phase 4 debt).
+- Notification system for report assignment.
+- Giant analytics dashboard / claim-readiness widgets on dashboard load.
+- Sitemap / robots / structured data / advanced revalidation (later SEO track — not Admin UX acceptance).
 
 ### QA evidence
 
-- `revisions/round-01-interactive-guide/` — Round 01 capture target (not owner-approved)
-- **No** `approved/` folder until owner visual sign-off
-- **No** commit / tag / push on this branch yet
+- Unit: `tests/unit/phase11-admin-ux.spec.ts`, `tests/unit/phase11-transaction-delete.spec.ts`
+- Integration: `tests/int/phase11-admin-ux.int.spec.ts`
+- E2E: `tests/e2e/phase11-admin-ux.e2e.spec.ts` (+ prior P11-A/B/C and Phase 10 suites)
 
-See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md).
+See [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md), [SECURITY.md](./SECURITY.md).
 
 ## Phase 4 — Admin UI polish debt
 

@@ -46,7 +46,12 @@ beforeAll(async () => {
 afterAll(async () => {
   for (const id of createdUserIDs.reverse()) {
     try {
-      await payload.delete({ collection: 'users', id, overrideAccess: true })
+      await payload.delete({
+        collection: 'users',
+        id,
+        overrideAccess: true,
+        context: { seed: true },
+      })
     } catch {
       // Best-effort cleanup in the disposable integration database.
     }
@@ -81,6 +86,7 @@ describe('P0-03 inactive-user sessions', () => {
       id: admin.id,
       data: { isActive: false },
       overrideAccess: true,
+      context: { seed: true },
     })
 
     expect(await persistedSessions(admin.id)).toHaveLength(0)
@@ -119,6 +125,7 @@ describe('P0-03 inactive-user sessions', () => {
       id: admin.id,
       data: { displayName: 'P0-03 updated display' },
       overrideAccess: true,
+      context: { seed: true },
     })
 
     const after = await persistedSessions(admin.id)
@@ -138,12 +145,14 @@ describe('P0-03 inactive-user sessions', () => {
       id: reviewer.id,
       data: { isActive: false },
       overrideAccess: true,
+      context: { seed: true },
     })
     await payload.update({
       collection: 'users',
       id: researcher.id,
       data: { isActive: false },
       overrideAccess: true,
+      context: { seed: true },
     })
 
     const inactiveReviewer = await payload.findByID({
@@ -151,12 +160,14 @@ describe('P0-03 inactive-user sessions', () => {
       id: reviewer.id,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
     const inactiveResearcher = await payload.findByID({
       collection: 'users',
       id: researcher.id,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
 
     await expect(

@@ -78,14 +78,17 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 | Secure cookies | HTTPS-only in production; secure admin cookies |
 | Input validation | Zod at all custom input boundaries |
 | CSP | Plan and test before production demo (Phase later) |
-| User reports | Never publicly readable; plain text; honeypot; contact field ACL (admin/reviewer); no attachments |
+| User reports | Never publicly readable; plain text; honeypot; contact field ACL (admin/reviewer); no attachments; `assignedTo` editorial-only (Phase 11); public API rejects assignment |
+| Transaction hard delete | Previously published/approved/archived blocked server-side; linked reports RESTRICT; seed bypass only `context.seed` + non-prod |
+| Editorial dashboard | Internal `/api/admin-ops/dashboard` — active admin/reviewer; cheap counts only; no public exposure |
 
 ## 7. Data minimization
 
 - **No** identity-document uploads in MVP.
 - **No** national ID collection.
 - **No** citizen accounts.
-- Change reports (Phase 10): optional contact only; never published automatically; not in public DTOs/URLs. Rate-limit identity is a one-way **IP-only** HMAC — raw IP is not persisted; User-Agent cannot bypass buckets. Success UX is client-state only (not `?sent=1`). Editorial status transitions require audit-events (fail closed); citizen `report_received` audit is best-effort.
+- Change reports (Phase 10): optional contact only; never published automatically; not in public DTOs/URLs. Rate-limit identity is a one-way **IP-only** HMAC — raw IP is not persisted; User-Agent cannot bypass buckets. Success UX is client-state only (not `?sent=1`). Editorial status transitions require audit-events (fail closed); citizen `report_received` audit is best-effort. Phase 11 `assignedTo` is editorial-only; assignment audits store assignee ids only (no contact/message).
+- Phase 11 Admin dashboard is authenticated editorial-only; counts use indexed Payload queries (no claim-graph N+1 on load).
 - **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. **P9-C:** browser-native print does not transmit or persist answers; generated print date is local display only. **P9-D:** WhatsApp share is client-side text only — public transaction detail URL, no answers/checklist state, no server-stored personalized results. **P9-E:** edit-from-result prunes inapplicable answers before evaluation/persist so hidden answers cannot silently drive rules. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
 
 ## 8. Dependency and migration safety

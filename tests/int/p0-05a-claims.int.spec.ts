@@ -36,7 +36,12 @@ async function cleanup() {
     for (const item of [...created].reverse()) {
       if (item.collection !== collection) continue
       try {
-        await payload.delete({ collection: collection as 'users', id: item.id, overrideAccess: true })
+        await payload.delete({
+          collection: collection as 'users',
+          id: item.id,
+          overrideAccess: true,
+          context: { seed: true },
+        })
       } catch {
         /* ignore */
       }
@@ -352,6 +357,7 @@ describe('P0-05A claims foundation', () => {
       id: claim.id,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(afterForge.reviewedBy).toBeFalsy()
     expect(afterForge.verifiedAt).toBeFalsy()

@@ -393,10 +393,15 @@ export function workflowSidebarFields(): Field[] {
       type: 'date',
       label: 'موعد المراجعة القادمة',
       localized: false,
+      index: true,
       admin: {
         readOnly: true,
         position: 'sidebar',
-        description: 'يُحسب عند الاعتماد/النشر. المدير فقط يتجاوزه بسبب موثّق.',
+        description:
+          'يُحسب عند الاعتماد/النشر. منفصل عن جاهزية النشر (P11-B). صفّي القائمة بـ reviewDueAt ≤ الآن للمراجعات المستحقة. المدير فقط يتجاوزه بسبب موثّق.',
+        components: {
+          Cell: '/components/admin/ReviewDueAtCell#ReviewDueAtCell',
+        },
       },
     },
     {
