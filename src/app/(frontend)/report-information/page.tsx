@@ -9,7 +9,7 @@ import { loadPublicSiteSettings } from '@/lib/public/site-settings'
 export const dynamic = 'force-dynamic'
 
 type Props = {
-  searchParams: Promise<{ transaction?: string; sent?: string }>
+  searchParams: Promise<{ transaction?: string }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Phase 10 — public changed-information report form.
- * Only reachable for Transactions that pass P0-05/P0-06 public eligibility.
+ * Success UX is client-state only after a real POST (no forgeable ?sent=1).
  */
 export default async function ReportInformationPage({ searchParams }: Props) {
   const sp = await searchParams
@@ -52,7 +52,6 @@ export default async function ReportInformationPage({ searchParams }: Props) {
   }
 
   const { transaction } = result
-  const sent = sp.sent === '1'
 
   return (
     <div className="waraqa-container py-10 md:py-14" data-report-page>
@@ -67,33 +66,12 @@ export default async function ReportInformationPage({ searchParams }: Props) {
       </header>
 
       <div className="mt-10 max-w-2xl">
-        {sent ? (
-          <div
-            className="rounded-[0.8125rem] border border-border/80 bg-surface px-5 py-8 text-center"
-            data-report-success
-            role="status"
-          >
-            <h2 className="font-display text-xl font-bold text-ink-950">تم استلام بلاغك</h2>
-            <p className="mt-3 text-ink-700 leading-relaxed">
-              شكراً لك. فريق ورقة سيراجع البلاغ قبل أي تعديل على المحتوى. ورقة منصة إرشادية مستقلة وليست
-              جهة حكومية.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link
-                href={`/transactions/${encodeURIComponent(transaction.slug)}`}
-                className="inline-flex min-h-12 items-center rounded-[0.8125rem] bg-brand-800 px-5 font-semibold text-white"
-              >
-                العودة إلى المعاملة
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <ReportInformationForm
-            transactionSlug={transaction.slug}
-            transactionTitle={transaction.title}
-            demoLabeled={transaction.demoLabeled}
-          />
-        )}
+        <ReportInformationForm
+          transactionSlug={transaction.slug}
+          transactionTitle={transaction.title}
+          demoLabeled={transaction.demoLabeled}
+          serviceCenters={transaction.serviceCenters.map((c) => ({ id: c.id, name: c.name }))}
+        />
       </div>
     </div>
   )

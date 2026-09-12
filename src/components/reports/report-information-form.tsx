@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -11,10 +10,16 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { REPORT_SECTION_LABELS_AR, REPORT_SECTIONS, type ReportSection } from '@/lib/reports/types'
 
+export type ReportFormServiceCenter = {
+  id: number | string
+  name: string
+}
+
 type Props = {
   transactionSlug: string
   transactionTitle: string
   demoLabeled: boolean
+  serviceCenters: ReportFormServiceCenter[]
 }
 
 type FieldErrors = Partial<Record<string, string>>
@@ -23,10 +28,12 @@ export function ReportInformationForm({
   transactionSlug,
   transactionTitle,
   demoLabeled,
+  serviceCenters,
 }: Props) {
-  const router = useRouter()
   const [section, setSection] = React.useState<ReportSection | ''>('')
   const [message, setMessage] = React.useState('')
+  const [encountered, setEncountered] = React.useState('')
+  const [serviceCenterId, setServiceCenterId] = React.useState('')
   const [sourceUrl, setSourceUrl] = React.useState('')
   const [contactEmail, setContactEmail] = React.useState('')
   const [contactPhone, setContactPhone] = React.useState('')
@@ -51,6 +58,8 @@ export function ReportInformationForm({
           transactionSlug,
           section,
           message,
+          encountered,
+          serviceCenterId: serviceCenterId ? Number(serviceCenterId) : undefined,
           sourceUrl: sourceUrl.trim() || undefined,
           contactEmail: contactEmail.trim() || undefined,
           contactPhone: contactPhone.trim() || undefined,
@@ -72,9 +81,8 @@ export function ReportInformationForm({
         return
       }
 
+      // Client-only success — never encode success in a forgeable query param.
       setSuccess(true)
-      // Ensure success URL has no contact/message leakage.
-      router.replace(`/report-information?transaction=${encodeURIComponent(transactionSlug)}&sent=1`)
     } catch {
       setFormError('تعذّر إرسال البلاغ حالياً. حاول مرة ثانية بعد قليل.')
     } finally {
@@ -113,12 +121,7 @@ export function ReportInformationForm({
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex flex-col gap-6"
-      data-report-form
-      noValidate
-    >
+    <form onSubmit={onSubmit} className="flex flex-col gap-6" data-report-form noValidate>
       <div className="rounded-[0.8125rem] border border-border/80 bg-ivory/70 px-4 py-3 text-sm text-ink-700">
         <p className="font-medium text-ink-900">المعاملة</p>
         <p className="mt-1 break-words">{transactionTitle}</p>
@@ -155,7 +158,7 @@ export function ReportInformationForm({
 
       <Field
         id="report-message"
-        label="ما المعلومة التي تغيّرت أو تبدو خاطئة؟"
+        label="ما المعلومة التي تبدو غير صحيحة؟"
         required
         helperText="اكتب بأسلوب واضح بدون مرفقات. لا تُرسل أرقاماً وطنية أو وثائق هوية."
         error={fieldErrors.message}
@@ -164,13 +167,57 @@ export function ReportInformationForm({
           id="report-message"
           name="message"
           required
-          rows={5}
+          rows={4}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           maxLength={2200}
           aria-invalid={Boolean(fieldErrors.message)}
         />
       </Field>
+
+      <Field
+        id="report-encountered"
+        label="ماذا واجهتَ على أرض الواقع؟"
+        required
+        helperText="مثلاً: الرسوم المطلوبة في المركز اختلفت عن الصفحة."
+        error={fieldErrors.encountered}
+      >
+        <Textarea
+          id="report-encountered"
+          name="encountered"
+          required
+          rows={4}
+          value={encountered}
+          onChange={(e) => setEncountered(e.target.value)}
+          maxLength={2200}
+          aria-invalid={Boolean(fieldErrors.encountered)}
+        />
+      </Field>
+
+      {serviceCenters.length > 0 ? (
+        <Field
+          id="report-service-center"
+          label="مركز الخدمة"
+          helperText="اختياري — فقط المراكز المرتبطة بهذه المعاملة."
+          error={fieldErrors.serviceCenterId}
+        >
+          <select
+            id="report-service-center"
+            name="serviceCenterId"
+            value={serviceCenterId}
+            onChange={(e) => setServiceCenterId(e.target.value)}
+            className="flex h-12 w-full rounded-[0.8125rem] border border-input bg-surface px-3.5 text-base text-ink-950"
+            data-report-service-center
+          >
+            <option value="">— لا ينطبق / لا أعرف —</option>
+            {serviceCenters.map((c) => (
+              <option key={String(c.id)} value={String(c.id)}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ) : null}
 
       <Field
         id="report-source-url"
@@ -219,7 +266,6 @@ export function ReportInformationForm({
         </Field>
       </fieldset>
 
-      {/* Honeypot — visually hidden from humans */}
       <div
         aria-hidden="true"
         className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
@@ -255,7 +301,11 @@ export function ReportInformationForm({
       ) : null}
 
       {formError ? (
-        <p className="rounded-[0.8125rem] border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert" data-report-error>
+        <p
+          className="rounded-[0.8125rem] border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          role="alert"
+          data-report-error
+        >
           {formError}
         </p>
       ) : null}

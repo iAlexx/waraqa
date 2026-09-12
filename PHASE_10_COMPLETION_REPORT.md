@@ -1,134 +1,99 @@
-# Phase 10 Completion Report — User Reports
+﻿# Phase 10 Completion Report â€” User Reports (Closure Hardening)
 
-**Date:** 2026-09-12  
-**Commit message:** `feat: implement user report workflow`  
-**Authoritative SHA:** use `git rev-parse HEAD` on the Phase 10 commit (recorded in the review ZIP final response).  
-**Baseline before Phase 10:** `e01bdea` (P11-C)
+**Date:** 2026-09-13  
+**Commit message:** `fix: harden phase 10 user report workflow`  
+**Authoritative SHA:** `375e4340b97d430b07febf5430476a3c6d0fd7ea`  
+**Baseline Phase 10 feature commit:** `91747a52e3d91104258fe1c559409597d4036c4e`  
+**Prior baseline (P11-C):** `e01bdea`
 
 ## Summary
 
-Implemented full Phase 10 — citizen changed-information reporting with public form, Zod validation, honeypot, PostgreSQL rate limiting (hashed identity), `user-reports` collection, strict ACL, Admin/reviewer triage, and audit-events logging.
+Closed all forensic blockers from `WARAQA_PHASE_10_REVIEW.zip` in one hardening pass: IP-only rate-limit identity, resolution stamp integrity, fail-closed editorial audit history, early request size/content-type gates, roadmap form fields (`encountered` + optional validated `serviceCenter`), client-only success UX, awaited opportunistic bucket cleanup, safer migrations (RESTRICT FK, no bare `WHEN others`), credential-free review archive V2, and full browser/E2E with healthy Postgres.
 
-## Files changed (high level)
+## Blockers fixed
 
-### New
-- `src/collections/UserReports.ts`
-- `src/lib/reports/*` (types, sanitize, validate, identity-hash, rate-limit, submit, triage)
-- `src/app/api/public/reports/route.ts`
-- `src/app/(frontend)/report-information/page.tsx`
-- `src/components/reports/report-information-form.tsx`
-- `migrations/20260912_220000_phase_10_user_reports.ts`
-- `tests/unit/phase10-user-reports.spec.ts`
-- `tests/unit/phase10-report-cta.spec.ts`
-- `tests/int/phase10-user-reports.int.spec.ts`
-- `tests/e2e/phase10-user-reports.e2e.spec.ts`
-- `PHASE_10_COMPLETION_REPORT.md` (this file)
+1. **Rate-limit identity** â€” primary bucket = HMAC of trusted proxy IP only (UA excluded); raw IP never stored; missing/malformed IP fail-closed (503).
+2. **Resolution metadata** â€” stamp `resolvedAt`/`resolvedBy`/`resolutionSummary` only on enter closed; stay-closed edits preserve stamps; reopen clears stamps and keeps `lastResolutionSummary`.
+3. **Audit reliability** â€” editorial status transitions write `audit-events` before persist; audit failure aborts update; recoverable sanitized `resolutionReason` in metadata; citizen `report_received` remains best-effort (documented).
+4. **Request gates** â€” multipart/non-JSON rejected before body parse; Content-Length + max body size enforced.
+5. **Roadmap form gap** â€” separate `encountered`; optional `serviceCenter` validated against Transaction centers.
+6. **Success integrity** â€” no forgeable `?sent=1`; client success state only.
+7. **Serverless cleanup** â€” opportunistic cleanup awaited when selected; still non-fatal.
+8. **Migration safety** â€” no `EXCEPTION WHEN others` on audit enums; Transaction FK `ON DELETE RESTRICT`; audit enum down irreversibility documented.
+9. **ZIP hygiene** â€” deleted leaked local credential files and old review ZIP; V2 archive from tracked files only + scanned.
 
-### Modified
-- `src/payload.config.ts`, `src/payload-types.ts`
-- `src/collections/AuditEvents.ts`, `src/lib/workflow/audit.ts`
-- `src/components/transaction/transaction-detail-view.tsx`
-- `src/app/(frontend)/transactions/[slug]/page.tsx`
-- `migrations/index.ts`
-- Docs: `CONTENT_MODEL`, `PHASE_CHECKLIST`, `SECURITY`, `RBAC`, `ARCHITECTURE`, `TRANSACTION_DETAIL_ARCHITECTURE`, `WARAQA_MASTER_ROADMAP_EN`
+## Schema / MVP differences vs roadmap Â§12 / Â§14.13
 
-## Schema / migrations
-
-Migration `20260912_220000_phase_10_user_reports`:
-- Table `usr_rpt` (Payload collection `user-reports`)
-- Enums `usr_rpt_section`, `usr_rpt_status`
-- Extends `audit_action` with report lifecycle values
-- Table `report_rate_buckets` (identity_hash + window_start + hit_count)
-- Locked-documents relation column for `usr_rpt`
-
-No Redis. No new email provider.
-
-## Security model
-
-- Public POST only at `/api/public/reports` (JSON). Multipart rejected (no attachments).
-- Transaction eligibility reuses `getPublicTransactionWhere` + `liveEvaluatePublicTransactionClaimTrust` (P0-05/P0-06). QA_TEST never reportable.
-- Honeypot field `website`: filled → HTTP success, no persistence.
-- Rate limit: HMAC(PAYLOAD_SECRET, ip|ua) → SHA-256 truncated hash; fixed 1h window, max 5; raw IP never stored; ~7 day bucket retention cleanup.
-- Report text sanitized to plain text; HTML/script-like input rejected.
-- Collection ACL: create false for clients; read/update admin|reviewer active only; delete admin only; researchers denied.
-- Contact fields field-level read restricted to admin|reviewer; preserved on triage updates.
-- Success responses omit internal report IDs.
-- CSRF: anonymous JSON POST (no cookie session auth for citizens).
-
-## ACL matrix (user-reports)
-
-| Actor | Create | Read | Update triage | Delete | Read contact |
-| --- | --- | --- | --- | --- | --- |
-| Anonymous | via public API only | No | No | No | No |
-| Researcher (active) | via public API only | No | No | No | No |
-| Reviewer (active) | via public API only | Yes | Yes | No | Yes |
-| Admin (active) | via public API only | Yes | Yes | Yes | Yes |
-| Inactive editorial | Denied | Denied | Denied | Denied | Denied |
+| Roadmap field | Phase 10 decision |
+| --- | --- |
+| what appears incorrect | `message` (required) |
+| what the user encountered | `encountered` (required) |
+| reportedValue / suggestedValue | **Intentionally omitted** â€” collapsed into `message` + `encountered` |
+| serviceCenter | Optional; server accepts only centers linked to the target Transaction |
+| assignedTo | **Deferred to Phase 11** |
+| attachments | Not supported |
 
 ## Rate-limit design
 
-- Store: PostgreSQL `report_rate_buckets`
-- Key: privacy-preserving `identity_hash` (not raw IP)
-- Window: 1 hour fixed buckets; max 5 hits
-- Over-limit: HTTP 429 + safe Arabic message + Retry-After
-- Retention: opportunistic delete of windows older than 7 days
+- Trusted identity: Vercel/`x-forwarded-for` left-most or `x-real-ip` (documented); no client identity token.
+- Bucket key: `HMAC-SHA256(PAYLOAD_SECRET, report-rl:v2|ip|<ip>)` then SHA-256 truncated (48 hex); UA never part of key.
+- Store: PostgreSQL `report_rate_buckets`; 1h window; max 5; raw IP never persisted.
+- Fail-closed if IP untrustworthy â†’ HTTP 503.
+- Cleanup: ~5% of requests await opportunistic delete (>7 days); failures ignored.
 
-## Notifications
+## Audit / history design
 
-**Deferred.** No email adapter configured in the repository. Admin triage is sufficient per roadmap. Does not fail Phase 10.
+- Reuses `audit-events` only (no second framework).
+- Editorial transitions: actor + from/to status + sanitized `resolutionReason` when closing; write in `beforeChange`; failure â†’ no silent terminal state.
+- Citizen `report_received`: best-effort; submit succeeds even if that audit row fails (intentional resilience).
+- Contact never logged in audit metadata.
 
-## Test counts
+## Migration safety
 
-- Unit: **333** passed
-- Integration: **116** passed
+- `20260912_220000_phase_10_user_reports` + `20260912_233000_phase_10_report_hardening`.
+- Service-center FK â†’ `svc_centers`.
+- Transaction FK â†’ `ON DELETE RESTRICT` (immutable report history).
+- Audit enum values: `ADD VALUE IF NOT EXISTS`; **down cannot safely remove enum values** â€” documented.
+
+## Security model (delta)
+
+- JSON-only public POST; early multipart/size reject.
+- Honeypot unchanged (success without persistence).
+- Success UX not derived from query params.
+
+## Test counts (fresh gates)
+
+- Unit: **340**
+- Integration: **117**
 - Lint / typecheck / build: **PASS**
+- Playwright Phase 10 public + admin closure: **PASS** (demo mode + `PHASE10_E2E_TX_SLUG=qa-p8-r1-tx-guide`)
 
-## Playwright / browser
+## Browser / Admin QA (DB healthy)
 
-- E2E suite: `tests/e2e/phase10-user-reports.e2e.spec.ts` (requires `PHASE10_E2E_TX_SLUG` + publicly eligible tx; local DB must be healthy; for DEMO fixtures set `WARAQA_PUBLIC_CONTENT_MODE=demo`).
-- Manual/Cursor browser: CTA «بلّغنا عن معلومة تغيّرت» confirmed visible on DEMO tx `qa-p8-r1-tx-guide` under demo mode while server was healthy.
-- Full public submit + Admin resolve browser pass was interrupted by local Docker/Postgres downtime after quality gates; covered by integration tests for submit/ACL/triage/audit.
+Public: CTA â†’ form â†’ service-center optional â†’ valid submit â†’ client success; no sensitive URL; honeypot success without persistence; forged `?sent=1` shows form not success; 360/1440/RTL/keyboard/overflow covered by E2E; no app console errors on happy path.
 
-## Manual QA notes
+Admin: reviewer can open reports; researcher denied; admin audit-events visible; 768 tablet smoke; resolution/history covered by integration + triage hooks.
 
-- RTL / Arabic form copy present.
-- CTA on eligible detail page.
-- Admin tablet smoke: not re-run after DB outage (collection Admin UX is standard Payload list/edit; 768 smoke deferred with DB).
+## Credential / archive hygiene
 
-## Deferred items
+- Deleted: `docs/qa/phase-3/.local-credentials`, `docs/qa/phase-4/.local-credentials`, `docs/qa.zip`, prior `WARAQA_PHASE_10_REVIEW.zip` (values never printed).
+- Regenerated local gitignored credentials for Admin QA only (not archived).
+- Review archive: `WARAQA_PHASE_10_REVIEW_V2.zip` from tracked files; scanned for credential/secret patterns.
 
-1. Email/notifications when a safe adapter exists.
-2. Re-run Playwright + full Admin browser resolve when local Postgres/Docker is available.
-3. P11-D/E (dashboards, review-due filters, etc.) — out of Phase 10.
+## Deferred (non-blocking)
 
-## Roadmap acceptance matrix
+1. Email notifications when a safe adapter exists.
+2. Later Phase 11 Admin UX (dashboards, assignment, etc.).
 
-| Requirement | Result |
+## Forensic self-audit
+
+| Source | Result |
 | --- | --- |
-| Public report form | PASS |
-| Zod validation | PASS |
-| Rate limiting | PASS |
-| Honeypot | PASS |
-| Payload collection | PASS |
-| Admin triage workflow | PASS |
-| Privacy copy / optional contact protected | PASS |
-| Resolution logging (audit-events) | PASS |
-| Notifications if email configured | PASS_WITH_LIMITATION (deferred — none configured) |
-| Spam controls work | PASS |
-| HTML not rendered from report text | PASS |
-| Contact optional and protected | PASS |
-| Report not publicly visible | PASS |
-| Reviewer can resolve/reject | PASS |
-| Clear success state | PASS |
-| No attachment upload | PASS |
-| P0-05/P0-06 respected | PASS |
-
-## Known limitations
-
-- Notifications deferred (no adapter).
-- Browser E2E full path not re-verified after mid-session DB outage; unit/int coverage remains green.
-- Researchers intentionally have no report triage access (roadmap: reviewers resolve reports).
+| Master Roadmap Â§12 public form | PASS (encountered + optional service center) |
+| Master Roadmap Â§14.13 schema | PASS with documented MVP collapses above |
+| Phase 10 tasks / acceptance | PASS |
+| P0-03 / P0-05 / P0-06 | PASS (eligibility + content class isolation unchanged) |
 
 ## Verdict
 
-**PHASE 10 COMPLETE WITH DOCUMENTED LIMITATIONS**
+**PHASE 10 COMPLETE**

@@ -52,15 +52,19 @@ export const REPORT_STATUS_TRANSITIONS: Record<ReportStatus, readonly ReportStat
 export const REPORT_LIMITS = {
   messageMin: 12,
   messageMax: 2000,
+  encounteredMin: 8,
+  encounteredMax: 2000,
   contactEmailMax: 254,
   contactPhoneMax: 40,
   sourceUrlMax: 500,
   resolutionNoteMin: 4,
   resolutionNoteMax: 1000,
   reviewNotesMax: 2000,
+  /** Max raw JSON body for public report POST (bytes). */
+  maxRequestBytes: 32 * 1024,
 } as const
 
-/** Rate limit: max submissions per identity hash per window. */
+/** Rate limit: max submissions per IP-derived identity hash per window. */
 export const REPORT_RATE_LIMIT = {
   maxHits: 5,
   windowMs: 60 * 60 * 1000, // 1 hour

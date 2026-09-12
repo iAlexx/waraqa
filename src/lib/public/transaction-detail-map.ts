@@ -35,6 +35,7 @@ export type PublicTransactionDetail = {
 }
 
 export type PublicServiceCenter = {
+  id: number | string
   name: string
   slug: string
   city: string | null
@@ -100,6 +101,7 @@ function mapServiceCenter(raw: unknown): PublicServiceCenter | null {
   const name = localizedString(raw.name as LocalizedLike)
   const slug = typeof raw.slug === 'string' ? raw.slug : ''
   if (!name || !slug) return null
+  if (raw.id == null) return null
   const phones = Array.isArray(raw.phones)
     ? raw.phones
         .map((p) => {
@@ -111,6 +113,7 @@ function mapServiceCenter(raw: unknown): PublicServiceCenter | null {
         .filter(Boolean)
     : []
   return {
+    id: raw.id as number | string,
     name,
     slug,
     city: localizedString(raw.city as LocalizedLike) || null,

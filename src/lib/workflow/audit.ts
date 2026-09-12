@@ -28,6 +28,7 @@ const SAFE_META_KEYS = new Set([
   'toState',
   'commentLength',
   'reasonLength',
+  'resolutionReason',
   'versionId',
   'hashPrefix',
   'reviewDueAt',
@@ -45,8 +46,11 @@ export function sanitizeAuditMetadata(
   const out: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(meta)) {
     if (!SAFE_META_KEYS.has(k)) continue
-    if (typeof v === 'string') out[k] = v.slice(0, 200)
-    else if (typeof v === 'number' || typeof v === 'boolean') out[k] = v
+    if (typeof v === 'string') {
+      // resolutionReason needs enough room for a recoverable closing note.
+      const cap = k === 'resolutionReason' ? 500 : 200
+      out[k] = v.slice(0, cap)
+    } else if (typeof v === 'number' || typeof v === 'boolean') out[k] = v
   }
   return Object.keys(out).length ? out : undefined
 }

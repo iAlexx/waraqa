@@ -222,16 +222,18 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 - Share permalinks / tokens (optional post–Phase 9)
 - Phase 11 sitemap / structured data / advanced revalidation
 
-## Phase 10 — User Reports (COMPLETE)
+## Phase 10 — User Reports (COMPLETE — closure hardened 2026-09-13)
 
 - [x] Public CTA «بلّغنا عن معلومة تغيّرت» on publicly eligible Transactions only (P0-05/P0-06)
-- [x] Arabic report form at `/report-information` (no attachments; optional protected contact)
-- [x] Zod + plain-text sanitization; honeypot; PostgreSQL rate limit (hashed identity)
+- [x] Arabic report form at `/report-information` (`message` + `encountered` + optional validated `serviceCenter`; no attachments; optional protected contact)
+- [x] Zod + plain-text sanitization; honeypot; PostgreSQL rate limit (**IP-only** HMAC identity; UA excluded; fail-closed without trusted IP)
 - [x] Collection `user-reports` with strict ACL (admin/reviewer triage; no public read)
-- [x] Status lifecycle `open` → `in_review` → `resolved` / `rejected` / `spam` + audit-events
+- [x] Status lifecycle + resolution stamps only on enter closed; editorial audit fail-closed with recoverable `resolutionReason`
+- [x] Early JSON/size request gates; client-only success UX (no forgeable `?sent=1`)
+- [x] Migrations: RESTRICT Transaction FK; hardening migration; audit enum down irreversibility documented
 - [x] Notifications deferred (no safe email adapter in repo)
 
-See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § `user-reports`, [SECURITY.md](./SECURITY.md).
+See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § `user-reports`, [SECURITY.md](./SECURITY.md), [PHASE_10_COMPLETION_REPORT.md](../PHASE_10_COMPLETION_REPORT.md).
 
 ## Phase 9 — Guide result UX (P9-A…P9-E)
 

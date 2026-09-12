@@ -74,7 +74,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 | --- | --- |
 | CSRF | Rely on framework/Payload cookie + same-site practices; avoid cookie auth on cross-site public POSTs |
 | XSS | Sanitize / safely serialize rich text; never render raw user HTML from reports |
-| Rate limiting | Public report POSTs: PostgreSQL `report_rate_buckets` + hashed identity (Phase 10); no raw IP stored |
+| Rate limiting | Public report POSTs: PostgreSQL `report_rate_buckets` + **IP-only** HMAC identity (User-Agent excluded; Vercel `x-forwarded-for`/`x-real-ip`; fail-closed if IP untrustworthy); no raw IP stored |
 | Secure cookies | HTTPS-only in production; secure admin cookies |
 | Input validation | Zod at all custom input boundaries |
 | CSP | Plan and test before production demo (Phase later) |
@@ -85,7 +85,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 - **No** identity-document uploads in MVP.
 - **No** national ID collection.
 - **No** citizen accounts.
-- Change reports (Phase 10): optional contact only; never published automatically; not in public DTOs/URLs. Rate-limit identity is a one-way hash — raw IP is not persisted.
+- Change reports (Phase 10): optional contact only; never published automatically; not in public DTOs/URLs. Rate-limit identity is a one-way **IP-only** HMAC — raw IP is not persisted; User-Agent cannot bypass buckets. Success UX is client-state only (not `?sent=1`). Editorial status transitions require audit-events (fail closed); citizen `report_received` audit is best-effort.
 - **Guide answers / checklist (Phase 8–9):** never sent to the server; never in URLs. **P9-B:** schema-versioned device-local `localStorage` (`waraqa:guide:<slug>`) for answers + document checklist progress only — fail closed on version/identity/shape mismatch. Restart clears the blob. No cookies, DB, or server citizen state. **P9-C:** browser-native print does not transmit or persist answers; generated print date is local display only. **P9-D:** WhatsApp share is client-side text only — public transaction detail URL, no answers/checklist state, no server-stored personalized results. **P9-E:** edit-from-result prunes inapplicable answers before evaluation/persist so hidden answers cannot silently drive rules. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
 
 ## 8. Dependency and migration safety

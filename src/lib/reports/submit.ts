@@ -11,10 +11,18 @@ export type SubmitReportResult =
   | { ok: true; discarded?: boolean }
   | {
       ok: false
-      code: 'not_found' | 'rate_limited' | 'unavailable'
+      code: 'not_found' | 'rate_limited' | 'unavailable' | 'validation'
       message: string
       retryAfterSec?: number
+      fields?: Record<string, string>
     }
+
+type ReportableTx = {
+  ok: true
+  id: number | string
+  title: string
+  serviceCenterIds: number[]
+}
 
 /**
  * Create a user report only when the Transaction is publicly eligible
@@ -24,7 +32,7 @@ export async function assertPubliclyReportableTransaction(
   payload: Payload,
   slug: string,
   req?: PayloadRequest,
-): Promise<{ ok: true; id: number | string; title: string } | { ok: false }> {
+): Promise<ReportableTx | { ok: false }> {
   const normalized = slug.trim()
   if (!normalized || normalized.length > 160) return { ok: false }
 
@@ -32,7 +40,7 @@ export async function assertPubliclyReportableTransaction(
     const found = await payload.find({
       collection: 'transactions',
       locale: 'ar',
-      depth: 0,
+      depth: 1,
       limit: 1,
       overrideAccess: false,
       req,
@@ -42,7 +50,12 @@ export async function assertPubliclyReportableTransaction(
     })
 
     const doc = found.docs[0] as
-      | { id: number | string; title?: unknown; contentClass?: unknown }
+      | {
+          id: number | string
+          title?: unknown
+          contentClass?: unknown
+          serviceCenters?: unknown
+        }
       | undefined
     if (!doc) return { ok: false }
 
@@ -57,12 +70,31 @@ export async function assertPubliclyReportableTransaction(
           ? (doc.title as { ar: string }).ar
           : normalized
 
-    return { ok: true, id: doc.id, title }
+    const serviceCenterIds: number[] = []
+    if (Array.isArray(doc.serviceCenters)) {
+      for (const c of doc.serviceCenters) {
+        if (typeof c === 'number' && Number.isFinite(c)) serviceCenterIds.push(c)
+        else if (typeof c === 'string' && /^\d+$/.test(c)) serviceCenterIds.push(Number(c))
+        else if (c && typeof c === 'object' && 'id' in c) {
+          const id = Number((c as { id: unknown }).id)
+          if (Number.isFinite(id)) serviceCenterIds.push(id)
+        }
+      }
+    }
+
+    return { ok: true, id: doc.id, title, serviceCenterIds }
   } catch {
     return { ok: false }
   }
 }
 
+/**
+ * Citizen submission path.
+ *
+ * `report_received` audit is best-effort: the citizen already succeeded in
+ * creating the report row. Editorial status transitions (triage) fail closed
+ * if audit cannot be written — see enforceUserReportTriage.
+ */
 export async function submitPublicUserReport(opts: {
   payload: Payload
   req?: PayloadRequest
@@ -71,14 +103,14 @@ export async function submitPublicUserReport(opts: {
 }): Promise<SubmitReportResult> {
   const { payload, req, data, identityHash } = opts
 
-  // Honeypot: pretend success, do not persist.
   if (data.honeypotTriggered) {
     return { ok: true, discarded: true }
   }
 
-  // Occasional cleanup (cheap best-effort).
-  if (Math.random() < 0.02) {
-    void cleanupExpiredReportRateBuckets(payload)
+  // Opportunistic cleanup — awaited when selected so serverless can finish it.
+  // Non-fatal if cleanup fails.
+  if (Math.random() < 0.05) {
+    await cleanupExpiredReportRateBuckets(payload)
   }
 
   let rate: Awaited<ReturnType<typeof consumeReportRateLimit>>
@@ -110,6 +142,19 @@ export async function submitPublicUserReport(opts: {
     }
   }
 
+  let serviceCenter: number | undefined
+  if (data.serviceCenterId != null) {
+    if (!tx.serviceCenterIds.includes(data.serviceCenterId)) {
+      return {
+        ok: false,
+        code: 'validation',
+        message: 'مركز الخدمة غير مرتبط بهذه المعاملة.',
+        fields: { serviceCenterId: 'اختر مركزاً من قائمة المعاملة فقط.' },
+      }
+    }
+    serviceCenter = data.serviceCenterId
+  }
+
   try {
     const created = await payload.create({
       collection: 'user-reports',
@@ -117,6 +162,8 @@ export async function submitPublicUserReport(opts: {
         transaction: Number(tx.id),
         section: data.section,
         message: data.message,
+        encountered: data.encountered,
+        serviceCenter: serviceCenter,
         sourceUrl: data.sourceUrl || undefined,
         contactEmail: data.contactEmail || undefined,
         contactPhone: data.contactPhone || undefined,
@@ -140,7 +187,8 @@ export async function submitPublicUserReport(opts: {
         metadata: { toState: 'open' },
       })
     } catch {
-      // Report already stored — audit failure must not fail citizen submit.
+      // Intentional: citizen submit stays resilient if audit_received fails.
+      // Editorial triage transitions fail closed on audit errors instead.
     }
 
     return { ok: true }

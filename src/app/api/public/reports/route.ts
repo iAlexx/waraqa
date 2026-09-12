@@ -3,8 +3,14 @@ import { NextResponse } from 'next/server'
 
 import config from '@payload-config'
 import { getServerEnv } from '@/lib/env'
-import { clientIpFromHeaders, hashReportIdentity } from '@/lib/reports/identity-hash'
+import { hashReportIdentity, trustedClientIpFromHeaders } from '@/lib/reports/identity-hash'
+import {
+  contentLengthExceedsLimit,
+  isJsonContentType,
+  isMultipartContentType,
+} from '@/lib/reports/request-guards'
 import { submitPublicUserReport } from '@/lib/reports/submit'
+import { REPORT_LIMITS } from '@/lib/reports/types'
 import { validatePublicReportSubmit } from '@/lib/reports/validate-submit'
 
 export const dynamic = 'force-dynamic'
@@ -21,25 +27,57 @@ function json(
 /**
  * Phase 10 — public changed-information report submission.
  * Anonymous POST only. No public reads. No attachments.
+ *
+ * Rate limit: IP-derived HMAC bucket (User-Agent excluded). Requires a
+ * trustworthy proxy IP (Vercel x-forwarded-for / x-real-ip); otherwise 503.
  */
 export async function POST(request: Request): Promise<NextResponse> {
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return json(
-      { ok: false, code: 'validation', message: 'طلب غير صالح.' },
-      400,
-    )
-  }
-
-  // Reject multipart / attachment attempts by content-type check.
   const contentType = request.headers.get('content-type') || ''
-  if (contentType.includes('multipart/form-data')) {
+
+  if (isMultipartContentType(contentType)) {
     return json(
       { ok: false, code: 'validation', message: 'لا يُسمح بالمرفقات.' },
       400,
     )
+  }
+
+  if (!isJsonContentType(contentType)) {
+    return json(
+      { ok: false, code: 'validation', message: 'يُقبل JSON فقط.' },
+      415,
+    )
+  }
+
+  const lengthCheck = contentLengthExceedsLimit(request.headers.get('content-length'))
+  if (lengthCheck === 'invalid') {
+    return json({ ok: false, code: 'validation', message: 'طلب غير صالح.' }, 400)
+  }
+  if (lengthCheck === 'too_large') {
+    return json(
+      { ok: false, code: 'validation', message: 'الطلب كبير جداً.' },
+      413,
+    )
+  }
+
+  let rawText: string
+  try {
+    rawText = await request.text()
+  } catch {
+    return json({ ok: false, code: 'validation', message: 'طلب غير صالح.' }, 400)
+  }
+
+  if (rawText.length > REPORT_LIMITS.maxRequestBytes) {
+    return json(
+      { ok: false, code: 'validation', message: 'الطلب كبير جداً.' },
+      413,
+    )
+  }
+
+  let body: unknown
+  try {
+    body = JSON.parse(rawText) as unknown
+  } catch {
+    return json({ ok: false, code: 'validation', message: 'طلب غير صالح.' }, 400)
   }
 
   const validated = validatePublicReportSubmit(body)
@@ -57,13 +95,24 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     const env = getServerEnv()
-    const payload = await getPayload({ config })
+    const trusted = trustedClientIpFromHeaders(request.headers)
+    if (!trusted.ok) {
+      return json(
+        {
+          ok: false,
+          code: 'unavailable',
+          message: 'تعذّر إرسال البلاغ حالياً. حاول مرة ثانية بعد قليل.',
+        },
+        503,
+      )
+    }
+
     const identityHash = hashReportIdentity({
       secret: env.PAYLOAD_SECRET,
-      ip: clientIpFromHeaders(request.headers),
-      userAgent: request.headers.get('user-agent'),
+      ip: trusted.ip,
     })
 
+    const payload = await getPayload({ config })
     const result = await submitPublicUserReport({
       payload,
       data: validated.data,
@@ -83,10 +132,20 @@ export async function POST(request: Request): Promise<NextResponse> {
       if (result.code === 'not_found') {
         return json({ ok: false, code: 'not_found', message: result.message }, 404)
       }
+      if (result.code === 'validation') {
+        return json(
+          {
+            ok: false,
+            code: 'validation',
+            message: result.message,
+            fields: result.fields,
+          },
+          400,
+        )
+      }
       return json({ ok: false, code: 'unavailable', message: result.message }, 503)
     }
 
-    // Success — do not return internal report IDs.
     return json(
       {
         ok: true,
@@ -106,7 +165,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 }
 
-/** Disallow enumeration / accidental GETs. */
 export async function GET(): Promise<NextResponse> {
   return json({ ok: false, message: 'غير متاح.' }, 405)
 }

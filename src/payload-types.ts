@@ -944,17 +944,25 @@ export interface Claim {
 export interface UserReport {
   id: number;
   /**
-   * المعاملة التي يخصّها البلاغ.
+   * المعاملة التي يخصّها البلاغ. الحذف النهائي للمعاملة مقيّد طالما توجد بلاغات مرتبطة (RESTRICT).
    */
   transaction: number | Transaction;
   section: 'documents' | 'fees' | 'steps' | 'location' | 'duration' | 'source' | 'other';
   /**
-   * نص عادي من المواطن — لا يُعرض للعامة.
+   * نص عادي من المواطن — لا يُعرض للعامة. (يعادل reportedValue في الخارطة المبسّطة)
    */
   message: string;
+  /**
+   * وصف ما واجهه المواطن — نص عادي.
+   */
+  encountered: string;
+  /**
+   * اختياري — يُقبل فقط إن كان مرتبطاً بالمعاملة عند الإرسال العام.
+   */
+  serviceCenter?: (number | null) | ServiceCenter;
   sourceUrl?: string | null;
   /**
-   * اختياري — للمتابعة بشأن البلاغ فقط. لا يُعرض للعامة. لا تُعدّل من لوحة التحرير عادةً.
+   * اختياري — للمتابعة بشأن البلاغ فقط. لا يُعرض للعامة.
    */
   contactEmail?: string | null;
   /**
@@ -971,9 +979,13 @@ export interface UserReport {
    */
   reviewNotes?: string | null;
   /**
-   * مطلوب عند الإغلاق أو الرفض.
+   * مطلوب عند الانتقال إلى تم الحل أو مرفوض. لا يُعاد ختمه عند تعديلات لاحقة في نفس الحالة المغلقة.
    */
   resolutionSummary?: string | null;
+  /**
+   * يُحفظ عند الإغلاق ويبقى بعد إعادة الفتح — السجل التفصيلي في أحداث التدقيق.
+   */
+  lastResolutionSummary?: string | null;
   resolvedAt?: string | null;
   resolvedBy?: (number | null) | User;
   updatedAt: string;
@@ -1545,6 +1557,8 @@ export interface UserReportsSelect<T extends boolean = true> {
   transaction?: T;
   section?: T;
   message?: T;
+  encountered?: T;
+  serviceCenter?: T;
   sourceUrl?: T;
   contactEmail?: T;
   contactPhone?: T;
@@ -1552,6 +1566,7 @@ export interface UserReportsSelect<T extends boolean = true> {
   status?: T;
   reviewNotes?: T;
   resolutionSummary?: T;
+  lastResolutionSummary?: T;
   resolvedAt?: T;
   resolvedBy?: T;
   updatedAt?: T;

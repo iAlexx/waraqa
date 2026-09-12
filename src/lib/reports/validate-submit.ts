@@ -26,8 +26,16 @@ export const publicReportSubmitSchema = z.object({
   section: z.enum(REPORT_SECTIONS),
   message: z
     .string()
-    .min(1, 'اكتب وصفاً للمعلومة.')
+    .min(1, 'اكتب ما يبدو غير صحيح.')
     .max(REPORT_LIMITS.messageMax + 200),
+  encountered: z
+    .string()
+    .min(1, 'اكتب ما واجهته.')
+    .max(REPORT_LIMITS.encounteredMax + 200),
+  /** Optional — numeric id or empty; validated against transaction centers server-side. */
+  serviceCenterId: z
+    .union([z.number().int().positive(), z.string().regex(/^\d+$/), z.literal(''), z.null()])
+    .optional(),
   sourceUrl: z.string().max(REPORT_LIMITS.sourceUrlMax + 50).optional().or(z.literal('')),
   contactEmail: emailSchema,
   contactPhone: z
@@ -40,12 +48,12 @@ export const publicReportSubmitSchema = z.object({
   website: z.string().max(200).optional().or(z.literal('')),
 })
 
-export type PublicReportSubmitInput = z.infer<typeof publicReportSubmitSchema>
-
 export type ValidatedPublicReport = {
   transactionSlug: string
   section: ReportSection
   message: string
+  encountered: string
+  serviceCenterId: number | null
   sourceUrl: string | null
   contactEmail: string | null
   contactPhone: string | null
@@ -63,6 +71,13 @@ export type ReportValidationFailure = {
 export type ReportValidationSuccess = {
   ok: true
   data: ValidatedPublicReport
+}
+
+function parseOptionalCenterId(raw: unknown): number | null {
+  if (raw == null || raw === '') return null
+  const n = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isInteger(n) || n <= 0) return null
+  return n
 }
 
 export function validatePublicReportSubmit(
@@ -94,6 +109,8 @@ export function validatePublicReportSubmit(
         transactionSlug: raw.transactionSlug.trim(),
         section: raw.section,
         message: '',
+        encountered: '',
+        serviceCenterId: null,
         sourceUrl: null,
         contactEmail: null,
         contactPhone: null,
@@ -103,12 +120,17 @@ export function validatePublicReportSubmit(
     }
   }
 
-  if (looksLikeUnsafeMarkup(raw.message)) {
-    return {
-      ok: false,
-      code: 'validation',
-      message: 'النص يجب أن يكون نصاً عادياً بدون تنسيق HTML.',
-      fields: { message: 'أزل الوسوم أو الروابط البرمجية من النص.' },
+  for (const [field, value] of [
+    ['message', raw.message],
+    ['encountered', raw.encountered],
+  ] as const) {
+    if (looksLikeUnsafeMarkup(value)) {
+      return {
+        ok: false,
+        code: 'validation',
+        message: 'النص يجب أن يكون نصاً عادياً بدون تنسيق HTML.',
+        fields: { [field]: 'أزل الوسوم أو الروابط البرمجية من النص.' },
+      }
     }
   }
 
@@ -117,8 +139,18 @@ export function validatePublicReportSubmit(
     return {
       ok: false,
       code: 'validation',
-      message: 'الوصف قصير جداً.',
+      message: 'وصف المعلومة قصير جداً.',
       fields: { message: `اكتب على الأقل ${REPORT_LIMITS.messageMin} حرفاً.` },
+    }
+  }
+
+  const encountered = sanitizePlainText(raw.encountered, REPORT_LIMITS.encounteredMax)
+  if (encountered.length < REPORT_LIMITS.encounteredMin) {
+    return {
+      ok: false,
+      code: 'validation',
+      message: 'وصف ما واجهته قصير جداً.',
+      fields: { encountered: `اكتب على الأقل ${REPORT_LIMITS.encounteredMin} حرفاً.` },
     }
   }
 
@@ -158,12 +190,28 @@ export function validatePublicReportSubmit(
     }
   }
 
+  const serviceCenterId = parseOptionalCenterId(raw.serviceCenterId)
+  if (
+    raw.serviceCenterId != null &&
+    raw.serviceCenterId !== '' &&
+    serviceCenterId == null
+  ) {
+    return {
+      ok: false,
+      code: 'validation',
+      message: 'مركز الخدمة غير صالح.',
+      fields: { serviceCenterId: 'اختر مركزاً من قائمة المعاملة فقط.' },
+    }
+  }
+
   return {
     ok: true,
     data: {
       transactionSlug: raw.transactionSlug.trim(),
       section: raw.section,
       message,
+      encountered,
+      serviceCenterId,
       sourceUrl,
       contactEmail,
       contactPhone,

@@ -17,7 +17,9 @@ describe('Phase 10 public report CTA wiring', () => {
   it('public API route rejects GET and multipart', () => {
     const file = path.join(process.cwd(), 'src/app/api/public/reports/route.ts')
     const src = readFileSync(file, 'utf8')
-    expect(src).toContain('multipart/form-data')
+    expect(src).toContain('isMultipartContentType')
+    expect(src).toContain('isJsonContentType')
+    expect(src).toContain('contentLengthExceedsLimit')
     expect(src).toContain('export async function GET')
   })
 })

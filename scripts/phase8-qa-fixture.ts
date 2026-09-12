@@ -129,6 +129,24 @@ async function main() {
     context: seed,
   })
 
+  const serviceCenter = await payload.create({
+    collection: 'service-centers',
+    locale: 'ar',
+    draft: false,
+    data: {
+      name: 'مركز خدمة تجريبي ٨',
+      slug: `${PHASE8_QA_SLUG_PREFIX}center`,
+      agency: agency.id,
+      governorate: 'damascus',
+      city: 'دمشق',
+      address: 'عنوان تجريبي — مو عنوان رسمي',
+      active: true,
+      _status: 'published',
+    },
+    overrideAccess: true,
+    context: seed,
+  })
+
   const claim = await createAuthoritativeClaimFixture(payload, {
     key: 'claim_qa_p8_r1_summary',
     sourceId: Number(source.id),
@@ -233,6 +251,7 @@ async function main() {
   const base = {
     category: category.id,
     agency: agency.id,
+    serviceCenters: [serviceCenter.id],
     lastReviewedAt: reviewedAt,
     contentClass: 'DEMO' as const,
     claimBindings,

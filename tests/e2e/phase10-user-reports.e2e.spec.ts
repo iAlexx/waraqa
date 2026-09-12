@@ -34,15 +34,25 @@ test.describe('Phase 10 public report flow', () => {
     await page.locator('#report-message').fill(
       'الرسوم في الصفحة لا تطابق ما طُلب في المركز عند الزيارة اليوم.',
     )
+    await page.locator('#report-encountered').fill(
+      'طلب الموظف مبلغاً مختلفاً عند الشباك ولم يذكر السبب.',
+    )
+    const centerSelect = page.locator('#report-service-center')
+    if (await centerSelect.isVisible().catch(() => false)) {
+      const options = centerSelect.locator('option')
+      const count = await options.count()
+      if (count > 1) {
+        await centerSelect.selectOption({ index: 1 })
+      }
+    }
     await page.locator('#report-consent').click()
     await page.locator('[data-report-submit]').click()
 
     await expect(page.locator('[data-report-success]')).toBeVisible({ timeout: 15_000 })
-    expect(page.url()).not.toMatch(/contactEmail|followup|@/)
-    expect(page.url()).toMatch(/sent=1|report-information/)
+    expect(page.url()).not.toMatch(/contactEmail|followup|@|sent=1/)
+    expect(page.url()).toMatch(/report-information/)
 
     await page.setViewportSize({ width: 1440, height: 900 })
-    await page.goto(`/report-information?transaction=${encodeURIComponent(slug)}&sent=1`)
     await expect(page.locator('[data-report-success]')).toBeVisible()
     const overflow1440 = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,

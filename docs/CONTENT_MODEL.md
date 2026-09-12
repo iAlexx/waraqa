@@ -304,14 +304,17 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 | --- | --- |
 | `transaction` | Required relationship → `transactions` |
 | `section` | `documents` \| `fees` \| `steps` \| `location` \| `duration` \| `source` \| `other` |
-| `message` | Plain-text citizen explanation (sanitized; max 2000) |
+| `message` | Plain-text: what appears incorrect (required; max 2000). MVP collapses roadmap `reportedValue` into this field. |
+| `encountered` | Plain-text: what the citizen encountered (required; max 2000). |
+| `serviceCenter` | Optional relationship → `service-centers`; public submit accepts only centers linked to the Transaction |
 | `sourceUrl` | Optional http(s) URL |
 | `contactEmail` / `contactPhone` | Optional; **field-level read only for admin/reviewer** |
 | `consentAccepted` | Required at submit |
 | `status` | `open` \| `in_review` \| `resolved` \| `rejected` \| `spam` |
 | `reviewNotes` | Internal editorial notes |
-| `resolutionSummary` | Required when resolving/rejecting |
-| `resolvedAt` / `resolvedBy` | Server-stamped on resolve/reject |
+| `resolutionSummary` | Authoritative closing reason; stamped only on transition into resolved/rejected |
+| `lastResolutionSummary` | Preserved after reopen for editorial continuity (immutable detail also in audit-events) |
+| `resolvedAt` / `resolvedBy` | Server-stamped **only** when entering resolved/rejected |
 
 **Public entry:** CTA on eligible transaction detail → `/report-information?transaction=<slug>` → `POST /api/public/reports`.
 
@@ -319,13 +322,13 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 
 **ACL:** Anonymous create only via the public submit path (`overrideAccess` + `context.publicReportSubmit`). Collection `create` is always false for clients. Read/update: active `admin` \| `reviewer` only. Delete: `admin` only. Researchers have **no** report access (minimum for roadmap: reviewers resolve reports).
 
-**Spam controls:** Invisible honeypot (`website`); filled honeypot → HTTP success without persistence. PostgreSQL fixed-window rate limit on HMAC+SHA256 identity hash (no raw IP stored). Buckets table `report_rate_buckets`; retain ~7 days.
+**Spam controls:** Invisible honeypot (`website`); filled honeypot → HTTP success without persistence. PostgreSQL fixed-window rate limit on **IP-only** HMAC identity hash (User-Agent excluded; raw IP never stored). Buckets table `report_rate_buckets`; retain ~7 days. Vercel: trust `x-forwarded-for` / `x-real-ip`; missing/malformed IP → fail closed (503).
 
-**Audit:** `report_received`, `report_in_review`, `report_resolved`, `report_rejected`, `report_marked_spam`, `report_status_changed` via `audit-events`.
+**Audit:** Editorial status transitions write `audit-events` **before** persist; failure aborts the update. Metadata includes recoverable `resolutionReason` (sanitized, capped). Citizen `report_received` remains best-effort so submit stays resilient. `assignedTo` deferred to Phase 11.
 
 **Notifications:** Deferred — no email adapter configured; Admin triage is sufficient.
 
-**Out of scope:** attachments, national ID, citizen accounts, automatic content changes from reports.
+**Out of scope / MVP schema decisions:** attachments; national ID; `reportedValue`/`suggestedValue` collapsed into `message`+`encountered`; `assignedTo` → Phase 11.
 
 ---
 

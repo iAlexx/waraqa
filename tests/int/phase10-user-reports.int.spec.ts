@@ -35,6 +35,7 @@ afterAll(async () => {
     'claims',
     'sources',
     'documents',
+    'service-centers',
     'agencies',
     'categories',
     'users',
@@ -63,6 +64,7 @@ describe('Phase 10 user reports integration', () => {
   let inactiveId: number
   let categoryId: number
   let agencyId: number
+  let serviceCenterId: number
   let documentId: number
   let sourceId: number
   let productionSlug: string
@@ -172,6 +174,28 @@ describe('Phase 10 user reports integration', () => {
     )
     agencyId = Number(agency.id)
 
+    const center = await track(
+      'service-centers',
+      await payload.create({
+        collection: 'service-centers',
+        locale: 'ar',
+        draft: false,
+        data: {
+          name: `مركز P10 ${stamp}`,
+          slug: `p10-center-${stamp}`,
+          agency: agencyId,
+          governorate: 'damascus',
+          city: 'دمشق',
+          address: 'عنوان تجريبي P10',
+          active: true,
+          _status: 'published',
+        },
+        overrideAccess: true,
+        context: seedCtx,
+      }),
+    )
+    serviceCenterId = Number(center.id)
+
     const document = await track(
       'documents',
       await payload.create({
@@ -235,6 +259,7 @@ describe('Phase 10 user reports integration', () => {
           summary: 'ملخص تجريبي لبلاغات المرحلة العاشرة.',
           category: categoryId,
           agency: agencyId,
+          serviceCenters: [serviceCenterId],
           contentClass: 'PRODUCTION',
           claimTrustOk: true,
           claimBindings,
@@ -272,6 +297,7 @@ describe('Phase 10 user reports integration', () => {
           summary: 'يجب ألا تكون قابلة للبلاغ العام.',
           category: categoryId,
           agency: agencyId,
+          serviceCenters: [serviceCenterId],
           contentClass: 'QA_TEST',
           claimTrustOk: true,
           claimBindings,
@@ -304,6 +330,7 @@ describe('Phase 10 user reports integration', () => {
       transactionSlug: productionSlug,
       section: 'fees',
       message: 'الرسوم المذكورة لم تعد مطابقة لما طُلب في المركز اليوم.',
+      encountered: 'طلبوا مبلغاً مختلفاً عند الشباك في المركز.',
       consent: true,
       contactEmail: 'followup@example.test',
     })
@@ -313,7 +340,6 @@ describe('Phase 10 user reports integration', () => {
     const identity = hashReportIdentity({
       secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
       ip: `198.51.100.${stamp % 200}`,
-      userAgent: `P10-Test-${stamp}`,
     })
 
     const result = await submitPublicUserReport({
@@ -342,11 +368,69 @@ describe('Phase 10 user reports integration', () => {
     expect(String(report.message)).not.toMatch(/</)
   })
 
+  it('rejects arbitrary serviceCenterId not linked to the transaction', async () => {
+    const validated = validatePublicReportSubmit({
+      transactionSlug: productionSlug,
+      section: 'location',
+      message: 'محاولة ربط مركز خدمة غير مرتبط بالمعاملة من العميل.',
+      encountered: 'اختيار مركز وهمي من خارج قائمة المعاملة.',
+      consent: true,
+      serviceCenterId: serviceCenterId + 999999,
+    })
+    expect(validated.ok).toBe(true)
+    if (!validated.ok) return
+
+    const result = await submitPublicUserReport({
+      payload,
+      data: validated.data,
+      identityHash: hashReportIdentity({
+        secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
+        ip: '203.0.113.55',
+      }),
+    })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.code).toBe('validation')
+
+    const allowed = validatePublicReportSubmit({
+      transactionSlug: productionSlug,
+      section: 'location',
+      message: 'بلاغ مرتبط بمركز الخدمة الصحيح للمعاملة فقط.',
+      encountered: 'تم اختيار المركز من قائمة المعاملة العلنية.',
+      consent: true,
+      serviceCenterId,
+    })
+    expect(allowed.ok).toBe(true)
+    if (!allowed.ok) return
+    const okResult = await submitPublicUserReport({
+      payload,
+      data: allowed.data,
+      identityHash: hashReportIdentity({
+        secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
+        ip: '203.0.113.56',
+      }),
+    })
+    expect(okResult.ok).toBe(true)
+    const found = await payload.find({
+      collection: 'user-reports',
+      where: {
+        and: [
+          { transaction: { equals: productionTxId } },
+          { serviceCenter: { equals: serviceCenterId } },
+        ],
+      },
+      limit: 5,
+      overrideAccess: true,
+    })
+    expect(found.docs.length).toBeGreaterThan(0)
+  })
+
   it('rejects QA_TEST transaction as not reportable', async () => {
     const validated = validatePublicReportSubmit({
       transactionSlug: qaTestSlug,
       section: 'other',
       message: 'محاولة بلاغ على معاملة اختبار معزولة عن العامة.',
+      encountered: 'ظهرت المعاملة في رابط مباشر غير مؤهل للعامة.',
       consent: true,
     })
     expect(validated.ok).toBe(true)
@@ -358,7 +442,6 @@ describe('Phase 10 user reports integration', () => {
       identityHash: hashReportIdentity({
         secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
         ip: '203.0.113.9',
-        userAgent: 'qa-block',
       }),
     })
     expect(result.ok).toBe(false)
@@ -377,6 +460,7 @@ describe('Phase 10 user reports integration', () => {
       transactionSlug: productionSlug,
       section: 'steps',
       message: 'نص يبدو شرعياً لكن الحقل المخفي ممتلئ للروبوتات فقط.',
+      encountered: 'محاولة روبوت عبر الحقل المخفي فقط.',
       consent: true,
       website: 'https://bot.example',
     })
@@ -390,7 +474,6 @@ describe('Phase 10 user reports integration', () => {
       identityHash: hashReportIdentity({
         secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
         ip: '203.0.113.10',
-        userAgent: 'honeypot',
       }),
     })
     expect(result.ok).toBe(true)
@@ -406,11 +489,16 @@ describe('Phase 10 user reports integration', () => {
   })
 
   it('rate-limits repeated submissions for the same identity hash', async () => {
-    const identity = hashReportIdentity({
+    const identitySameUaA = hashReportIdentity({
       secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
       ip: `203.0.113.${(stamp % 50) + 20}`,
-      userAgent: `rate-${stamp}`,
     })
+    const identitySameUaB = hashReportIdentity({
+      secret: process.env.PAYLOAD_SECRET || 'x'.repeat(32),
+      ip: `203.0.113.${(stamp % 50) + 20}`,
+    })
+    expect(identitySameUaA).toBe(identitySameUaB)
+    const identity = identitySameUaA
     expect(identity).not.toContain('203.0.113')
 
     let blocked = false
@@ -578,13 +666,103 @@ describe('Phase 10 user reports integration', () => {
           { entityId: { equals: String(reportId) } },
         ],
       },
-      limit: 10,
+      limit: 20,
       overrideAccess: true,
+      sort: 'createdAt',
     })
     for (const a of audits.docs) created.push({ collection: 'audit-events', id: a.id })
     expect(audits.docs.some((d) => d.action === 'report_resolved' || d.action === 'report_in_review')).toBe(
       true,
     )
+    const resolvedAudit = audits.docs.find((d) => d.action === 'report_resolved')
+    expect(resolvedAudit).toBeTruthy()
+    const meta = resolvedAudit?.metadata as { resolutionReason?: string } | undefined
+    expect(meta?.resolutionReason).toContain('الرسوم')
+
+    const closedAt = String(resolved.resolvedAt)
+    const reviewerReqStay = (await createLocalReq(
+      { user: reviewerFresh as NonNullable<PayloadRequest['user']> },
+      payload,
+    )) as PayloadRequest
+    const stay = await payload.update({
+      collection: 'user-reports',
+      id: reportId!,
+      data: {
+        status: 'resolved',
+        reviewNotes: 'ملاحظة داخلية لاحقًا',
+        resolutionSummary: 'محاولة تغيير السبب بعد الإغلاق يجب أن تُرفض ضمنياً',
+      },
+      overrideAccess: false,
+      req: reviewerReqStay,
+    })
+    expect(String(stay.resolvedAt)).toBe(closedAt)
+    expect(String(stay.resolutionSummary)).toContain('الرسوم')
+    expect(relationIdLike(stay.resolvedBy)).toBe(reviewerId)
+
+    const reviewerReqReopen = (await createLocalReq(
+      { user: reviewerFresh as NonNullable<PayloadRequest['user']> },
+      payload,
+    )) as PayloadRequest
+    const reopened = await payload.update({
+      collection: 'user-reports',
+      id: reportId!,
+      data: { status: 'in_review' },
+      overrideAccess: false,
+      req: reviewerReqReopen,
+    })
+    expect(reopened.status).toBe('in_review')
+    expect(reopened.resolvedAt).toBeFalsy()
+    expect(String(reopened.lastResolutionSummary || reopened.resolutionSummary)).toContain('الرسوم')
+
+    const reviewerReqReresolve = (await createLocalReq(
+      { user: reviewerFresh as NonNullable<PayloadRequest['user']> },
+      payload,
+    )) as PayloadRequest
+    const reresolved = await payload.update({
+      collection: 'user-reports',
+      id: reportId!,
+      data: {
+        status: 'resolved',
+        resolutionSummary: 'إعادة إغلاق بعد مراجعة ثانية للرسوم.',
+      },
+      overrideAccess: false,
+      req: reviewerReqReresolve,
+    })
+    expect(reresolved.status).toBe('resolved')
+
+    const audits2 = await payload.find({
+      collection: 'audit-events',
+      where: {
+        and: [
+          { entityType: { equals: 'user-reports' } },
+          { entityId: { equals: String(reportId) } },
+          { action: { equals: 'report_resolved' } },
+        ],
+      },
+      limit: 20,
+      overrideAccess: true,
+    })
+    for (const a of audits2.docs) {
+      if (!created.some((c) => c.collection === 'audit-events' && c.id === a.id)) {
+        created.push({ collection: 'audit-events', id: a.id })
+      }
+    }
+    expect(audits2.docs.length).toBeGreaterThanOrEqual(2)
+    const reasons = audits2.docs.map(
+      (d) => (d.metadata as { resolutionReason?: string } | null)?.resolutionReason || '',
+    )
+    expect(reasons.some((r) => r.includes('الرسوم'))).toBe(true)
+    expect(reasons.some((r) => r.includes('إعادة إغلاق'))).toBe(true)
+
+    // Original first resolve event remains unchanged (immutable audit row).
+    const firstReason = (
+      audits2.docs.find((d) =>
+        String((d.metadata as { resolutionReason?: string })?.resolutionReason || '').includes(
+          'المصدر الرسمي',
+        ),
+      )?.metadata as { resolutionReason?: string }
+    )?.resolutionReason
+    expect(firstReason).toContain('المصدر الرسمي')
 
     const reviewerReq3 = (await createLocalReq(
       { user: reviewerFresh as NonNullable<PayloadRequest['user']> },
@@ -603,6 +781,18 @@ describe('Phase 10 user reports integration', () => {
   })
 
   it('does not expose contact on researcher-denied path; admin can read contact', async () => {
+    const withContact = await payload.find({
+      collection: 'user-reports',
+      where: { transaction: { equals: productionTxId } },
+      limit: 20,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const target = withContact.docs.find(
+      (d) => (d as { contactEmail?: string | null }).contactEmail === 'followup@example.test',
+    )
+    expect(target).toBeTruthy()
+
     const admin = await payload.findByID({
       collection: 'users',
       id: adminId,
@@ -613,16 +803,14 @@ describe('Phase 10 user reports integration', () => {
       payload,
     )) as PayloadRequest
 
-    const found = await payload.find({
+    const asAdmin = await payload.findByID({
       collection: 'user-reports',
-      where: { transaction: { equals: productionTxId } },
-      limit: 1,
+      id: target!.id,
       depth: 0,
       overrideAccess: false,
       req: adminReq,
     })
-    expect(found.docs[0]).toBeTruthy()
-    expect((found.docs[0] as { contactEmail?: string }).contactEmail).toBeTruthy()
+    expect((asAdmin as { contactEmail?: string }).contactEmail).toBe('followup@example.test')
   })
 })
 

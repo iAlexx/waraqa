@@ -3,6 +3,13 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 /**
  * Phase 10 — user-reports collection + privacy-preserving rate-limit buckets.
  * Idempotent for DBs that already received schema via PAYLOAD_DATABASE_PUSH.
+ *
+ * Transaction FK uses ON DELETE RESTRICT so hard-deleting a Transaction that
+ * still has reports fails loudly (immutable report history).
+ *
+ * Down migration limitation: PostgreSQL cannot easily remove values from
+ * `audit_action` once added; down drops report tables/types but leaves the
+ * audit enum extensions in place (documented intentional).
  */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
@@ -18,19 +25,21 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       );
     EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-    -- Extend audit_action enum with report lifecycle values (idempotent).
-    DO $$ BEGIN ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_received'; EXCEPTION WHEN others THEN NULL; END $$;
-    DO $$ BEGIN ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_in_review'; EXCEPTION WHEN others THEN NULL; END $$;
-    DO $$ BEGIN ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_resolved'; EXCEPTION WHEN others THEN NULL; END $$;
-    DO $$ BEGIN ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_rejected'; EXCEPTION WHEN others THEN NULL; END $$;
-    DO $$ BEGIN ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_marked_spam'; EXCEPTION WHEN others THEN NULL; END $$;
-    DO $$ BEGIN ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_status_changed'; EXCEPTION WHEN others THEN NULL; END $$;
+    -- Idempotent enum extensions (ADD VALUE IF NOT EXISTS). Do not swallow other errors.
+    ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_received';
+    ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_in_review';
+    ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_resolved';
+    ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_rejected';
+    ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_marked_spam';
+    ALTER TYPE "public"."audit_action" ADD VALUE IF NOT EXISTS 'report_status_changed';
 
     CREATE TABLE IF NOT EXISTS "usr_rpt" (
       "id" serial PRIMARY KEY NOT NULL,
-      "transaction_id" integer,
+      "transaction_id" integer NOT NULL,
       "section" "usr_rpt_section",
       "message" varchar,
+      "encountered" varchar,
+      "service_center_id" integer,
       "source_url" varchar,
       "contact_email" varchar,
       "contact_phone" varchar,
@@ -38,6 +47,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "status" "usr_rpt_status" DEFAULT 'open',
       "review_notes" varchar,
       "resolution_summary" varchar,
+      "last_resolution_summary" varchar,
       "resolved_at" timestamp(3) with time zone,
       "resolved_by_id" integer,
       "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -46,7 +56,12 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     DO $$ BEGIN
       ALTER TABLE "usr_rpt" ADD CONSTRAINT "usr_rpt_transaction_id_tx_id_fk"
-        FOREIGN KEY ("transaction_id") REFERENCES "public"."tx"("id") ON DELETE set null ON UPDATE no action;
+        FOREIGN KEY ("transaction_id") REFERENCES "public"."tx"("id") ON DELETE restrict ON UPDATE no action;
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+    DO $$ BEGIN
+      ALTER TABLE "usr_rpt" ADD CONSTRAINT "usr_rpt_service_center_id_fk"
+        FOREIGN KEY ("service_center_id") REFERENCES "public"."svc_centers"("id") ON DELETE set null ON UPDATE no action;
     EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
     DO $$ BEGIN
@@ -58,6 +73,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "usr_rpt_status_idx" ON "usr_rpt" USING btree ("status");
     CREATE INDEX IF NOT EXISTS "usr_rpt_created_at_idx" ON "usr_rpt" USING btree ("created_at");
     CREATE INDEX IF NOT EXISTS "usr_rpt_updated_at_idx" ON "usr_rpt" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "usr_rpt_service_center_idx" ON "usr_rpt" USING btree ("service_center_id");
 
     ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "usr_rpt_id" integer;
     DO $$ BEGIN
@@ -67,7 +83,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_usr_rpt_id_idx"
       ON "payload_locked_documents_rels" USING btree ("usr_rpt_id");
 
-    -- Pseudonymous rate-limit buckets (no raw IP).
     CREATE TABLE IF NOT EXISTS "report_rate_buckets" (
       "identity_hash" varchar(64) NOT NULL,
       "window_start" timestamp(3) with time zone NOT NULL,
@@ -90,5 +105,8 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
 
     DROP TYPE IF EXISTS "public"."usr_rpt_section";
     DROP TYPE IF EXISTS "public"."usr_rpt_status";
+
+    -- NOTE: audit_action enum values added in up() are NOT removed.
+    -- PostgreSQL cannot drop enum values safely without table rewrites.
   `)
 }
