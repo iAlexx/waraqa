@@ -8,6 +8,7 @@ import {
   contentLengthExceedsLimit,
   isJsonContentType,
   isMultipartContentType,
+  readRequestBodyLimited,
 } from '@/lib/reports/request-guards'
 import { submitPublicUserReport } from '@/lib/reports/submit'
 import { REPORT_LIMITS } from '@/lib/reports/types'
@@ -59,23 +60,21 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
-  let rawText: string
-  try {
-    rawText = await request.text()
-  } catch {
+  // Byte-capped stream read (covers missing Content-Length / chunked oversized bodies).
+  const bodyRead = await readRequestBodyLimited(request, REPORT_LIMITS.maxRequestBytes)
+  if (!bodyRead.ok) {
+    if (bodyRead.reason === 'too_large') {
+      return json(
+        { ok: false, code: 'validation', message: 'الطلب كبير جداً.' },
+        413,
+      )
+    }
     return json({ ok: false, code: 'validation', message: 'طلب غير صالح.' }, 400)
-  }
-
-  if (rawText.length > REPORT_LIMITS.maxRequestBytes) {
-    return json(
-      { ok: false, code: 'validation', message: 'الطلب كبير جداً.' },
-      413,
-    )
   }
 
   let body: unknown
   try {
-    body = JSON.parse(rawText) as unknown
+    body = JSON.parse(bodyRead.text) as unknown
   } catch {
     return json({ ok: false, code: 'validation', message: 'طلب غير صالح.' }, 400)
   }

@@ -39,6 +39,8 @@ export function formatGuideAnswerLabel(
 
   if (question.questionType === 'multi') {
     if (!Array.isArray(val)) return null
+    // Explicit empty multi (`[]`) is answered-empty — not unanswered.
+    if (val.length === 0) return 'لا شيء محدد'
     const labels = val
       .map((k) => question.options.find((o) => o.key === k)?.label)
       .filter((label): label is string => Boolean(label))
@@ -81,7 +83,8 @@ export function pruneInapplicableAnswers(
       if (!Array.isArray(value)) continue
       const allowed = new Set(question.options.map((o) => o.key))
       const cleaned = [...new Set(value.filter((v) => typeof v === 'string' && allowed.has(v)))]
-      if (cleaned.length > 0) current[key] = cleaned
+      // Preserve explicit empty multi (`[]`) — Decision Engine treats it as answered-empty.
+      current[key] = cleaned
     }
   }
 

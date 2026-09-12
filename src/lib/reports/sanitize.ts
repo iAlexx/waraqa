@@ -44,15 +44,39 @@ export function sanitizeOptionalContactPhone(input: unknown): string | null {
   return v.length ? v : null
 }
 
-export function sanitizeOptionalSourceUrl(input: unknown): string | null {
-  const v = sanitizePlainText(input, REPORT_LIMITS.sourceUrlMax)
-  if (!v) return null
+export type SourceUrlSanitizeResult =
+  | { ok: true; url: string | null }
+  | { ok: false; reason: 'invalid' | 'too_long' }
+
+/**
+ * Normalize an optional source URL.
+ * Never truncates a valid URL into a different URL — over-limit → too_long.
+ */
+export function sanitizeOptionalSourceUrl(input: unknown): SourceUrlSanitizeResult {
+  if (input == null || input === '') return { ok: true, url: null }
+  if (typeof input !== 'string') return { ok: false, reason: 'invalid' }
+
+  // Clean without length truncation (length checked on the normalized URL).
+  const cleaned = input
+    .replace(CONTROL_CHARS, '')
+    .replace(TAG_LIKE, ' ')
+    .replace(SCRIPTISH, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!cleaned) return { ok: true, url: null }
+
   try {
-    const u = new URL(v)
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null
-    return u.toString().slice(0, REPORT_LIMITS.sourceUrlMax)
+    const u = new URL(cleaned)
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+      return { ok: false, reason: 'invalid' }
+    }
+    const normalized = u.toString()
+    if (normalized.length > REPORT_LIMITS.sourceUrlMax) {
+      return { ok: false, reason: 'too_long' }
+    }
+    return { ok: true, url: normalized }
   } catch {
-    return null
+    return { ok: false, reason: 'invalid' }
   }
 }
 

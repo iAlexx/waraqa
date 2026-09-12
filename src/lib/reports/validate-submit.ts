@@ -179,8 +179,16 @@ export function validatePublicReportSubmit(
   const sourceUrlRaw = typeof raw.sourceUrl === 'string' ? raw.sourceUrl.trim() : ''
   let sourceUrl: string | null = null
   if (sourceUrlRaw) {
-    sourceUrl = sanitizeOptionalSourceUrl(sourceUrlRaw)
-    if (!sourceUrl) {
+    const source = sanitizeOptionalSourceUrl(sourceUrlRaw)
+    if (!source.ok) {
+      if (source.reason === 'too_long') {
+        return {
+          ok: false,
+          code: 'validation',
+          message: 'رابط المصدر طويل جداً.',
+          fields: { sourceUrl: 'اختصر رابط المصدر.' },
+        }
+      }
       return {
         ok: false,
         code: 'validation',
@@ -188,6 +196,7 @@ export function validatePublicReportSubmit(
         fields: { sourceUrl: 'استخدم رابط http أو https فقط.' },
       }
     }
+    sourceUrl = source.url
   }
 
   const serviceCenterId = parseOptionalCenterId(raw.serviceCenterId)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { evaluateConditionResult } from '@/lib/guide/evaluate'
 import {
   buildGuideAnswerSummaryRows,
   formatGuideAnswerLabel,
@@ -68,6 +69,41 @@ describe('P9-E answer labels + prune', () => {
     expect(rows.every((r) => !r.answerLabel.includes('_'))).toBe(true)
     expect(rows.map((r) => r.answerLabel).join(' ')).not.toContain('passport')
     expect(rows.map((r) => r.prompt).join(' ')).not.toContain('is_minor')
+  })
+
+  it('preserves explicit empty multi [] as answered-empty (not dropped)', () => {
+    const questions: GuideQuestion[] = [
+      q({
+        key: 'needs',
+        questionType: 'multi',
+        required: false,
+        prompt: 'احتياجات',
+        options: [
+          { key: 'photo', label: 'صور' },
+          { key: 'stamp', label: 'طابع' },
+        ],
+      }),
+    ]
+    const pruned = pruneInapplicableAnswers(questions, { needs: [] })
+    expect(pruned).toEqual({ needs: [] })
+    expect(formatGuideAnswerLabel(questions[0]!, { needs: [] })).toBe('لا شيء محدد')
+    const rows = buildGuideAnswerSummaryRows(questions, { needs: [] })
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.answerLabel).toBe('لا شيء محدد')
+
+    // Decision Engine: answered-empty must not become UNKNOWN for compare ops.
+    expect(
+      evaluateConditionResult(
+        { questionKey: 'needs', operator: 'notEquals', value: 'photo' },
+        pruned,
+      ),
+    ).toBe('MATCH')
+    expect(
+      evaluateConditionResult(
+        { questionKey: 'needs', operator: 'equals', value: 'photo' },
+        {},
+      ),
+    ).toBe('UNKNOWN')
   })
 
   it('prunes stale downstream answers when earlier answer hides them', () => {

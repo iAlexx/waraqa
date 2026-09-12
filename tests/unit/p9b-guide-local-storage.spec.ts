@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { pruneInapplicableAnswers } from '@/lib/guide/answer-labels'
 import {
   GUIDE_LOCAL_STORAGE_VERSION,
   buildGuideLocalPersistedState,
@@ -122,6 +123,22 @@ describe('P9-B guide local storage helpers', () => {
       needs_guardian: 'no',
       extras: ['urgent'],
     })
+  })
+
+  it('preserves explicit empty multi [] through sanitize + prune (answered-empty)', () => {
+    const questions = buildGuide().questions as GuideQuestion[]
+    const cleaned = sanitizePersistedAnswers({ extras: [] }, questions)
+    expect(cleaned).toEqual({ extras: [] })
+    const pruned = pruneInapplicableAnswers(questions, cleaned)
+    expect(pruned).toEqual({ extras: [] })
+  })
+
+  it('changes guideSchemaVersion when questions are reordered (stepIndex safety)', () => {
+    const guide = buildGuide()
+    const reordered = buildGuide({
+      questions: [...guide.questions].reverse(),
+    })
+    expect(computeGuideSchemaVersion(reordered)).not.toBe(computeGuideSchemaVersion(guide))
   })
 
   it('drops unknown checklist keys and reconciles with active docs', () => {

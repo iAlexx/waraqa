@@ -8,6 +8,7 @@ import {
   contentLengthExceedsLimit,
   isJsonContentType,
   isMultipartContentType,
+  readRequestBodyLimited,
 } from '@/lib/reports/request-guards'
 import { sanitizeAuditMetadata } from '@/lib/workflow/audit'
 import { isClosed } from '@/lib/reports/triage'
@@ -69,6 +70,40 @@ describe('Phase 10 request guards', () => {
     expect(contentLengthExceedsLimit('100')).toBe('ok')
     expect(contentLengthExceedsLimit(null)).toBe('missing')
   })
+
+  it('byte-limits streamed bodies (missing Content-Length / chunked)', async () => {
+    const max = 64
+    const oversized = new Uint8Array(max + 8).fill(0x61)
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(oversized.slice(0, 40))
+        controller.enqueue(oversized.slice(40))
+        controller.close()
+      },
+    })
+    const req = new Request('http://localhost/api/public/reports', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: stream,
+      // @ts-expect-error duplex required for streaming request body in undici
+      duplex: 'half',
+    })
+    const result = await readRequestBodyLimited(req, max)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.reason).toBe('too_large')
+
+    const small = new Request('http://localhost/api/public/reports', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{"ok":true}',
+    })
+    const ok = await readRequestBodyLimited(small, max)
+    expect(ok.ok).toBe(true)
+    if (ok.ok) {
+      expect(ok.text).toBe('{"ok":true}')
+      expect(ok.byteLength).toBe(Buffer.byteLength('{"ok":true}', 'utf8'))
+    }
+  })
 })
 
 describe('Phase 10 report validation', () => {
@@ -115,6 +150,18 @@ describe('Phase 10 report validation', () => {
     })
     expect(result.ok).toBe(false)
   })
+
+  it('rejects overlong source URLs with a field error (no silent truncate)', () => {
+    const long = `https://example.test/${'q'.repeat(REPORT_LIMITS.sourceUrlMax)}`
+    const result = validatePublicReportSubmit({
+      ...base,
+      sourceUrl: long,
+    })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.fields?.sourceUrl).toBeTruthy()
+    expect(result.message).toMatch(/طويل/)
+  })
 })
 
 describe('Phase 10 sanitize + audit metadata', () => {
@@ -126,9 +173,19 @@ describe('Phase 10 sanitize + audit metadata', () => {
     expect(looksLikeUnsafeMarkup('<img src=x onerror=alert(1)>')).toBe(true)
   })
 
-  it('allows https URLs only', () => {
-    expect(sanitizeOptionalSourceUrl('https://example.test/page')).toContain('https://')
-    expect(sanitizeOptionalSourceUrl('ftp://example.test')).toBeNull()
+  it('allows https URLs only; rejects overlong without truncating', () => {
+    const ok = sanitizeOptionalSourceUrl('https://example.test/page')
+    expect(ok.ok).toBe(true)
+    if (ok.ok) expect(ok.url).toContain('https://')
+
+    const ftp = sanitizeOptionalSourceUrl('ftp://example.test')
+    expect(ftp.ok).toBe(false)
+    if (!ftp.ok) expect(ftp.reason).toBe('invalid')
+
+    const longPath = 'a'.repeat(REPORT_LIMITS.sourceUrlMax)
+    const tooLong = sanitizeOptionalSourceUrl(`https://example.test/${longPath}`)
+    expect(tooLong.ok).toBe(false)
+    if (!tooLong.ok) expect(tooLong.reason).toBe('too_long')
   })
 
   it('keeps recoverable resolutionReason in audit metadata', () => {

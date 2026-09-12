@@ -71,12 +71,14 @@ export function computeGuideSchemaVersion(
     'questions' | 'documents' | 'rules' | 'steps' | 'fees' | 'variants' | 'notices'
   >,
 ): string {
-  const qPart = [...guide.questions]
+  // Preserve question order — persisted progress uses numeric stepIndex against
+  // the visible question list. Sorting here would keep the fingerprint stable
+  // across reorderings and restore the wrong step.
+  const qPart = guide.questions
     .map((q) => {
       const opts = [...q.options].map((o) => o.key).sort().join(',')
       return `${q.key}:${q.questionType}:${q.required ? '1' : '0'}:${opts}`
     })
-    .sort()
     .join('|')
   const dPart = [...guide.documents]
     .map((d) => `${d.key}:${d.requirementType ?? ''}`)
@@ -136,7 +138,8 @@ export function sanitizePersistedAnswers(
       if (!Array.isArray(value)) continue
       const allowed = new Set(question.options.map((o) => o.key))
       const cleaned = [...new Set(value.filter((v) => typeof v === 'string' && allowed.has(v)))]
-      if (cleaned.length > 0) out[key] = cleaned
+      // Keep explicit empty multi (`[]`) so restore does not become unanswered/UNKNOWN.
+      out[key] = cleaned
     }
   }
 
