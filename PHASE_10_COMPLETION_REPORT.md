@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-13  
 **Commit message:** `fix: harden phase 10 user report workflow`  
-**Authoritative SHA:** `375e4340b97d430b07febf5430476a3c6d0fd7ea`  
+**Phase 10 closure code commit:** `487da9b68db2cc6abc13a6088a6f699f96310e14`
+(This report document may live in a later docs commit; the SHA above names the hardening code commit, not this file's containing commit.)  
 **Baseline Phase 10 feature commit:** `91747a52e3d91104258fe1c559409597d4036c4e`  
 **Prior baseline (P11-C):** `e01bdea`
 
