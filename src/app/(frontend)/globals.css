@@ -258,8 +258,125 @@
   }
 }
 
+/* P9-C: print-only nodes stay out of screen layout */
+[data-print-only] {
+  display: none !important;
+}
+
+/* P9-C — A4 RTL preparation print (browser-native; no PDF backend) */
 @media print {
-  [aria-hidden='true'].pointer-events-none {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+
+  html {
+    background: #fff !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #14201e !important;
+    font-size: 11pt;
+    line-height: 1.45;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .skip-link,
+  [data-mobile-nav-root],
+  body > header,
+  body > footer,
+  [data-sonner-toaster],
+  [data-print-hide],
+  [aria-hidden='true'].pointer-events-none,
+  .waraqa-pattern-responsive {
     display: none !important;
+  }
+
+  [data-print-only] {
+    display: block !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+
+  [data-guide-print-sheet] {
+    color: #14201e;
+  }
+
+  [data-guide-print-sheet] a {
+    color: #0a3d37 !important;
+    text-decoration: underline;
+    word-break: break-word;
+  }
+
+  [data-print-source-url] {
+    display: block !important;
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-size: 9pt;
+    word-break: break-all;
+    margin-top: 0.15rem;
+  }
+
+  [data-print-break-avoid],
+  [data-checklist-item],
+  [data-guide-print-sheet] li,
+  [data-guide-print-sheet] [data-print-notice],
+  [data-guide-print-sheet] [data-print-source-entry],
+  [data-guide-print-sheet] [data-print-disclaimer],
+  [data-demo-content-label] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  [data-guide-print-sheet] h2,
+  [data-guide-print-sheet] h3,
+  [data-guide-page] > header h1 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Checklist: hide native controls; show text marks (not acceptance). */
+  [data-checklist-clear-all] {
+    display: none !important;
+  }
+
+  [data-checklist-checkbox] {
+    display: none !important;
+  }
+
+  [data-checklist-item]::before {
+    content: '[ ]';
+    display: inline-block;
+    margin-inline-end: 0.4rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  [data-checklist-item][data-checklist-checked='true']::before {
+    content: '[✓]';
+  }
+
+  [data-guide-page] {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  [data-guide-page] > header {
+    border: none !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  [data-guide-documents-checklist] label,
+  [data-guide-print-sheet] [data-print-result-card] {
+    border-color: #c5d0cc !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 }

@@ -13,6 +13,7 @@ import { Documents } from './collections/Documents'
 import { ServiceCenters } from './collections/ServiceCenters'
 import { Sources } from './collections/Sources'
 import { Transactions } from './collections/Transactions'
+import { UserReports } from './collections/UserReports'
 import { Users } from './collections/Users'
 import { SiteSettings } from './globals/SiteSettings'
 
@@ -45,6 +46,7 @@ export default buildConfig({
     Sources,
     Transactions,
     Claims,
+    UserReports,
     AuditEvents,
   ],
   globals: [SiteSettings],

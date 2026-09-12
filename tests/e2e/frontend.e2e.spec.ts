@@ -503,7 +503,7 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.locator('[data-guide-client]').getByRole('heading', { name: 'الوثائق' })).toBeVisible()
     expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
 
-    // P9-A: interactive document checklist (in-memory only)
+    // P9-A: interactive document checklist (+ P9-B may persist locally; still never in URL)
     const checklist = page.locator('[data-guide-documents-checklist]')
     await expect(checklist).toBeVisible()
     await expect(checklist.getByText(/التحديد هون بس لمساعدتك بالتحضير/)).toBeVisible()
@@ -519,6 +519,273 @@ test.describe('Phase 8 interactive guide', () => {
     await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
     await expect(page.locator('#guide-question-heading')).toBeVisible()
     expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers)=/)
+  })
+
+  test('P9-B local persistence restores progress and restart clears storage', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    const firstDoc = checklist.getByRole('checkbox').first()
+    await firstDoc.check()
+    await expect(firstDoc).toBeChecked()
+
+    const stored = await page.evaluate((slug) => {
+      const raw = window.localStorage.getItem(`waraqa:guide:${slug}`)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as {
+        answers?: Record<string, unknown>
+        checkedDocumentKeys?: string[]
+      }
+      return {
+        hasAnswers: Boolean(parsed.answers && Object.keys(parsed.answers).length > 0),
+        checkedCount: parsed.checkedDocumentKeys?.length ?? 0,
+        keys: Object.keys(parsed),
+      }
+    }, guideSlug)
+    expect(stored?.hasAnswers).toBe(true)
+    expect(stored?.checkedCount).toBeGreaterThan(0)
+    expect(stored?.keys).not.toEqual(expect.arrayContaining(['claimTrustOk', 'contentClass']))
+
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+    expect(page.url()).not.toMatch(/[?&](age_group|issuance|answers|doc_|checked)=/)
+
+    await page.getByRole('button', { name: 'ابدأ من جديد' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await expect(page.locator('#guide-question-heading')).toBeVisible()
+
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await expect(page.locator('#guide-question-heading')).toBeVisible()
+    const afterRestart = await page.evaluate(
+      (slug) => window.localStorage.getItem(`waraqa:guide:${slug}`),
+      guideSlug,
+    )
+    expect(afterRestart).toBeNull()
+  })
+
+  test('P9-C print sheet: button, demo warning, print media hides chrome', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toHaveCount(0)
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const printBtn = page.getByRole('button', { name: 'طباعة النتيجة' })
+    await expect(printBtn).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await checklist.getByRole('checkbox').first().check()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+
+    await expect(page.locator('[data-guide-print-sheet]')).toBeVisible()
+    await expect(page.locator('[data-demo-content-label]').first()).toContainText(
+      'بيانات تجريبية للعرض — ليست معلومات رسمية',
+    )
+    await expect(page.locator('[data-print-disclaimer]')).toContainText('منصة إرشادية مستقلة')
+    await expect(page.locator('[data-guide-print-sheet]')).toContainText('المصادر الرسمية')
+
+    const overflow = await page.evaluate(() => {
+      const el = document.querySelector('[data-guide-print-sheet]')
+      if (!el) return true
+      return el.scrollWidth > el.clientWidth + 1
+    })
+    expect(overflow).toBe(false)
+
+    await page.emulateMedia({ media: 'print' })
+
+    await expect(page.locator('[data-site-header]')).toBeHidden()
+    await expect(page.locator('[data-site-footer]')).toBeHidden()
+    await expect(page.locator('[data-guide-controls]')).toBeHidden()
+    await expect(printBtn).toBeHidden()
+    await expect(page.locator('[data-guide-print-sheet]')).toBeVisible()
+    await expect(page.locator('[data-guide-print-chrome]')).toBeVisible()
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+
+    const checkedMark = await page.evaluate(() => {
+      const item = document.querySelector('[data-checklist-checked="true"]')
+      if (!item) return null
+      return getComputedStyle(item, '::before').content
+    })
+    expect(checkedMark && checkedMark !== 'none').toBeTruthy()
+    expect(String(checkedMark)).toMatch(/✓/)
+
+    await page.emulateMedia({ media: 'screen' })
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-documents-checklist]').getByRole('checkbox').first()).toBeChecked()
+  })
+
+  test('P9-D WhatsApp share: href message is Arabic-safe and omits checklist/answers', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'مشاركة عبر واتساب' })).toHaveCount(0)
+
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^نعم$/ })
+      .click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page
+      .locator('[data-guide-client] label')
+      .filter({ hasText: /^أول مرة$/ })
+      .click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const share = page.getByRole('link', { name: 'مشاركة عبر واتساب' })
+    await expect(share).toBeVisible()
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await checklist.getByRole('checkbox').first().check()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+
+    const href = await share.getAttribute('href')
+    expect(href).toMatch(/^https:\/\/wa\.me\/\?text=/)
+    const decoded = decodeURIComponent(new URL(href!).searchParams.get('text') || '')
+    expect(decoded).toContain('هاي قائمة معاملتي من ورقة:')
+    expect(decoded).toContain('بيانات تجريبية للعرض — ليست معلومات رسمية')
+    expect(decoded).toContain('ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً.')
+    expect(decoded).toMatch(/\/transactions\/qa-p8-r1-tx-guide/)
+    expect(decoded).not.toMatch(/needs_guardian|include-|doc_|rule_|claim_|contentClass|QA_TEST/)
+    expect(decoded).not.toContain('محدّد للتحضير')
+    expect(decoded).not.toContain('[✓]')
+    expect(decoded).not.toMatch(/[?&](answers|age_group|issuance)=/)
+
+    // Do not open external WhatsApp — inspect href only.
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(checklist.getByRole('checkbox').first()).toBeChecked()
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'مشاركة عبر واتساب' })).toBeVisible()
+  })
+
+  test('P9-E edit answers: summary, edit, recalculate, persist, print/share, restart', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 800 })
+    const guideRes = await page.goto(`/transactions/${guideSlug}/guide`)
+    if (guideRes?.status() === 404) {
+      test.skip(true, 'Phase 8 fixture not seeded')
+      return
+    }
+
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(String(err)))
+
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await page.locator('[data-guide-client] label').filter({ hasText: /^نعم$/ }).click()
+    await page.getByRole('button', { name: 'التالي' }).click()
+    await page.locator('[data-guide-client] label').filter({ hasText: /^أول مرة$/ }).click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+
+    const summary = page.locator('[data-guide-answer-summary]')
+    await expect(summary).toBeVisible()
+    await expect(summary.getByRole('heading', { name: 'إجاباتك' })).toBeVisible()
+    await expect(summary.getByText('هل أنت بالغ؟')).toBeVisible()
+    await expect(summary.getByText('نعم')).toBeVisible()
+
+    const checklist = page.locator('[data-guide-documents-checklist]')
+    await checklist.getByRole('checkbox').first().check()
+
+    const overflow360 = await page.evaluate(
+      () =>
+        Math.max(
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          document.body.scrollWidth - document.body.clientWidth,
+        ),
+    )
+    expect(overflow360).toBeLessThanOrEqual(1)
+
+    // Edit second answer (transaction type) — fixture keys may vary; use first editable later row
+    const editButtons = summary.locator('[data-guide-edit-answer]')
+    const editCount = await editButtons.count()
+    expect(editCount).toBeGreaterThanOrEqual(2)
+    await editButtons.nth(1).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+
+    await page.locator('[data-guide-client] label').filter({ hasText: /^تجديد$/ }).click()
+    await page.getByRole('button', { name: 'عرض النتيجة' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-answer-summary]')).toContainText('تجديد')
+
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const overflow1440 = await page.evaluate(
+      () =>
+        Math.max(
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          document.body.scrollWidth - document.body.clientWidth,
+        ),
+    )
+    expect(overflow1440).toBeLessThanOrEqual(1)
+    await expect(page.getByRole('button', { name: 'طباعة النتيجة' })).toBeVisible()
+    const share = page.getByRole('link', { name: 'مشاركة عبر واتساب' })
+    await expect(share).toBeVisible()
+    const href = await share.getAttribute('href')
+    const decoded = decodeURIComponent(new URL(href!).searchParams.get('text') || '')
+    expect(decoded).not.toMatch(/is_adult|first_time|needs_guardian|doc_/)
+    expect(decoded).toContain('ورقة منصة إرشادية مستقلة')
+
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toBeVisible()
+    await expect(page.locator('[data-guide-answer-summary]')).toContainText('تجديد')
+
+    await page.getByRole('button', { name: 'ابدأ من جديد' }).click()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    await page.reload()
+    await expect(page.locator('[data-guide-client][data-guide-storage-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'نتيجة التحضير' })).toHaveCount(0)
+    expect(errors).toEqual([])
   })
 
   test('hidden transaction guide slug returns not found', async ({ page }) => {

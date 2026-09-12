@@ -17,7 +17,7 @@ export function contentClassField(overrides?: Partial<Field>): Field {
     admin: {
       position: 'sidebar',
       description:
-        'عزل المحتوى: إنتاج / عرض تجريبي / اختبار. مستقل عن التوثيق وclaimTrustOk. الافتراضي: اختبار QA. الترقية إلى إنتاج للمراجع/المدير فقط.',
+        'عزل المحتوى — لا يثبت صحة المعلومة ولا يغني عن توثيق الادعاءات. PRODUCTION: للمحتوى العام المعتمد (ليس تحققاً تلقائياً). DEMO: يظهر بتحذير واضح. QA_TEST: لا يظهر للعامة أبداً. مستقل عن claimTrustOk وعن حالة التحرير. الترقية إلى PRODUCTION للمراجع/المدير فقط.',
       components: {
         Cell: '/components/admin/ContentClassCell#ContentClassCell',
       },

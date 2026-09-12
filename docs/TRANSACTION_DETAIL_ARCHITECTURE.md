@@ -88,7 +88,9 @@ Per-slug Arabic `title` + summary-derived `description` + basic Open Graph. Inel
 
 ## Boundaries (not Phase 7)
 
-No Phase 8 guide engine, eligibility personalization, accounts, submission/upload, Phase 10 reporting, Phase 11 sitemap/robots/structured data/advanced revalidation, AI recommendations, or buttons implying Waraqa submits to government.
+No eligibility personalization, accounts, submission/upload, Phase 11 sitemap/robots/structured data/advanced revalidation, AI recommendations, or buttons implying Waraqa submits to government.
+
+**Phase 10:** Public CTA «بلّغنا عن معلومة تغيّرت» links to `/report-information?transaction=<slug>` only for Transactions that pass the same public eligibility loader as this page (P0-05/P0-06).
 
 ## Migration
 

@@ -84,3 +84,21 @@ export function formatPublicDate(iso: string | null | undefined): string | null 
     return null
   }
 }
+
+/** Arabic date+time for print/export labels (not a source verification date). */
+export function formatPublicDateTime(iso: string | Date | null | undefined): string | null {
+  if (iso == null) return null
+  try {
+    const d = iso instanceof Date ? iso : new Date(iso)
+    if (Number.isNaN(d.getTime())) return null
+    return new Intl.DateTimeFormat('ar-SY', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(d)
+  } catch {
+    return null
+  }
+}

@@ -4,6 +4,7 @@ import { isPhase8QaFixtureSlug, PHASE8_QA_SLUG_PREFIX } from '@/lib/public/qa-ph
 
 type TrackedCollection =
   | 'transactions'
+  | 'service-centers'
   | 'documents'
   | 'sources'
   | 'agencies'
@@ -11,6 +12,7 @@ type TrackedCollection =
 
 const DELETE_ORDER: TrackedCollection[] = [
   'transactions',
+  'service-centers',
   'documents',
   'sources',
   'agencies',
@@ -23,6 +25,32 @@ const REVIEWER_EMAIL_PREFIX = 'qa-p8-r1-reviewer@'
 /** Deletes only Phase 8 QA rows (`qa-p8-r1-*`). */
 export async function cleanupPhase8QaFixture(payload: Payload): Promise<{ deleted: number }> {
   let deleted = 0
+
+  // Reports may RESTRICT deletion of referenced transactions — clear them first.
+  const txCandidates = await payload.find({
+    collection: 'transactions',
+    locale: 'ar',
+    depth: 0,
+    limit: 500,
+    overrideAccess: true,
+    where: { slug: { contains: PHASE8_QA_SLUG_PREFIX } },
+  })
+  for (const tx of txCandidates.docs) {
+    const slug = (tx as { slug?: string }).slug
+    if (!isPhase8QaFixtureSlug(slug)) continue
+    const reports = await payload.find({
+      collection: 'user-reports',
+      depth: 0,
+      limit: 500,
+      overrideAccess: true,
+      where: { transaction: { equals: tx.id } },
+    })
+    for (const report of reports.docs) {
+      await payload.delete({ collection: 'user-reports', id: report.id, overrideAccess: true })
+      deleted += 1
+    }
+  }
+
   for (const collection of DELETE_ORDER) {
     const found = await payload.find({
       collection,

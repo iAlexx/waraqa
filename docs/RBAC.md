@@ -31,8 +31,13 @@ Arabic admin labels: مدير / مراجع / باحث / مشاهد.
 | Read published + active | Yes | Yes | Yes | Yes | Yes |
 | Read `internalNotes` / source editorial `notes` | Yes | Yes | Yes | No | No |
 | Read audit fields (`createdBy`, etc.) publicly | Yes | Yes | Yes | Stripped | Stripped |
+| Submit public user report (`POST /api/public/reports`) | via public path | via public path | via public path | via public path | Yes (eligible txs only) |
+| Read / triage `user-reports` | Yes | Yes | **No** | **No** | **No** |
+| Read report contact fields | Yes | Yes | No | No | No |
+| Delete `user-reports` | Yes | No | No | No | No |
 
-Content collections covered: `categories`, `agencies`, `service-centers`, `documents`, `sources`, `transactions`.
+Content collections covered: `categories`, `agencies`, `service-centers`, `documents`, `sources`, `transactions`.  
+Reports collection: `user-reports` (Phase 10) — not publicly readable; researchers excluded by design (reviewers resolve reports per roadmap).
 
 ## First-user admin bootstrap
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import Link from 'next/link'
 
 import type { PublicGuideDTO } from '@/lib/guide/public-guide-map'
@@ -9,12 +10,36 @@ import {
 } from '@/lib/guide/public-guide-map'
 import { visibleQuestions } from '@/lib/guide/evaluate'
 import {
+  ANSWER_SUMMARY_HEADING_AR,
+  EDIT_ANSWER_LABEL_AR,
+  buildGuideAnswerSummaryRows,
+  pruneInapplicableAnswers,
+} from '@/lib/guide/answer-labels'
+import {
   CHECKLIST_CLEAR_ALL_LABEL_AR,
   CHECKLIST_SAFETY_COPY_AR,
   pruneCheckedDocumentKeys,
   toggleCheckedDocumentKey,
 } from '@/lib/guide/checklist-state'
-import type { GuideAnswers, GuideChecklistItem, GuideNotice } from '@/lib/guide/types'
+import {
+  clearGuideLocalState,
+  clampGuideStepIndex,
+  readGuideLocalState,
+  writeGuideLocalState,
+} from '@/lib/guide/guide-local-storage'
+import {
+  PRINT_GENERATED_DATE_LABEL_AR,
+  PRINT_RESULT_BUTTON_LABEL_AR,
+  PRINT_SHEET_KIND_LABEL_AR,
+} from '@/lib/guide/print-labels'
+import { buildWhatsAppShare, WHATSAPP_SHARE_BUTTON_LABEL_AR } from '@/lib/guide/whatsapp-share'
+import type {
+  GuideAnswers,
+  GuideChecklistItem,
+  GuideNotice,
+} from '@/lib/guide/types'
+import { DEMO_PUBLIC_LABEL_AR } from '@/lib/content-class/types'
+import { formatPublicDateTime } from '@/lib/public/transaction-labels'
 import { cn } from '@/lib/utils/cn'
 
 export type GuideClientProps = {
@@ -39,9 +64,16 @@ function GuideClient({ guide }: GuideClientProps) {
   const [stepIndex, setStepIndex] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  /** P9-A: local-only checked document keys (never persisted / never sent). */
+  /** P9-A/B: checked document keys — device-local only (never sent to server). */
   const [checkedDocKeys, setCheckedDocKeys] = useState<Set<string>>(() => new Set())
   const [prunedForSignature, setPrunedForSignature] = useState<string | null>(null)
+  /**
+   * P9-B persistence gate: writes are blocked until restore has finished.
+   * Ref is the authoritative arming flag (survives awkward effect reordering);
+   * state drives re-render + `data-guide-storage-ready` for tests.
+   */
+  const hasRestoredLocalState = useRef(false)
+  const [persistenceReady, setPersistenceReady] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const statusId = useId()
 
@@ -85,11 +117,46 @@ function GuideClient({ guide }: GuideClientProps) {
     })
   }
 
+  // P9-B: restore in useLayoutEffect so it always completes before any useEffect write.
+  // Lifecycle: localStorage → apply React state → arm persistenceReady (never write first).
+  useLayoutEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- P9-B device-local restore after SSR */
+    hasRestoredLocalState.current = false
+    setPersistenceReady(false)
+
+    const restored = readGuideLocalState(guide)
+    if (restored) {
+      setAnswers(restored.answers)
+      setCheckedDocKeys(new Set(restored.checkedDocumentKeys))
+      setStepIndex(restored.stepIndex)
+      setShowResult(restored.showResult)
+      setPrunedForSignature(null)
+      setError(null)
+    }
+
+    hasRestoredLocalState.current = true
+    setPersistenceReady(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed once per mounted guide identity
+  }, [guide.slug, guide.transactionId])
+
+  // P9-B: persist only after restore has armed the gate (ref + state).
+  useEffect(() => {
+    if (!hasRestoredLocalState.current || !persistenceReady) return
+    writeGuideLocalState(guide, {
+      answers,
+      checkedDocumentKeys: checkedDocKeys,
+      stepIndex,
+      showResult,
+    })
+  }, [persistenceReady, guide, answers, checkedDocKeys, stepIndex, showResult])
+
   useEffect(() => {
     headingRef.current?.focus()
   }, [stepIndex, showResult])
 
   function restart() {
+    clearGuideLocalState(guide.slug)
     setAnswers({})
     setStepIndex(0)
     setShowResult(false)
@@ -99,8 +166,30 @@ function GuideClient({ guide }: GuideClientProps) {
   }
 
   function setAnswer(questionKey: string, value: string | string[]) {
-    setAnswers((prev) => ({ ...prev, [questionKey]: value }))
+    const next = pruneInapplicableAnswers(guide.questions, {
+      ...answers,
+      [questionKey]: value,
+    })
+    setAnswers(next)
+    setStepIndex((i) =>
+      clampGuideStepIndex(i, visibleQuestions(guide.questions, next).length),
+    )
     setError(null)
+  }
+
+  function editAnswer(questionKey: string) {
+    setError(null)
+    setPrunedForSignature(null)
+    const live = pruneInapplicableAnswers(guide.questions, answers)
+    setAnswers(live)
+    const visibleNow = visibleQuestions(guide.questions, live)
+    const idx = visibleNow.findIndex((q) => q.key === questionKey)
+    setShowResult(false)
+    if (idx < 0) {
+      setStepIndex(0)
+      return
+    }
+    setStepIndex(idx)
   }
 
   function goNext() {
@@ -137,14 +226,50 @@ function GuideClient({ guide }: GuideClientProps) {
     setCheckedDocKeys((prev) => toggleCheckedDocumentKey(prev, key, checked))
   }
 
+  const [printGeneratedAt, setPrintGeneratedAt] = useState<string | null>(null)
+
+  function handlePrintResult() {
+    flushSync(() => {
+      setPrintGeneratedAt(formatPublicDateTime(new Date()))
+    })
+    window.print()
+  }
+
+  const answerSummaryRows =
+    showResult && evaluation?.ok
+      ? buildGuideAnswerSummaryRows(guide.questions, answers)
+      : []
+
+  const whatsappShare = useMemo(() => {
+    if (!showResult || !evaluation || !evaluation.ok) return null
+    return buildWhatsAppShare({
+      title: guide.title,
+      detailHref: guide.detailHref,
+      siteOrigin: process.env.NEXT_PUBLIC_SERVER_URL,
+      documents: evaluation.documents.map((d) => ({ title: d.title })),
+      steps: evaluation.steps.map((s) => ({ title: s.title })),
+      notices: evaluation.notices.map((n) => ({
+        title: n.title,
+        body: n.body,
+        severity: n.severity,
+      })),
+      lastReviewedLabel: guide.lastReviewedLabel,
+      demoLabeled: guide.demoLabeled,
+    })
+  }, [showResult, evaluation, guide.title, guide.detailHref, guide.lastReviewedLabel, guide.demoLabeled])
+
   return (
-    <div className="mx-auto w-full min-w-0 max-w-5xl" data-guide-client>
-      <p className="text-sm text-ink-600" aria-live="polite" id={statusId}>
+    <div
+      className="mx-auto w-full min-w-0 max-w-5xl"
+      data-guide-client
+      data-guide-storage-ready={persistenceReady ? 'true' : 'false'}
+    >
+      <p className="text-sm text-ink-600" aria-live="polite" id={statusId} data-print-hide="">
         {progressLabel}
       </p>
 
       {!showResult && current ? (
-        <section className="mt-6" aria-labelledby="guide-question-heading">
+        <section className="mt-6" aria-labelledby="guide-question-heading" data-print-hide="">
           <h2
             id="guide-question-heading"
             ref={headingRef}
@@ -291,9 +416,48 @@ function GuideClient({ guide }: GuideClientProps) {
               {evaluation.message}
             </p>
           ) : (
-            <div className="mt-6 flex flex-col gap-8">
+            <div
+              className="mt-6 flex flex-col gap-8"
+              data-guide-print-sheet=""
+              data-guide-result-ok=""
+            >
+              <PrintSheetChrome
+                title={guide.title}
+                demoLabeled={guide.demoLabeled}
+                generatedAt={printGeneratedAt}
+              />
+
+              <div data-print-hide="" className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  data-guide-print-button=""
+                  onClick={handlePrintResult}
+                  className="inline-flex min-h-11 items-center rounded-md bg-brand-800 px-4 text-sm font-semibold text-white hover:bg-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40 focus-visible:ring-offset-2"
+                >
+                  {PRINT_RESULT_BUTTON_LABEL_AR}
+                </button>
+                {whatsappShare?.ok ? (
+                  <a
+                    href={whatsappShare.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-guide-whatsapp-share=""
+                    data-guide-whatsapp-public-url={whatsappShare.publicUrl}
+                    className="inline-flex min-h-11 items-center rounded-md border border-border bg-surface px-4 text-sm font-semibold text-brand-900 hover:bg-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40 focus-visible:ring-offset-2"
+                  >
+                    {WHATSAPP_SHARE_BUTTON_LABEL_AR}
+                  </a>
+                ) : null}
+              </div>
+
+              <AnswerSummary rows={answerSummaryRows} onEdit={editAnswer} />
+
               {evaluation.variant ? (
-                <div className="rounded-[0.8125rem] border border-border/80 bg-surface px-4 py-3">
+                <div
+                  data-print-result-card=""
+                  data-print-break-avoid=""
+                  className="rounded-[0.8125rem] border border-border/80 bg-surface px-4 py-3"
+                >
                   <p className="text-xs text-ink-500">المتغير المحدد</p>
                   <p className="font-semibold text-ink-950">{evaluation.variant.title}</p>
                   {evaluation.variant.explanation ? (
@@ -308,16 +472,19 @@ function GuideClient({ guide }: GuideClientProps) {
                 onCheckedChange={setDocumentChecked}
                 onClearAll={clearAllChecks}
               />
-              <ResultList title="الخطوات" items={evaluation.steps} />
-              <ResultList title="الرسوم" items={evaluation.fees} />
+              <ResultList title="الخطوات" items={evaluation.steps} listKind="steps" />
+              <ResultList title="الرسوم" items={evaluation.fees} listKind="fees" />
 
               {evaluation.notices.length > 0 ? (
-                <div>
+                <div data-guide-print-notices="">
                   <h3 className="font-display text-lg font-bold text-ink-950">ملاحظات</h3>
                   <ul className="mt-3 flex flex-col gap-3">
                     {evaluation.notices.map((n: GuideNotice & { why: string | null }) => (
                       <li
                         key={n.key}
+                        data-print-notice=""
+                        data-print-break-avoid=""
+                        data-print-result-card=""
                         className="rounded-[0.8125rem] border border-border/80 bg-surface px-4 py-3"
                       >
                         <p className="font-semibold text-ink-950">{n.title}</p>
@@ -331,33 +498,48 @@ function GuideClient({ guide }: GuideClientProps) {
                 </div>
               ) : null}
 
-              <p className="rounded-[0.8125rem] border border-border/80 bg-ivory/80 px-4 py-3 text-sm text-ink-700">
+              <p
+                data-print-disclaimer=""
+                data-print-break-avoid=""
+                data-print-result-card=""
+                className="rounded-[0.8125rem] border border-border/80 bg-ivory/80 px-4 py-3 text-sm text-ink-700"
+              >
                 ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً. هذه النتيجة مساعدة للتحضير وليست قراراً
                 رسمياً أو ضمان قبول. راجع الجهة الرسمية قبل التقديم.
                 {guide.lastReviewedLabel ? (
                   <>
                     {' '}
-                    آخر مراجعة للمحتوى: <strong>{guide.lastReviewedLabel}</strong>.
+                    آخر مراجعة للمحتوى:{' '}
+                    <strong data-guide-verification-label="">{guide.lastReviewedLabel}</strong>.
                   </>
                 ) : null}
               </p>
 
               {guide.sources.length > 0 ? (
-                <div>
+                <div data-guide-print-sources="">
                   <h3 className="font-display text-lg font-bold text-ink-950">المصادر الرسمية</h3>
                   <ul className="mt-3 flex flex-col gap-2 text-sm">
                     {guide.sources.map((s, i) => (
-                      <li key={`${s.title}-${i}`}>
+                      <li
+                        key={`${s.title}-${i}`}
+                        data-print-source-entry=""
+                        data-print-break-avoid=""
+                      >
                         {s.officialLink ? (
-                          <a
-                            href={s.officialLink.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="break-all font-medium text-brand-900 underline-offset-4 hover:underline"
-                          >
-                            {s.primary ? 'أساسي — ' : ''}
-                            {s.title}
-                          </a>
+                          <>
+                            <a
+                              href={s.officialLink.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="break-all font-medium text-brand-900 underline-offset-4 hover:underline"
+                            >
+                              {s.primary ? 'أساسي — ' : ''}
+                              {s.title}
+                            </a>
+                            <span data-print-only="" data-print-source-url="">
+                              {s.officialLink.href}
+                            </span>
+                          </>
                         ) : (
                           <span>{s.title}</span>
                         )}
@@ -371,7 +553,11 @@ function GuideClient({ guide }: GuideClientProps) {
         </section>
       ) : null}
 
-      <div className="mt-10 flex flex-wrap gap-3 border-t border-border/60 pt-6">
+      <div
+        className="mt-10 flex flex-wrap gap-3 border-t border-border/60 pt-6"
+        data-print-hide=""
+        data-guide-controls=""
+      >
         <button
           type="button"
           onClick={goBack}
@@ -404,6 +590,98 @@ function GuideClient({ guide }: GuideClientProps) {
         </Link>
       </div>
     </div>
+  )
+}
+
+function PrintSheetChrome({
+  title,
+  demoLabeled,
+  generatedAt,
+}: {
+  title: string
+  demoLabeled: boolean
+  generatedAt: string | null
+}) {
+  // Stable client stamp for the sheet before the citizen presses print (not a verification date).
+  const [fallbackStamp] = useState(() => formatPublicDateTime(new Date()))
+  const stamp = generatedAt ?? fallbackStamp
+
+  return (
+    <div data-print-only="" data-guide-print-chrome="" className="mb-4">
+      <p className="font-wordmark text-2xl font-bold text-ink-950">ورقة</p>
+      <p className="mt-1 text-sm text-ink-700">{PRINT_SHEET_KIND_LABEL_AR}</p>
+      <p className="mt-3 font-display text-xl font-bold text-ink-950" data-guide-print-title="">
+        {title}
+      </p>
+      {demoLabeled ? (
+        <p className="mt-2 text-sm font-semibold text-ink-950" data-demo-content-label="" role="status">
+          {DEMO_PUBLIC_LABEL_AR}
+        </p>
+      ) : null}
+      <p
+        className="mt-4 text-sm text-ink-700"
+        data-guide-print-generated-at=""
+        suppressHydrationWarning
+      >
+        {PRINT_GENERATED_DATE_LABEL_AR}
+        {stamp ? (
+          <>
+            : <time suppressHydrationWarning>{stamp}</time>
+          </>
+        ) : null}
+      </p>
+    </div>
+  )
+}
+
+type AnswerSummaryProps = {
+  rows: ReturnType<typeof buildGuideAnswerSummaryRows>
+  onEdit: (questionKey: string) => void
+}
+
+function AnswerSummary({ rows, onEdit }: AnswerSummaryProps) {
+  if (rows.length < 1) return null
+  const headingId = 'guide-answer-summary-heading'
+
+  return (
+    <section
+      data-guide-answer-summary=""
+      data-testid="guide-answer-summary"
+      aria-labelledby={headingId}
+      className="border-b border-border/60 pb-6"
+    >
+      <h3 id={headingId} className="font-display text-lg font-bold text-ink-950">
+        {ANSWER_SUMMARY_HEADING_AR}
+      </h3>
+      <ul className="mt-3 flex flex-col gap-3">
+        {rows.map((row) => (
+          <li
+            key={row.questionKey}
+            data-guide-answer-row={row.questionKey}
+            data-print-break-avoid=""
+            className="flex flex-wrap items-start justify-between gap-3"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-ink-600" data-guide-answer-prompt="">
+                {row.prompt}
+              </p>
+              <p className="mt-0.5 font-semibold text-ink-950" data-guide-answer-value="">
+                {row.answerLabel}
+              </p>
+            </div>
+            <button
+              type="button"
+              data-print-hide=""
+              data-guide-edit-answer={row.questionKey}
+              onClick={() => onEdit(row.questionKey)}
+              className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border bg-surface px-3 text-sm font-semibold text-brand-900 hover:bg-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-800/40 focus-visible:ring-offset-2"
+            >
+              {EDIT_ANSWER_LABEL_AR}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
@@ -497,15 +775,25 @@ function DocumentsChecklist({
   )
 }
 
-function ResultList({ title, items }: { title: string; items: GuideChecklistItem[] }) {
+function ResultList({
+  title,
+  items,
+  listKind,
+}: {
+  title: string
+  items: GuideChecklistItem[]
+  listKind: 'steps' | 'fees'
+}) {
   if (items.length < 1) return null
   return (
-    <div>
+    <div data-guide-print-list={listKind}>
       <h3 className="font-display text-lg font-bold text-ink-950">{title}</h3>
       <ul className="mt-3 flex flex-col gap-3">
         {items.map((item) => (
           <li
             key={item.key}
+            data-print-break-avoid=""
+            data-print-result-card=""
             className="rounded-[0.8125rem] border border-border/80 bg-surface px-4 py-3"
           >
             <p className="font-semibold text-ink-950">{item.title}</p>

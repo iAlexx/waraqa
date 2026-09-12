@@ -12,7 +12,8 @@ export function stableKeyField(overrides?: Partial<Field>): Field {
     localized: false,
     index: true,
     admin: {
-      description: 'أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط (مثال: first_time). لا يُغيّر بعد النشر.',
+      description:
+        'قيمة تقنية للنظام (وليس نصاً للمواطن). أحرف إنجليزية صغيرة وأرقام وشرطة سفلية فقط. لا تغيّره بعد ربطه بالقواعد أو بعد استخدام الدليل إلا عند الضرورة — التغيير قد يكسر القواعد أو التقدّم المحفوظ على أجهزة المواطنين.',
     },
   }
   return { ...base, ...overrides } as Field
@@ -33,6 +34,9 @@ function conditionRowFields(): Field[] {
       label: 'مفتاح السؤال',
       required: true,
       localized: false,
+      admin: {
+        description: 'المفتاح المستقر للسؤال (تقني) — ليس نص السؤال الظاهر للمواطن.',
+      },
     },
     {
       name: 'operator',
@@ -49,7 +53,8 @@ function conditionRowFields(): Field[] {
       label: 'القيمة',
       localized: false,
       admin: {
-        description: 'مطلوبة لـ equals / notEquals / includes. لمفتاح الخيار أو نعم/لا.',
+        description:
+          'مطلوبة لـ equals / notEquals / includes. استخدم مفتاح الخيار أو yes/no للأسئلة المنطقية.',
       },
     },
   ]
@@ -86,200 +91,256 @@ const EFFECT_TYPES = [
   { label: 'اختيار متغير', value: 'selectVariant' },
 ] as const
 
-/** Phase 8 guide authoring fields on transactions (additive). */
-export function guideFields(): Field[] {
+/** Sidebar toggle — kept outside main guide tab content for quick access. */
+export function guideEnabledField(): Field {
+  return {
+    name: 'guideEnabled',
+    type: 'checkbox',
+    label: 'تفعيل الدليل التفاعلي للعامة',
+    defaultValue: false,
+    localized: false,
+    admin: {
+      description:
+        'يظهر زر «ابدأ الدليل التفاعلي» للمواطن فقط عند التفعيل ووجود أسئلة/قواعد صالحة بدون أخطاء.',
+      position: 'sidebar',
+      components: {
+        Cell: '/components/admin/BooleanArCell#BooleanArCell',
+      },
+    },
+  }
+}
+
+/** Guide authoring fields (questions / variants / notices / rules) — schema-stable. */
+export function guideAuthoringFields(): Field[] {
   return [
     {
-      name: 'guideEnabled',
-      type: 'checkbox',
-      label: 'تفعيل الدليل التفاعلي للعامة',
-      defaultValue: false,
-      localized: false,
+      name: 'guideRulePreview',
+      type: 'ui',
       admin: {
-        description:
-          'يظهر زر «ابدأ الدليل التفاعلي» فقط عند التفعيل ووجود إعداد دليل صالح بدون أخطاء.',
-        position: 'sidebar',
+        components: {
+          Field: '/components/admin/GuideRulePreviewPanel#GuideRulePreviewPanel',
+        },
       },
     },
     {
-      type: 'collapsible',
-      label: 'الدليل التفاعلي (المرحلة ٨)',
-      admin: { initCollapsed: true },
+      name: 'questions',
+      dbName: 'questions',
+      type: 'array',
+      label: 'أسئلة الدليل',
+      labels: { singular: 'سؤال', plural: 'أسئلة' },
+      admin: {
+        description:
+          'أسئلة يراها المواطن في الدليل التفاعلي. المفتاح المستقر تقني؛ نص السؤال هو ما يظهر للعامة.',
+      },
       fields: [
+        stableKeyField(),
         {
-          name: 'questions',
-          dbName: 'questions',
+          name: 'questionType',
+          dbName: 'qtype',
+          type: 'select',
+          label: 'نوع السؤال',
+          required: true,
+          localized: false,
+          defaultValue: 'single',
+          options: [
+            { label: 'اختيار واحد', value: 'single' },
+            { label: 'اختيار متعدد', value: 'multi' },
+            { label: 'نعم / لا', value: 'boolean' },
+          ],
+        },
+        localizedText('prompt', 'نص السؤال', {
+          required: true,
+          admin: { description: 'يظهر هذا النص للمواطن.' },
+        }),
+        localizedTextarea('helpText', 'نص مساعدة', {
+          admin: { description: 'اختياري — مساعدة قصيرة للمواطن تحت السؤال.' },
+        }),
+        {
+          name: 'required',
+          type: 'checkbox',
+          label: 'إلزامي',
+          defaultValue: true,
+          localized: false,
+        },
+        {
+          name: 'active',
+          type: 'checkbox',
+          label: 'نشط',
+          defaultValue: true,
+          localized: false,
+          admin: {
+            description: 'الأسئلة غير النشطة لا تظهر في الدليل العام.',
+          },
+        },
+        {
+          name: 'options',
+          dbName: 'qopts',
           type: 'array',
-          label: 'أسئلة الدليل',
-          labels: { singular: 'سؤال', plural: 'أسئلة' },
+          label: 'الخيارات',
+          labels: { singular: 'خيار', plural: 'خيارات' },
+          admin: {
+            condition: (_, sibling) =>
+              sibling?.questionType === 'single' || sibling?.questionType === 'multi',
+            description: 'التسمية للمواطن؛ المفتاح تقني للقواعد.',
+          },
           fields: [
             stableKeyField(),
+            localizedText('label', 'التسمية', {
+              required: true,
+              admin: { description: 'يظهر هذا النص للمواطن.' },
+            }),
+          ],
+        },
+        {
+          name: 'visibleWhen',
+          type: 'group',
+          label: 'يظهر عندما',
+          admin: {
+            description: 'شروط ظهور السؤال حسب إجابات سابقة (مفاتيح تقنية).',
+          },
+          fields: conditionGroupFields(),
+        },
+      ],
+    },
+    {
+      name: 'variants',
+      dbName: 'variants',
+      type: 'array',
+      label: 'متغيرات النتيجة',
+      labels: { singular: 'متغير', plural: 'متغيرات' },
+      admin: {
+        description: 'مسارات نتيجة اختيارية يختارها محرك القرار عبر selectVariant.',
+      },
+      fields: [
+        stableKeyField(),
+        localizedText('title', 'العنوان', {
+          required: true,
+          admin: { description: 'يظهر هذا النص للمواطن في النتيجة عند اختيار المتغير.' },
+        }),
+        localizedTextarea('explanation', 'شرح اختياري'),
+        {
+          name: 'active',
+          type: 'checkbox',
+          label: 'نشط',
+          defaultValue: true,
+          localized: false,
+        },
+      ],
+    },
+    {
+      name: 'notices',
+      dbName: 'notices',
+      type: 'array',
+      label: 'ملاحظات التحضير',
+      labels: { singular: 'ملاحظة', plural: 'ملاحظات' },
+      admin: {
+        description: 'ملاحظات/تنبيهات يمكن تضمينها في نتيجة الدليل حسب القواعد.',
+      },
+      fields: [
+        stableKeyField(),
+        localizedText('title', 'العنوان', { required: true }),
+        localizedTextarea('body', 'النص', { required: true }),
+        {
+          name: 'severity',
+          dbName: 'sev',
+          type: 'select',
+          label: 'الأهمية',
+          localized: false,
+          defaultValue: 'info',
+          options: [
+            { label: 'معلومة', value: 'info' },
+            { label: 'تنبيه', value: 'warning' },
+          ],
+        },
+        {
+          name: 'active',
+          type: 'checkbox',
+          label: 'نشط',
+          defaultValue: true,
+          localized: false,
+        },
+      ],
+    },
+    {
+      name: 'decisionRules',
+      dbName: 'dec_rules',
+      type: 'array',
+      label: 'قواعد القرار',
+      labels: { singular: 'قاعدة', plural: 'قواعد' },
+      admin: {
+        description:
+          'منطق التضمين/الاستبعاد حسب الإجابات. استخدم مفاتيح الوثائق/الخطوات/الرسوم/الملاحظات/المتغيرات — لا تغيّر المفاتيح المرتبطة دون مراجعة.',
+      },
+      fields: [
+        stableKeyField(),
+        {
+          name: 'priority',
+          type: 'number',
+          label: 'الأولوية',
+          required: true,
+          defaultValue: 100,
+          min: 0,
+          localized: false,
+          admin: {
+            description: 'الأقل يُنفَّذ أولاً؛ الأعلى لاحقاً (يتجاوز عند التعارض).',
+          },
+        },
+        {
+          name: 'active',
+          type: 'checkbox',
+          label: 'نشطة',
+          defaultValue: true,
+          localized: false,
+        },
+        localizedTextarea('explanation', 'شرح للمستخدم عند التفعيل', {
+          admin: {
+            description: 'اختياري — قد يظهر كسبب («لماذا») في نتيجة الدليل.',
+          },
+        }),
+        {
+          name: 'when',
+          type: 'group',
+          label: 'الشروط',
+          fields: conditionGroupFields(),
+        },
+        {
+          name: 'effects',
+          dbName: 'fx',
+          type: 'array',
+          label: 'التأثيرات',
+          required: true,
+          minRows: 1,
+          fields: [
             {
-              name: 'questionType',
-              dbName: 'qtype',
+              name: 'type',
+              dbName: 'fx_type',
               type: 'select',
-              label: 'نوع السؤال',
+              label: 'النوع',
               required: true,
               localized: false,
-              defaultValue: 'single',
-              options: [
-                { label: 'اختيار واحد', value: 'single' },
-                { label: 'اختيار متعدد', value: 'multi' },
-                { label: 'نعم / لا', value: 'boolean' },
-              ],
-            },
-            localizedText('prompt', 'نص السؤال', { required: true }),
-            localizedTextarea('helpText', 'نص مساعدة'),
-            {
-              name: 'required',
-              type: 'checkbox',
-              label: 'إلزامي',
-              defaultValue: true,
-              localized: false,
+              options: [...EFFECT_TYPES],
             },
             {
-              name: 'active',
-              type: 'checkbox',
-              label: 'نشط',
-              defaultValue: true,
-              localized: false,
-            },
-            {
-              name: 'options',
-              dbName: 'qopts',
-              type: 'array',
-              label: 'الخيارات',
-              labels: { singular: 'خيار', plural: 'خيارات' },
-              admin: {
-                condition: (_, sibling) =>
-                  sibling?.questionType === 'single' || sibling?.questionType === 'multi',
-              },
-              fields: [stableKeyField(), localizedText('label', 'التسمية', { required: true })],
-            },
-            {
-              name: 'visibleWhen',
-              type: 'group',
-              label: 'يظهر عندما',
-              fields: conditionGroupFields(),
-            },
-          ],
-        },
-        {
-          name: 'variants',
-          dbName: 'variants',
-          type: 'array',
-          label: 'متغيرات النتيجة',
-          labels: { singular: 'متغير', plural: 'متغيرات' },
-          fields: [
-            stableKeyField(),
-            localizedText('title', 'العنوان', { required: true }),
-            localizedTextarea('explanation', 'شرح اختياري'),
-            {
-              name: 'active',
-              type: 'checkbox',
-              label: 'نشط',
-              defaultValue: true,
-              localized: false,
-            },
-          ],
-        },
-        {
-          name: 'notices',
-          dbName: 'notices',
-          type: 'array',
-          label: 'ملاحظات التحضير',
-          labels: { singular: 'ملاحظة', plural: 'ملاحظات' },
-          fields: [
-            stableKeyField(),
-            localizedText('title', 'العنوان', { required: true }),
-            localizedTextarea('body', 'النص', { required: true }),
-            {
-              name: 'severity',
-              dbName: 'sev',
-              type: 'select',
-              label: 'الأهمية',
-              localized: false,
-              defaultValue: 'info',
-              options: [
-                { label: 'معلومة', value: 'info' },
-                { label: 'تنبيه', value: 'warning' },
-              ],
-            },
-            {
-              name: 'active',
-              type: 'checkbox',
-              label: 'نشط',
-              defaultValue: true,
-              localized: false,
-            },
-          ],
-        },
-        {
-          name: 'decisionRules',
-          dbName: 'dec_rules',
-          type: 'array',
-          label: 'قواعد القرار',
-          labels: { singular: 'قاعدة', plural: 'قواعد' },
-          fields: [
-            stableKeyField(),
-            {
-              name: 'priority',
-              type: 'number',
-              label: 'الأولوية',
+              name: 'targetKey',
+              type: 'text',
+              label: 'مفتاح الهدف',
               required: true,
-              defaultValue: 100,
-              min: 0,
               localized: false,
               admin: {
-                description: 'الأقل يُنفَّذ أولاً؛ الأعلى لاحقاً (يتجاوز عند التعارض).',
+                description: 'المفتاح المستقر لوثيقة / خطوة / رسم / ملاحظة / متغير.',
               },
-            },
-            {
-              name: 'active',
-              type: 'checkbox',
-              label: 'نشطة',
-              defaultValue: true,
-              localized: false,
-            },
-            localizedTextarea('explanation', 'شرح للمستخدم عند التفعيل'),
-            {
-              name: 'when',
-              type: 'group',
-              label: 'الشروط',
-              fields: conditionGroupFields(),
-            },
-            {
-              name: 'effects',
-              dbName: 'fx',
-              type: 'array',
-              label: 'التأثيرات',
-              required: true,
-              minRows: 1,
-              fields: [
-                {
-                  name: 'type',
-                  dbName: 'fx_type',
-                  type: 'select',
-                  label: 'النوع',
-                  required: true,
-                  localized: false,
-                  options: [...EFFECT_TYPES],
-                },
-                {
-                  name: 'targetKey',
-                  type: 'text',
-                  label: 'مفتاح الهدف',
-                  required: true,
-                  localized: false,
-                  admin: {
-                    description: 'مفتاح وثيقة / خطوة / رسم / ملاحظة / متغير.',
-                  },
-                },
-              ],
             },
           ],
         },
       ],
     },
   ]
+}
+
+/**
+ * Phase 8 guide fields (enabled toggle + authoring arrays).
+ * Prefer `guideEnabledField` + `guideAuthoringFields` when placing into admin tabs.
+ */
+export function guideFields(): Field[] {
+  return [guideEnabledField(), ...guideAuthoringFields()]
 }

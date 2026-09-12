@@ -2254,6 +2254,8 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 ## Phase 8 — Guide Engine
 
 > **Owner decision (2026-07-20):** Phase 8 ships **in-memory answers only** and an **in-session result checklist**. Roadmap items below for “save local progress”, “browser refresh preserves safe progress”, and “schema-version mismatch in local storage” are **deferred to Phase 9+**. WhatsApp share, print, and persistent checklists remain Phase 9 scope. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md).
+>
+> **Update (2026-09-12):** Phase 9 delivered P9-A…P9-E (checklist, `localStorage`, A4 print, WhatsApp share, edit answers). OS Print Preview remains Phase 13 manual QA. Share permalinks/tokens remain deferred.
 
 ### Tasks
 
@@ -2316,6 +2318,8 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - no sensitive data is placed in a share URL;
 - result works on small screens.
 
+**Status (2026-09-12):** Implemented as P9-A…P9-E. Known carry-over: real OS/browser Print Preview is Phase 13 manual QA (P9-C limitation). Share permalinks/tokens not in scope.
+
 ## Phase 10 — User Reports
 
 ### Tasks
@@ -2339,6 +2343,8 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - reviewer can resolve/reject;
 - submission displays a clear success state;
 - no attachment upload exists.
+
+**Status (2026-09-12):** Implemented. Notifications deferred (no email adapter). See CONTENT_MODEL § user-reports.
 
 ## Phase 11 — Admin UX Refinement
 
@@ -2394,6 +2400,7 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - complete unit, integration, and E2E suites;
 - accessibility audit;
 - manual RTL audit;
+- **required: manual OS/browser Print Preview QA for personalized guide result (P9-C carry-over — A4 portrait, RTL, margins, page breaks, checklist `[✓]`/`[ ]`, DEMO warning, independence disclaimer, sources; Playwright `emulateMedia('print')` alone is not sufficient);**
 - security review;
 - dependency audit;
 - performance audit;

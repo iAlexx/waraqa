@@ -16,12 +16,19 @@ export type AuditAction =
   | 'revision_restored'
   | 'review_date_overridden'
   | 'marked_outdated'
+  | 'report_received'
+  | 'report_in_review'
+  | 'report_resolved'
+  | 'report_rejected'
+  | 'report_marked_spam'
+  | 'report_status_changed'
 
 const SAFE_META_KEYS = new Set([
   'fromState',
   'toState',
   'commentLength',
   'reasonLength',
+  'resolutionReason',
   'versionId',
   'hashPrefix',
   'reviewDueAt',
@@ -39,8 +46,11 @@ export function sanitizeAuditMetadata(
   const out: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(meta)) {
     if (!SAFE_META_KEYS.has(k)) continue
-    if (typeof v === 'string') out[k] = v.slice(0, 200)
-    else if (typeof v === 'number' || typeof v === 'boolean') out[k] = v
+    if (typeof v === 'string') {
+      // resolutionReason needs enough room for a recoverable closing note.
+      const cap = k === 'resolutionReason' ? 500 : 200
+      out[k] = v.slice(0, cap)
+    } else if (typeof v === 'number' || typeof v === 'boolean') out[k] = v
   }
   return Object.keys(out).length ? out : undefined
 }

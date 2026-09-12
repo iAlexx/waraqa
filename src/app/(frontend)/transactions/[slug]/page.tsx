@@ -48,7 +48,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /**
  * Phase 7 — public transaction detail.
  * Ineligible / missing slugs → notFound (no existence leak).
- * No Phase 8 guide engine, Phase 10 reporting, or Phase 11 SEO system.
+ * Phase 10 reporting CTA is on the detail view (publicly eligible txs only).
+ * No Phase 11 SEO system.
  */
 export default async function TransactionDetailPage({ params, searchParams }: Props) {
   const { slug } = await params

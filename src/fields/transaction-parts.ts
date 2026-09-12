@@ -13,7 +13,7 @@ export function requiredDocumentFields(): Field[] {
       required: false,
       admin: {
         description:
-          'مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).',
+          'مفتاح تقني للدليل التفاعلي (ليس نصاً للمواطن). يُملأ تلقائياً عند الحفظ إن تُرك فارغاً. لا تغيّره بعد ربطه بالقواعد إلا عند الضرورة.',
       },
     }),
     {
@@ -23,6 +23,9 @@ export function requiredDocumentFields(): Field[] {
       label: 'الوثيقة',
       required: true,
       localized: false,
+      admin: {
+        description: 'معلومة للمواطن عبر بطاقة الوثيقة المرتبطة.',
+      },
     },
     {
       name: 'requirementType',
@@ -36,6 +39,9 @@ export function requiredDocumentFields(): Field[] {
         { label: 'مشروط', value: 'conditional' },
         { label: 'بديل', value: 'alternative' },
       ],
+      admin: {
+        description: 'يساعد الدليل والنتيجة — لا يعني بحد ذاته أن الجهة الرسمية قبلت الورقة.',
+      },
     },
     localizedTextarea('condition', 'الشرط', {
       admin: { condition: (_, siblingData) => siblingData?.requirementType === 'conditional' },
@@ -80,11 +86,17 @@ export function stepFields(): Field[] {
       required: false,
       admin: {
         description:
-          'مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).',
+          'مفتاح تقني للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً. لا تغيّره بعد ربطه بالقواعد إلا عند الضرورة.',
       },
     }),
-    localizedText('title', 'عنوان الخطوة', { required: true }),
-    localizedTextarea('description', 'وصف الخطوة', { required: true }),
+    localizedText('title', 'عنوان الخطوة', {
+      required: true,
+      admin: { description: 'يظهر هذا النص للمواطن.' },
+    }),
+    localizedTextarea('description', 'وصف الخطوة', {
+      required: true,
+      admin: { description: 'يظهر هذا النص للمواطن.' },
+    }),
     localizedText('locationNote', 'ملاحظة المكان'),
   ]
 }
@@ -95,10 +107,13 @@ export function feeFields(): Field[] {
       required: false,
       admin: {
         description:
-          'مفتاح مستقر للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً (Phase 8).',
+          'مفتاح تقني للدليل التفاعلي. يُملأ تلقائياً عند الحفظ إن تُرك فارغاً. لا تغيّره بعد ربطه بالقواعد إلا عند الضرورة.',
       },
     }),
-    localizedText('label', 'التسمية', { required: true }),
+    localizedText('label', 'التسمية', {
+      required: true,
+      admin: { description: 'يظهر هذا النص للمواطن.' },
+    }),
     {
       name: 'amount',
       type: 'number',
@@ -133,6 +148,10 @@ export function sourceReferenceFields(): Field[] {
       label: 'المصدر',
       required: true,
       localized: false,
+      admin: {
+        description:
+          'مرجع قابل للاقتباس. المصدر ≠ الادعاء. ملء مصدر لا يثبت صحة المحتوى ولا يُجيز النشر وحده.',
+      },
     },
     {
       name: 'primary',
@@ -140,6 +159,9 @@ export function sourceReferenceFields(): Field[] {
       label: 'أساسي',
       defaultValue: false,
       localized: false,
+      admin: {
+        description: 'تلميح تحريري للمصدر الرئيسي — ليس اعتماداً رسمياً ولا بديلاً عن ربط الادعاءات.',
+      },
     },
     {
       name: 'coveredSections',
@@ -154,10 +176,12 @@ export function sourceReferenceFields(): Field[] {
         value,
       })),
       admin: {
-        description: 'أقسام المحتوى التي يدعمها هذا المصدر (مفاتيح ثابتة).',
+        description: 'أقسام المحتوى التي يدعمها هذا المصدر (مفاتيح ثابتة للنظام — ليست نصاً للمواطن).',
       },
     },
-    localizedText('citationNote', 'ملاحظة الاقتباس'),
+    localizedText('citationNote', 'ملاحظة الاقتباس', {
+      admin: { description: 'اختياري — يظهر للفريق التحريري؛ ليس دليلاً على التحقق.' },
+    }),
   ]
 }
 
@@ -175,6 +199,9 @@ export function claimBindingFields(): Field[] {
       label: 'الادعاء',
       required: true,
       localized: false,
+      admin: {
+        description: 'الادعاء ≠ المصدر. اختر ادعاءً موثّقاً؛ المصدر وحده لا يكفي للنشر العام.',
+      },
     },
     {
       name: 'required',
@@ -184,7 +211,7 @@ export function claimBindingFields(): Field[] {
       localized: false,
       admin: {
         description:
-          'إن وُسم مطلوباً فيجب أن يقيَّم AUTHORITATIVE عند الاعتماد/النشر. WARNING_ONLY لا يكفي.',
+          'إن وُسم مطلوباً فيجب أن يقيَّم AUTHORITATIVE عند الاعتماد/النشر. WARNING_ONLY لا يكفي. هذا لا يغيّر تصنيف المحتوى (contentClass).',
       },
     },
     {
@@ -195,14 +222,59 @@ export function claimBindingFields(): Field[] {
       enumName: 'tx_cov_sec',
       options: COVERED_SECTIONS.map((value) => ({ label: value, value })),
       admin: {
-        description: 'تلميح انتقالي لربط القسم — ليس بديلاً عن تغطية المصادر.',
+        description: 'تلميح تحريري لربط القسم — ليس بديلاً عن تغطية المصادر ولا عن ثقة الادعاء.',
       },
     },
   ]
 }
 
-/** Phase 4 editorial workflow fields on transactions. */
-export function workflowFields(): Field[] {
+/** Workflow metadata that belongs in the editorial «المراجعة والنشر» tab (not sidebar). */
+export function workflowPanelFields(): Field[] {
+  return [
+    {
+      name: 'changeRequestComment',
+      type: 'textarea',
+      label: 'تعليق طلب التعديل',
+      localized: false,
+      access: {
+        read: editorialFieldAccess,
+      },
+      admin: {
+        readOnly: true,
+        description: 'ظاهر للباحث داخل لوحة الإدارة — غير متاح للعامة.',
+      },
+    },
+    {
+      name: 'reviewDueOverrideReason',
+      type: 'textarea',
+      label: 'سبب تجاوز موعد المراجعة',
+      localized: false,
+      access: {
+        read: editorialFieldAccess,
+      },
+      admin: {
+        readOnly: true,
+        description: 'يُسجَّل عند تجاوز الموعد من المدير — للقراءة فقط هنا.',
+      },
+    },
+    {
+      name: 'archiveReason',
+      type: 'textarea',
+      label: 'سبب الأرشفة',
+      localized: false,
+      access: {
+        read: editorialFieldAccess,
+      },
+      admin: {
+        readOnly: true,
+        description: 'سبب موثّق للأرشفة عبر سير العمل — ليس حذفاً نهائياً. الأرشفة مفضّلة على الحذف.',
+      },
+    },
+  ]
+}
+
+/** Sidebar workflow chrome (status, audit stamps, review schedule). */
+export function workflowSidebarFields(): Field[] {
   return [
     {
       name: 'workflowState',
@@ -228,7 +300,7 @@ export function workflowFields(): Field[] {
       },
       admin: {
         readOnly: true,
-        description: 'تُغيَّر عبر إجراءات سير العمل فقط — لا تُعيَّن يدوياً.',
+        description: 'تُغيَّر عبر أزرار سير العمل فقط — ليست تعديلاً يدوياً للحالة.',
         position: 'sidebar',
         components: {
           Field: '/components/admin/WorkflowStateField#WorkflowStateField',
@@ -265,19 +337,6 @@ export function workflowFields(): Field[] {
       label: 'طلب التعديل بواسطة',
       localized: false,
       admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'changeRequestComment',
-      type: 'textarea',
-      label: 'تعليق طلب التعديل',
-      localized: false,
-      access: {
-        read: editorialFieldAccess,
-      },
-      admin: {
-        readOnly: true,
-        description: 'ظاهر للباحث داخل لوحة الإدارة — غير متاح للعامة.',
-      },
     },
     {
       name: 'approvedAt',
@@ -341,16 +400,6 @@ export function workflowFields(): Field[] {
       },
     },
     {
-      name: 'reviewDueOverrideReason',
-      type: 'textarea',
-      label: 'سبب تجاوز موعد المراجعة',
-      localized: false,
-      access: {
-        read: editorialFieldAccess,
-      },
-      admin: { readOnly: true },
-    },
-    {
       name: 'markedOutdated',
       type: 'checkbox',
       label: 'موسوم كقديم',
@@ -358,7 +407,8 @@ export function workflowFields(): Field[] {
       localized: false,
       admin: {
         position: 'sidebar',
-        description: 'يخفي المعاملة عن العامة حتى عند كونها منشورة.',
+        description:
+          'يخفي المعاملة عن العامة حتى عند كونها منشورة. الأرشفة عبر سير العمل مفضّلة على الحذف النهائي.',
         readOnly: true,
       },
     },
@@ -378,16 +428,6 @@ export function workflowFields(): Field[] {
       admin: { readOnly: true, position: 'sidebar' },
     },
     {
-      name: 'archiveReason',
-      type: 'textarea',
-      label: 'سبب الأرشفة',
-      localized: false,
-      access: {
-        read: editorialFieldAccess,
-      },
-      admin: { readOnly: true },
-    },
-    {
       name: 'workflowSchemaVersion',
       type: 'number',
       label: 'إصدار مخطط السير',
@@ -396,4 +436,9 @@ export function workflowFields(): Field[] {
       admin: { readOnly: true, position: 'sidebar' },
     },
   ]
+}
+
+/** Phase 4 editorial workflow fields on transactions (sidebar + panel). */
+export function workflowFields(): Field[] {
+  return [...workflowSidebarFields(), ...workflowPanelFields()]
 }

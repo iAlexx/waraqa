@@ -250,6 +250,86 @@ When `_status` becomes `published`, validation requires Arabic title + summary, 
 | Delete | Admin only |
 | Hooks | Publish auth, audit stamps, self-prereq guard, procedure validation, strip `internalNotes` for non-editorial reads |
 
+#### Admin information architecture (P11-A)
+
+Payload **unnamed tabs** (presentation only — stored document shape stays flat; no migration). Sidebar fields stay outside tabs.
+
+| Tab / area | Purpose |
+| --- | --- |
+| الأساسيات | Identity: title, slug, summary, category, agency, centers, audiences, aliases |
+| محتوى الخدمة | Citizen-facing eligibility, outcome, duration, prerequisites |
+| المتطلبات والخطوات | requiredDocuments, steps, fees |
+| الدليل التفاعلي | Guide questions / variants / notices / decision rules (stable keys warned) |
+| المصادر والأدلة | sources + claimBindings (`Source ≠ Claim`; filling a source does not permit publication) |
+| المراجعة والنشر | lastReviewedAt, internalNotes, changeRequestComment, reviewDueOverrideReason, archiveReason |
+| إعدادات متقدمة | Generated/internal (`searchText`) |
+| Sidebar | publicationStatus, claimTrustOk, guideEnabled, workflow*, contentClass, active, audit |
+
+**Editorial rules (admin help only):** `contentClass` ≠ verification; `PRODUCTION` does not mean verified; claim trust remains **server-enforced** (P0-05); public filtering remains P0-06. P11-A does not add blocker widgets (P11-B).
+
+#### Admin readiness panel (P11-B)
+
+Informational panel beside WorkflowActions (`GET /api/transactions/:id/readiness`, active `admin`/`reviewer`/`researcher` only).
+
+| Axis | Meaning |
+| --- | --- |
+| جاهزية سير العمل / النشر | Same content gates as approve/publish (procedure + source evidence + required AUTHORITATIVE claims) + transition/hash notes |
+| أهلية الظهور للعامة | P0-05 live claim trust + P0-06 contentClass + published/active/outdated/archived |
+
+**Rules:**
+- Workflow readiness ≠ public eligibility (e.g. QA_TEST may pass CMS gates but never public).
+- `contentClass` ≠ verification.
+- Stored `claimTrustOk` ≠ live authority; stale `true` surfaces as blocked.
+- Panel is **informational**; approve/publish still re-run all server checks independently.
+- Evaluation uses **last saved** draft document only.
+
+#### Admin guide rule preview (P11-C)
+
+Informational panel **معاينة قواعد الدليل** at the top of tab `الدليل التفاعلي` (`GET`/`POST /api/transactions/:id/guide-preview`, active `admin`/`reviewer`/`researcher` only).
+
+**Rules:**
+- Preview uses the **last saved** Transaction guide only; answers are ephemeral (not persisted to DB / localStorage / cookies).
+- Evaluation reuses the **canonical** Decision Engine (`evaluateGuide`) + Phase 9 prune/sanitize — no alternate evaluator.
+- `firedRuleKeys` are **diagnostic** only; they are not publication authority and do not bypass P0-05/P0-06.
+- Preview does **not** mutate content, workflow, claims, or `contentClass`.
+- Per-condition UNKNOWN detail is limited to rule keys whose `when` group is UNKNOWN (deeper condition diagnostics deferred).
+
+---
+
+## Collection: `user-reports` — بلاغات المواطنين (Phase 10)
+
+**Purpose:** Citizens report changed/outdated information about a publicly eligible Transaction. Reports are **never** public content.
+
+| Field | Notes |
+| --- | --- |
+| `transaction` | Required relationship → `transactions` |
+| `section` | `documents` \| `fees` \| `steps` \| `location` \| `duration` \| `source` \| `other` |
+| `message` | Plain-text: what appears incorrect (required; max 2000). MVP collapses roadmap `reportedValue` into this field. |
+| `encountered` | Plain-text: what the citizen encountered (required; max 2000). |
+| `serviceCenter` | Optional relationship → `service-centers`; public submit accepts only centers linked to the Transaction |
+| `sourceUrl` | Optional http(s) URL |
+| `contactEmail` / `contactPhone` | Optional; **field-level read only for admin/reviewer** |
+| `consentAccepted` | Required at submit |
+| `status` | `open` \| `in_review` \| `resolved` \| `rejected` \| `spam` |
+| `reviewNotes` | Internal editorial notes |
+| `resolutionSummary` | Authoritative closing reason; stamped only on transition into resolved/rejected |
+| `lastResolutionSummary` | Preserved after reopen for editorial continuity (immutable detail also in audit-events) |
+| `resolvedAt` / `resolvedBy` | Server-stamped **only** when entering resolved/rejected |
+
+**Public entry:** CTA on eligible transaction detail → `/report-information?transaction=<slug>` → `POST /api/public/reports`.
+
+**Eligibility:** Same P0-05 live claim trust + P0-06 `contentClass` gate as `loadPublicTransactionBySlug`. `QA_TEST` is never reportable. `DEMO` only when `WARAQA_PUBLIC_CONTENT_MODE=demo`.
+
+**ACL:** Anonymous create only via the public submit path (`overrideAccess` + `context.publicReportSubmit`). Collection `create` is always false for clients. Read/update: active `admin` \| `reviewer` only. Delete: `admin` only. Researchers have **no** report access (minimum for roadmap: reviewers resolve reports).
+
+**Spam controls:** Invisible honeypot (`website`); filled honeypot → HTTP success without persistence. PostgreSQL fixed-window rate limit on **IP-only** HMAC identity hash (User-Agent excluded; raw IP never stored). Buckets table `report_rate_buckets`; retain ~7 days. Vercel: trust `x-forwarded-for` / `x-real-ip`; missing/malformed IP → fail closed (503).
+
+**Audit:** Editorial status transitions write `audit-events` **before** persist; failure aborts the update. Metadata includes recoverable `resolutionReason` (sanitized, capped). Citizen `report_received` remains best-effort so submit stays resilient. `assignedTo` deferred to Phase 11.
+
+**Notifications:** Deferred — no email adapter configured; Admin triage is sufficient.
+
+**Out of scope / MVP schema decisions:** attachments; national ID; `reportedValue`/`suggestedValue` collapsed into `message`+`encountered`; `assignedTo` → Phase 11.
+
 ---
 
 ## Global: `site-settings` — إعدادات الموقع

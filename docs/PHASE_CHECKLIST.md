@@ -13,9 +13,9 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 6 | Search and Categories | **COMPLETE — OWNER APPROVED** | Arabic search, ranking, filters, pagination, unique results; QA Rounds 01–03 approved; tag `phase-6-complete` |
 | 7 | Transaction Page | Not started | Sources + verification dates |
 | 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
-| 9 | Guide and Result UX | Not started | Checklist, print, share |
+| 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview → Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
 | 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
-| 11 | Preview, Revalidation, SEO | Not started | Draft safe; sitemap; robots |
+| 11 | Preview, Revalidation, SEO | P11-A in progress (Admin UX tabs); SEO later | Draft safe; sitemap; robots |
 | 12 | Seeds and Five Procedures | Not started | Labeled demo vs verified |
 | 13 | Hardening, A11y, Performance | Not started | Full test matrix |
 | 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
@@ -213,15 +213,49 @@ Branch `phase-8-interactive-guide` from `phase-7-complete` (`8a73504`).
 
 ### Owner decisions (Phase 8)
 
-- [x] Answers in-memory only — no localStorage/sessionStorage/cookies/DB/analytics/URL answer params
-- [x] No WhatsApp/print/saved checklists/export/accounts (deferred Phase 9+)
+- [x] Phase 8 shipped in-memory answers only (persistence deferred; see Phase 9)
+- [x] No WhatsApp/print/export/accounts in Phase 8
 - [x] Variants + `selectVariant`; conflicting variant keys fail validation
 
 ### Not started (later phases)
 
-- Phase 9 share / print / local persistence
-- Phase 10 reporting
+- Share permalinks / tokens (optional post–Phase 9)
 - Phase 11 sitemap / structured data / advanced revalidation
+
+## Phase 10 — User Reports (COMPLETE — closure hardened 2026-09-13)
+
+- [x] Public CTA «بلّغنا عن معلومة تغيّرت» on publicly eligible Transactions only (P0-05/P0-06)
+- [x] Arabic report form at `/report-information` (`message` + `encountered` + optional validated `serviceCenter`; no attachments; optional protected contact)
+- [x] Zod + plain-text sanitization; honeypot; PostgreSQL rate limit (**IP-only** HMAC identity; UA excluded; fail-closed without trusted IP)
+- [x] Collection `user-reports` with strict ACL (admin/reviewer triage; no public read)
+- [x] Status lifecycle + resolution stamps only on enter closed; editorial audit fail-closed with recoverable `resolutionReason`
+- [x] Early JSON/size request gates; client-only success UX (no forgeable `?sent=1`)
+- [x] Migrations: RESTRICT Transaction FK; hardening migration; audit enum down irreversibility documented
+- [x] Notifications deferred (no safe email adapter in repo)
+
+See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § `user-reports`, [SECURITY.md](./SECURITY.md), [PHASE_10_COMPLETION_REPORT.md](../PHASE_10_COMPLETION_REPORT.md).
+
+## Phase 9 — Guide result UX (P9-A…P9-E)
+
+- [x] P9-A: interactive local documents checklist + clear-all (in `GuideClient`)
+- [x] P9-B: schema-versioned `localStorage` for answers + checklist (`waraqa:guide:<slug>`)
+- [x] P9-C: browser-native A4 RTL print (`window.print` + `@media print`; preparation sheet only)
+  - Accepted: **PASS WITH PRINT-PREVIEW LIMITATION** — real OS/browser Print Preview not manually inspected (not a commit blocker).
+  - **Required Phase 13 / pre-production:** manual Print Preview QA (A4 RTL, margins, page breaks, checklist marks, DEMO/disclaimer/sources).
+- [x] P9-D: client-side WhatsApp share (`wa.me` text; public transaction URL only; no answers/checklist state)
+- [x] P9-E: answer summary (**إجاباتك**) + per-answer **تعديل** + recalc / prune inapplicable answers
+- [ ] Share permalinks / tokens (explicitly out of Phase 9 acceptance; deferred)
+
+See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
+
+Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit answers) is implemented. Remaining known limitation: **OS Print Preview** → Phase 13.
+
+## Phase 11 — Admin UX (in progress)
+
+- [x] **P11-A:** Transaction admin unnamed tabs + Arabic editorial help (schema shape / RBAC / public behavior unchanged). See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § transactions Admin IA.
+- [x] **P11-B:** Transaction Admin readiness panel (workflow publish readiness ≠ public eligibility; informational; server-enforced publish unchanged).
+- [x] **P11-C:** Admin Decision Rule Preview (saved-guide only; canonical `evaluateGuide`; ephemeral answers; diagnostic firedRuleKeys).
+- [ ] Later P11: dashboards, review-due filters, safer delete confirmations, tablet Admin QA
 
 ### QA evidence
 

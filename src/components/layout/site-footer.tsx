@@ -30,7 +30,10 @@ function SiteFooter({ className, settings }: SiteFooterProps) {
   const disclaimer = settings.footerDisclaimer || settings.independenceDisclaimer
 
   return (
-    <footer className={cn('border-t border-border bg-ivory/90', className)}>
+    <footer
+      data-site-footer=""
+      className={cn('border-t border-border bg-ivory/90', className)}
+    >
       <div className="waraqa-container flex flex-col gap-6 py-8 md:py-10">
         <BrandMark size="footer" variant="primary" />
 
