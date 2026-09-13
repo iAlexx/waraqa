@@ -10,14 +10,32 @@ import {
   PHASE12_STABLE,
 } from './markers'
 
+/** Evidence row for claims backed by more than one opened source. */
+export type Phase12ClaimEvidence = {
+  sourceSlug: string
+  relationType: 'SUPPORTS' | 'CONTRADICTS'
+}
+
 export type Phase12ClaimDef = {
   key: string
   statement: string
   status: 'VERIFIED' | 'UNKNOWN' | 'CONFLICTED' | 'NEEDS_OFFICIAL_CONFIRMATION'
   publicationPermission: 'PUBLIC' | 'PUBLIC_WITH_WARNING' | 'INTERNAL_ONLY' | 'BLOCKED'
+  /** Primary source. Also the default single SUPPORTS evidence row when `evidence` is omitted. */
   sourceSlug: string
+  /**
+   * Multi-source evidence. Required for CONFLICTED claims (needs at least one
+   * SUPPORTS and one CONTRADICTS row). Omit for the common single-source case.
+   */
+  evidence?: Phase12ClaimEvidence[]
   /** When true, may be required on transaction publish bindings. */
   authoritativeCandidate: boolean
+}
+
+/** Evidence rows a claim should be seeded with (defaults to one SUPPORTS row). */
+export function claimEvidenceRows(claim: Phase12ClaimDef): Phase12ClaimEvidence[] {
+  if (claim.evidence && claim.evidence.length > 0) return claim.evidence
+  return [{ sourceSlug: claim.sourceSlug, relationType: 'SUPPORTS' }]
 }
 
 export type Phase12SourceDef = {
@@ -46,6 +64,17 @@ export type Phase12DocDef = {
   description?: string
 }
 
+/**
+ * Optional processing-time estimate taken verbatim-in-meaning from a service page.
+ * Absent whenever the opened source publishes no duration — never inferred.
+ */
+export type Phase12DurationDef = {
+  minimum?: number
+  maximum?: number
+  unit: 'minutes' | 'business_days' | 'calendar_days'
+  note?: string
+}
+
 export type Phase12ProcedureDef = {
   slug: string
   title: string
@@ -56,11 +85,16 @@ export type Phase12ProcedureDef = {
   audiences: Array<'citizen' | 'resident' | 'student' | 'other'>
   eligibility: string
   outcome: string
+  /** Primary citable source for the transaction. */
   sourceSlug: string
+  /** Extra non-primary sources cited on the transaction (reconciled/superseded material). */
+  supportingSourceSlugs?: string[]
   /** Claim keys required for authoritative sections we publish. */
   requiredClaimKeys: string[]
   /** Optional warning/uncertain claims bound non-required. */
   optionalClaimKeys: string[]
+  /** Only set when the opened service page states a processing time. */
+  estimatedDuration?: Phase12DurationDef
   documents: Array<{
     key: string
     docSlug: string
@@ -142,7 +176,7 @@ export const PHASE12_AGENCIES = [
     name: 'وزارة التربية والتعليم',
     shortName: 'التربية',
     type: 'ministry' as const,
-    description: 'الجهة المشار إليها في إعلان معادلة الشهادات الثانوية غير السورية (عبر سانا).',
+    description: 'الجهة المشار إليها في إعلانات معادلة الشهادات الثانوية غير السورية (عبر سانا).',
   },
   {
     slug: PHASE12_STABLE.agencyMofa,
@@ -161,15 +195,42 @@ export const PHASE12_SOURCES: Phase12SourceDef[] = [
     sourceType: 'announcement',
     officialUrl: PHASE12_SOURCE_URLS.sanaEquivalency,
     agencySlug: PHASE12_STABLE.agencyMoe,
-    notes: `Opened ${PHASE12_CHECKED_AT}. Official Syrian Arab News Agency (SANA) reporting MoE statement dated 2026-08-01. Not a ministry webpage. Telegram original not separately archived.`,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Official Syrian Arab News Agency (SANA) reporting MoE statement dated 2026-08-01. Not a ministry webpage. Telegram original not separately archived. Superseded on supplementary exams by the later SANA clarification — kept as CONTRADICTS-side evidence, not removed.`,
     coveredSections: [
       'summary',
       'eligibility',
       'required_documents',
       'steps',
+      'outcome',
       'service_centers',
       'other',
     ],
+  },
+  {
+    slug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    title: 'سانا — توضيح وزارة التربية حول آلية معادلة الشهادات غير السورية (استقبال دائم وتسلسل التصديق)',
+    sourceType: 'announcement',
+    officialUrl: PHASE12_SOURCE_URLS.sanaEquivalencyAnan,
+    agencySlug: PHASE12_STABLE.agencyMoe,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Later SANA item carrying the MoE clarification: year-round intake (including the university admission period), attestation chain (issuing education authority → issuing-country MFA → Syrian MFA), sworn Arabic translation for non-Arabic certificates, any person may submit a complete file, and cancellation of the Arabic + social studies complementary exams for foreign certificate holders. Preferred over the earlier announcement where the two differ.`,
+    coveredSections: [
+      'summary',
+      'eligibility',
+      'required_documents',
+      'steps',
+      'outcome',
+      'service_centers',
+      'other',
+    ],
+  },
+  {
+    slug: PHASE12_STABLE.sourceSanaSuppSuspension,
+    title: 'سانا — تعليق الامتحان التكميلي للطلبة السوريين للعامين 2025-2026 و2026-2027',
+    sourceType: 'announcement',
+    officialUrl: PHASE12_SOURCE_URLS.sanaSuppSuspension,
+    agencySlug: PHASE12_STABLE.agencyMoe,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Scope is narrow: Syrian students, school years 2025-2026 and 2026-2027. Used only for the scoped suspension claim and as CONTRADICTS evidence on the general supplementary-exam claim.`,
+    coveredSections: ['summary', 'eligibility', 'other'],
   },
   {
     slug: PHASE12_STABLE.sourceMofaPoa,
@@ -177,12 +238,14 @@ export const PHASE12_SOURCES: Phase12SourceDef[] = [
     sourceType: 'official_webpage',
     officialUrl: PHASE12_SOURCE_URLS.mofaPoa,
     agencySlug: PHASE12_STABLE.agencyMofa,
-    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amounts deferred to «دليل الرسوم» (not transcribed).`,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amounts deferred to «دليل الرسوم» (not transcribed). Page states same-day completion — recorded as a duration claim, no invented business-day range.`,
     coveredSections: [
       'summary',
       'eligibility',
       'required_documents',
       'steps',
+      'duration',
+      'outcome',
       'service_centers',
       'other',
     ],
@@ -193,12 +256,14 @@ export const PHASE12_SOURCES: Phase12SourceDef[] = [
     sourceType: 'official_webpage',
     officialUrl: PHASE12_SOURCE_URLS.mofaMarriage,
     agencySlug: PHASE12_STABLE.agencyMofa,
-    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amounts not listed on page body.`,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amounts not listed on page body. Page states a 15–25 minute service time with a workload caveat, and a nationality-dependent personal attendance rule.`,
     coveredSections: [
       'summary',
       'eligibility',
       'required_documents',
       'steps',
+      'duration',
+      'outcome',
       'service_centers',
       'other',
     ],
@@ -209,12 +274,14 @@ export const PHASE12_SOURCES: Phase12SourceDef[] = [
     sourceType: 'official_webpage',
     officialUrl: PHASE12_SOURCE_URLS.mofaCivilExtract,
     agencySlug: PHASE12_STABLE.agencyMofa,
-    notes: `Opened ${PHASE12_CHECKED_AT}. Duration/fee numeric values not taken from unverified snippets.`,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amount not published on the page. Same-day completion is stated on the service page and recorded as a duration claim.`,
     coveredSections: [
       'summary',
       'eligibility',
       'required_documents',
       'steps',
+      'duration',
+      'outcome',
       'service_centers',
       'other',
     ],
@@ -225,12 +292,13 @@ export const PHASE12_SOURCES: Phase12SourceDef[] = [
     sourceType: 'official_webpage',
     officialUrl: PHASE12_SOURCE_URLS.mofaPassportRenew,
     agencySlug: PHASE12_STABLE.agencyMofa,
-    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amounts not listed on page body.`,
+    notes: `Opened ${PHASE12_CHECKED_AT}. Fee amounts not listed on page body. No processing duration published — transaction intentionally carries no estimatedDuration.`,
     coveredSections: [
       'summary',
       'eligibility',
       'required_documents',
       'steps',
+      'outcome',
       'service_centers',
       'other',
     ],
@@ -241,28 +309,63 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
   {
     key: K.eqChannel,
     statement:
-      'تقديم طلبات معادلة الشهادات الثانوية غير السورية يتم عبر دوائر الامتحانات في المحافظات (حسب إعلان وزارة التربية عبر سانا في آب 2026).',
+      'تقديم طلبات معادلة الشهادات الثانوية غير السورية يتم عبر دوائر الامتحانات في مديريات التربية بالمحافظات.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
+    evidence: [
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalency, relationType: 'SUPPORTS' },
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan, relationType: 'SUPPORTS' },
+    ],
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.eqIntakeYearRound,
+    statement:
+      'استقبال طلبات معادلة الشهادات الثانوية غير السورية مستمر على مدار العام، ولا يتوقف خلال فترة التقدم للقبول الجامعي.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.eqAttestationChain,
+    statement:
+      'تصديق الشهادة وكشف المواد يتم وفق تسلسل: الجهة التعليمية المانحة للشهادة، ثم وزارة خارجية الدولة المانحة، ثم وزارة الخارجية والمغتربين السورية.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
     authoritativeCandidate: true,
   },
   {
     key: K.eqDocsBase,
     statement:
-      'الوثائق الأساسية تشمل الشهادة الثانوية الأصلية وكشف المواد مصدّقين من خارجية الدولة المانحة أو سفارتها في سورية، وإثبات شخصية (هوية أو جواز أو إخراج قيد)، وملف PDF بكل الوثائق.',
+      'الوثائق الأساسية للطلب: الشهادة الثانوية الأصلية، وكشف المواد (الدرجات)، وإثبات شخصية لصاحب الشهادة (هوية أو جواز سفر أو إخراج قيد مدني)، وملف إلكتروني PDF يجمع هذه الوثائق — على أن تكون الشهادة وكشف المواد مصدّقين وفق التسلسل المعتمد.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
-    sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    evidence: [
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan, relationType: 'SUPPORTS' },
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalency, relationType: 'SUPPORTS' },
+    ],
     authoritativeCandidate: true,
   },
   {
     key: K.eqDocsNonArab,
     statement:
-      'إذا كانت الشهادة صادرة عن دولة غير عربية، يلزم ترجمتها إلى العربية وتصديق الترجمة من وزارة الخارجية والمغتربين السورية.',
+      'إذا كانت الشهادة صادرة عن دولة غير عربية فتُرفق ترجمة عربية من مترجم محلّف، إضافة إلى تصديق الوثائق أصولاً.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
-    sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.eqProxySubmitter,
+    statement:
+      'لا يُشترط حضور صاحب الشهادة شخصياً؛ يستطيع أي شخص تقديم الطلب نيابة عنه ما دامت الأوراق مكتملة.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
     authoritativeCandidate: true,
   },
   {
@@ -272,30 +375,61 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
+    evidence: [
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalency, relationType: 'SUPPORTS' },
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan, relationType: 'SUPPORTS' },
+    ],
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.eqOutcome,
+    statement:
+      'نتيجة الإجراء وثيقة معادلة للشهادة الثانوية غير السورية تصدر عن وزارة التربية والتعليم بعد اكتمال التصديق والتحقق.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    evidence: [
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan, relationType: 'SUPPORTS' },
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalency, relationType: 'SUPPORTS' },
+    ],
     authoritativeCandidate: true,
   },
   {
     key: K.eqSupplementaryExams,
     statement:
-      'عند نقص مواد أساسية في الفرع العلمي أو الأدبي قد يُطلب التقدم لامتحانات استكمال وفق الأنظمة النافذة.',
-    status: 'VERIFIED',
-    publicationPermission: 'PUBLIC',
+      'المصادر المفتوحة متعارضة حول امتحانات الاستكمال: إعلان سابق يذكر احتمال التقدم لامتحانات استكمال عند نقص مواد أساسية في الفرع، بينما يذكر توضيح لاحق إلغاء الامتحانات التكميلية في اللغة العربية والدراسات الاجتماعية لحاملي الشهادات الأجنبية، ويذكر مصدر ثالث تعليق الامتحان التكميلي للطلبة السوريين للعامين 2025-2026 و2026-2027. لا يمكن تأكيد ما ينطبق على حالتك إلا من دائرة الامتحانات.',
+    status: 'CONFLICTED',
+    publicationPermission: 'PUBLIC_WITH_WARNING',
     sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
-    authoritativeCandidate: true,
+    evidence: [
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalency, relationType: 'SUPPORTS' },
+      { sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan, relationType: 'CONTRADICTS' },
+      { sourceSlug: PHASE12_STABLE.sourceSanaSuppSuspension, relationType: 'CONTRADICTS' },
+    ],
+    authoritativeCandidate: false,
+  },
+  {
+    key: K.eqArabicSocialCancel,
+    statement:
+      'وفق التوضيح اللاحق: أُلغيت الامتحانات التكميلية في مادتي اللغة العربية والدراسات الاجتماعية لحاملي الشهادات الأجنبية. هذا البند يتعارض مع إعلان أسبق، فتحقق منه قبل الاعتماد عليه.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC_WITH_WARNING',
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    authoritativeCandidate: false,
+  },
+  {
+    key: K.eqSuppSyrianSuspension,
+    statement:
+      'بند ضيق النطاق: عُلِّق الامتحان التكميلي للطلبة السوريين للعامين الدراسيين 2025-2026 و2026-2027. لا ينطبق خارج هذا النطاق الزمني ولا على غير الطلبة السوريين.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC_WITH_WARNING',
+    sourceSlug: PHASE12_STABLE.sourceSanaSuppSuspension,
+    authoritativeCandidate: false,
   },
   {
     key: K.eqFeeAmount,
     statement:
-      'الإعلان يذكر دفع «الرسم المالي المحدد» بعد تسليم الأوراق دون نشر مبلغ أو عملة في نص المصدر المقروء.',
-    status: 'NEEDS_OFFICIAL_CONFIRMATION',
-    publicationPermission: 'PUBLIC_WITH_WARNING',
-    sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
-    authoritativeCandidate: false,
-  },
-  {
-    key: K.eqIntakeFreshness,
-    statement:
-      'الإعلان مؤرخ 2026-08-01 ويشير إلى بدء التقديم من 2026-08-02؛ استمرار نافذة الاستقبال الحالية غير مؤكد من مصدر أحدث مفتوح في هذا التدقيق.',
+      'المصدر يذكر دفع «الرسم المالي المحدد» بعد تسليم الأوراق دون نشر مبلغ أو عملة في النص المقروء.',
     status: 'NEEDS_OFFICIAL_CONFIRMATION',
     publicationPermission: 'PUBLIC_WITH_WARNING',
     sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
@@ -321,7 +455,7 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
   {
     key: K.poaDocsBase,
     statement:
-      'الوثائق الأساسية: هوية أو جواز ساري للموكّل مع صورة، وصورة هوية أو جواز ساري للموكّل إليه. مقدم المعاملة هو صاحب العلاقة. لا يُنظَّم للسوري وكالة بموجب وثائقه الأجنبية إن كان لديه جنسية أخرى.',
+      'الوثائق الأساسية: هوية أو جواز ساري للموكّل مع صورة، وصورة هوية أو جواز ساري للموكّل إليه. مقدم المعاملة هو صاحب العلاقة. لا يُنظَّم للسوري وكالة بموجب وثائقه الأجنبية إن كان لديه جنسية أخرى.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceMofaPoa,
@@ -330,7 +464,7 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
   {
     key: K.poaDocsConditional,
     statement:
-      'توجد وثائق إضافية حسب نوع الوكالة (عقار، زواج، مركبة، شركة، قاصرين، محجور عليه) وفق صفحة الخدمة الرسمية.',
+      'تُضاف وثائق حسب موضوع الوكالة: بيان قيد عقاري أو وكالة بيع قطعي للعقار، وصورة هوية الزوج/الزوجة للزواج، وبيان قيد مركبة للمركبة، وشهادة تسجيل شركة للشركات، ووصاية شرعية لوكالات القاصرين، وقوامة شرعية للمحجور عليه.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceMofaPoa,
@@ -339,7 +473,23 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
   {
     key: K.poaValidity,
     statement:
-      'صلاحية الوكالات الخارجية لقبولها في سورية وتصديقها من الخارجية: سنة ميلادية من تاريخ تنظيمها لدى البعثة؛ وبعد التصديق يُحفظ لدى الكاتب بالعدل بالسرعة الممكنة.',
+      'صلاحية الوكالات الخارجية لقبولها في سورية وتصديقها من الخارجية: سنة ميلادية من تاريخ تنظيمها لدى البعثة؛ وبعد التصديق تُحفظ لدى الكاتب بالعدل بالسرعة الممكنة.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaPoa,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.poaDuration,
+    statement: 'صفحة الخدمة تذكر إنجاز تنظيم الوكالة في نفس اليوم.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaPoa,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.poaOutcome,
+    statement: 'نتيجة الخدمة: نسخة من الوكالة ممهورة بلصاقة الطابع الإلكتروني تُسلَّم لصاحب العلاقة.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceMofaPoa,
@@ -373,7 +523,16 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
   {
     key: K.marDocs,
     statement:
-      'المطلوب: عقد زواج مبرم لدى الدوائر الشرعية المعترف بها في دولة الإقامة ومصدّق من خارجية الدولة المضيفة؛ صورتان عن بيان قيد فردي للزوجة إن كانت سورية (حديث ومصادق من الخارجية السورية، لم يمضِ عليه أكثر من ستة أشهر)؛ صورة عن هوية/جواز/إخراج قيد للزوج؛ صورة عن هوية/جواز الزوجة. الحضور شخصي للزوج أو الزوجة.',
+      'المطلوب: عقد زواج مبرم لدى الدوائر الشرعية المعترف بها في دولة الإقامة ومصدّق من خارجية الدولة المضيفة؛ صورتان عن بيان قيد فردي للزوجة إن كانت سورية (حديث ومصادق من الخارجية السورية، لم يمضِ عليه أكثر من ستة أشهر)؛ صورة عن هوية/جواز/إخراج قيد للزوج؛ صورة عن هوية/جواز الزوجة.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaMarriage,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.marAttendance,
+    statement:
+      'يحضر الزوج شخصياً إذا كان سورياً؛ وإذا لم يكن الزوج سورياً تحضر الزوجة السورية شخصياً.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceMofaMarriage,
@@ -383,6 +542,23 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
     key: K.marInstruction,
     statement:
       'البعثة لا تسجّل الزواج في الدول الأجنبية؛ يلزم توكيل شخصين في سورية لتسجيل الزواج أصولاً داخل سورية.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaMarriage,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.marDuration,
+    statement:
+      'صفحة الخدمة تذكر مدة إنجاز تتراوح بين 15 و25 دقيقة، وقد تطول حسب ضغط العمل في البعثة.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaMarriage,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.marOutcome,
+    statement: 'نتيجة الخدمة: نسخة من بيان الزواج عليها لصاقة التصديق الإلكترونية من البعثة.',
     status: 'VERIFIED',
     publicationPermission: 'PUBLIC',
     sourceSlug: PHASE12_STABLE.sourceMofaMarriage,
@@ -432,6 +608,22 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
     authoritativeCandidate: true,
   },
   {
+    key: K.civDuration,
+    statement: 'صفحة الخدمة تذكر إنجاز استخراج الوثيقة في نفس اليوم.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaCivilExtract,
+    authoritativeCandidate: true,
+  },
+  {
+    key: K.civOutcome,
+    statement: 'نتيجة الخدمة: الوثيقة المدنية المطلوبة ممهورة بلصاقة الطابع الإلكتروني.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaCivilExtract,
+    authoritativeCandidate: true,
+  },
+  {
     key: K.civFeeAmount,
     statement: 'مبلغ الرسم غير منشور في نص صفحة الخدمة المقروءة في هذا التدقيق.',
     status: 'NEEDS_OFFICIAL_CONFIRMATION',
@@ -475,6 +667,15 @@ export const PHASE12_CLAIMS: Phase12ClaimDef[] = [
     authoritativeCandidate: true,
   },
   {
+    key: K.pasOutcome,
+    statement:
+      'نتيجة الخدمة: تجديد الجواز عبر منظومة إصدار الجوازات في البعثة بعد استكمال الإجراءات وتسديد الرسوم.',
+    status: 'VERIFIED',
+    publicationPermission: 'PUBLIC',
+    sourceSlug: PHASE12_STABLE.sourceMofaPassportRenew,
+    authoritativeCandidate: true,
+  },
+  {
     key: K.pasFeeAmount,
     statement: 'الصفحة تذكر تسديد الرسوم دون مبلغ رقمي ظاهر في النص المقروء.',
     status: 'NEEDS_OFFICIAL_CONFIRMATION',
@@ -489,18 +690,20 @@ export const PHASE12_DOCUMENTS: Phase12DocDef[] = [
     slug: `${PHASE12_STABLE.txSecondaryEquivalency}-doc-certificate`,
     name: 'الشهادة الثانوية الأصلية',
     documentType: 'certificate',
-    description: 'الشهادة الأصلية مرفقة بكشف المواد، مصدّقة وفق إعلان التربية عبر سانا.',
+    description:
+      'الشهادة الأصلية مصدّقة من الجهة التعليمية المانحة ثم خارجية الدولة المانحة ثم الخارجية السورية.',
   },
   {
     slug: `${PHASE12_STABLE.txSecondaryEquivalency}-doc-transcript`,
-    name: 'كشف المواد المدروسة',
+    name: 'كشف المواد والدرجات',
     documentType: 'other',
+    description: 'يُصدَّق بنفس تسلسل تصديق الشهادة.',
   },
   {
     slug: `${PHASE12_STABLE.txSecondaryEquivalency}-doc-id`,
     name: 'إثبات شخصية',
     documentType: 'identity',
-    description: 'هوية شخصية أو جواز سفر أو إخراج قيد مدني.',
+    description: 'هوية شخصية أو جواز سفر أو إخراج قيد مدني لصاحب الشهادة.',
   },
   {
     slug: `${PHASE12_STABLE.txSecondaryEquivalency}-doc-pdf`,
@@ -510,9 +713,9 @@ export const PHASE12_DOCUMENTS: Phase12DocDef[] = [
   },
   {
     slug: `${PHASE12_STABLE.txSecondaryEquivalency}-doc-translation`,
-    name: 'ترجمة عربية مصدّقة',
+    name: 'ترجمة عربية من مترجم محلّف',
     documentType: 'other',
-    description: 'للشهادات الصادرة عن دول غير عربية — ترجمة إلى العربية مصدّقة من الخارجية السورية.',
+    description: 'للشهادات الصادرة عن دول غير عربية — ترجمة إلى العربية من مترجم محلّف.',
   },
   {
     slug: `${PHASE12_STABLE.txPoaMission}-doc-principal-id`,
@@ -540,6 +743,24 @@ export const PHASE12_DOCUMENTS: Phase12DocDef[] = [
     slug: `${PHASE12_STABLE.txPoaMission}-doc-vehicle`,
     name: 'بيان قيد مركبة',
     documentType: 'other',
+  },
+  {
+    slug: `${PHASE12_STABLE.txPoaMission}-doc-company`,
+    name: 'شهادة تسجيل شركة',
+    documentType: 'certificate',
+    description: 'لوكالات الشركات — وفق صفحة الخارجية.',
+  },
+  {
+    slug: `${PHASE12_STABLE.txPoaMission}-doc-minor`,
+    name: 'وصاية شرعية',
+    documentType: 'approval',
+    description: 'لوكالات القاصرين — وفق صفحة الخارجية.',
+  },
+  {
+    slug: `${PHASE12_STABLE.txPoaMission}-doc-guardianship`,
+    name: 'قوامة شرعية',
+    documentType: 'approval',
+    description: 'لوكالات المحجور عليه — وفق صفحة الخارجية.',
   },
   {
     slug: `${PHASE12_STABLE.txMarriageMission}-doc-contract`,
@@ -620,23 +841,36 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
     title: 'معادلة شهادة ثانوية غير سورية',
     aliases: ['معادلة بكالوريا أجنبية', 'معادلة شهادة ثانوية أجنبية'],
     summary:
-      'إرشاد تجريبي مبني على إعلان وزارة التربية عبر سانا (آب 2026) حول تقديم طلبات معادلة الشهادات الثانوية غير السورية عبر دوائر الامتحانات في المحافظات. ورقة منصة مستقلة وليست جهة رسمية.',
+      'إرشاد تجريبي مبني على إعلانات وزارة التربية والتعليم المنشورة عبر سانا حول معادلة الشهادات الثانوية غير السورية عبر دوائر الامتحانات في المحافظات. ورقة منصة مستقلة وليست جهة رسمية.',
     categorySlug: PHASE12_STABLE.categoryEducation,
     agencySlug: PHASE12_STABLE.agencyMoe,
     audiences: ['citizen', 'student'],
     eligibility:
-      'الراغبون بمعادلة شهادة ثانوية غير سورية وفق الضوابط التي أعلنتها وزارة التربية (عبر سانا). راجع دائرة الامتحانات في محافظتك لتأكيد الأهلية الحالية.',
+      'الراغبون بمعادلة شهادة ثانوية غير سورية وفق الضوابط التي أعلنتها وزارة التربية والتعليم (عبر سانا). راجع دائرة الامتحانات في محافظتك لتأكيد ما ينطبق على حالتك.',
     outcome:
-      'وثيقة معادلة بعد استيفاء التصديقات والتحقق؛ قد يُقبل الطلب شرطياً قبل اكتمال التصديق دون منح الوثيقة النهائية.',
-    sourceSlug: PHASE12_STABLE.sourceSanaEquivalency,
+      'وثيقة معادلة تصدر بعد استيفاء التصديقات والتحقق؛ قد يُقبل الطلب شرطياً قبل اكتمال التصديق دون منح الوثيقة النهائية.',
+    sourceSlug: PHASE12_STABLE.sourceSanaEquivalencyAnan,
+    supportingSourceSlugs: [
+      PHASE12_STABLE.sourceSanaEquivalency,
+      PHASE12_STABLE.sourceSanaSuppSuspension,
+    ],
     requiredClaimKeys: [
       K.eqChannel,
+      K.eqIntakeYearRound,
+      K.eqAttestationChain,
       K.eqDocsBase,
       K.eqDocsNonArab,
+      K.eqProxySubmitter,
       K.eqConditionalAccept,
-      K.eqSupplementaryExams,
+      K.eqOutcome,
     ],
-    optionalClaimKeys: [K.eqFeeAmount, K.eqIntakeFreshness],
+    optionalClaimKeys: [
+      K.eqFeeAmount,
+      K.eqSupplementaryExams,
+      K.eqArabicSocialCancel,
+      K.eqSuppSyrianSuspension,
+    ],
+    // No estimatedDuration: year-round intake is not a processing time.
     documents: [
       {
         key: 'doc_certificate',
@@ -667,48 +901,59 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
     ],
     steps: [
       {
-        key: 'step_confirm_intake',
-        title: 'تأكد من نافذة التقديم الحالية',
+        key: 'step_prepare_docs',
+        title: 'جهّز الوثائق',
         description:
-          'راجع دائرة الامتحانات في مديرية التربية بمحافظتك؛ إعلان آب 2026 لا يغني عن التأكد من استمرار الاستقبال.',
+          'الشهادة الثانوية الأصلية وكشف المواد وإثبات الشخصية، مع ملف PDF يجمع الوثائق كلها.',
       },
       {
-        key: 'step_prepare_docs',
-        title: 'جهّز الوثائق والتصديقات',
+        key: 'step_attestation_chain',
+        title: 'أكمل تسلسل التصديق',
         description:
-          'الشهادة وكشف المواد مصدّقان من خارجية الدولة المانحة أو سفارتها في سورية، وإثبات الشخصية، وملف PDF.',
+          'التصديق من الجهة التعليمية المانحة، ثم وزارة خارجية الدولة المانحة، ثم وزارة الخارجية والمغتربين السورية.',
       },
       {
         key: 'step_translate_if_needed',
         title: 'ترجمة إن لزم',
-        description:
-          'للدول غير العربية: ترجمة عربية مصدّقة من وزارة الخارجية والمغتربين السورية.',
+        description: 'للشهادات من دول غير عربية: ترجمة عربية من مترجم محلّف.',
       },
       {
         key: 'step_submit',
         title: 'قدّم الطلب وادفع الرسم المحدد',
         description:
-          'التقديم في دائرة الامتحانات؛ المبلغ غير منشور في نص الإعلان المقروء — اسأل الجهة عن الرسم الحالي.',
+          'التقديم في دائرة الامتحانات بمديرية التربية، والاستقبال مستمر على مدار العام. يمكن لأي شخص تقديم الملف نيابةً عنك إذا كانت الأوراق مكتملة. المبلغ غير منشور في نص المصدر — اسأل الجهة عن الرسم الحالي.',
       },
     ],
     fees: [],
-    channelNote: 'دوائر الامتحانات في مديريات التربية بالمحافظات (حسب إعلان سانا).',
+    channelNote: 'دوائر الامتحانات في مديريات التربية بالمحافظات (وفق إعلانات سانا).',
     notices: [
       feeNotice(
         'notice_fee_unknown',
         'المصدر يذكر رسماً مالياً محدداً دون مبلغ. لا تعتمد أي رقم من منصات غير رسمية.',
       ),
       {
-        key: 'notice_intake_freshness',
-        title: 'تحقق من استمرار التقديم',
-        body: 'الإعلان مؤرخ آب 2026. تأكد من دائرة الامتحانات قبل الحضور.',
-        severity: 'warning',
+        key: 'notice_intake_year_round',
+        title: 'الاستقبال مستمر على مدار العام',
+        body: 'وفق التوضيح الأحدث، تقديم طلبات المعادلة متاح طوال العام ولا يتوقف خلال فترة التقدم للقبول الجامعي.',
+        severity: 'info',
       },
       {
-        key: 'notice_supplementary',
-        title: 'امتحانات استكمال محتملة',
-        body: 'عند نقص مواد أساسية قد تُطلب امتحانات استكمال وفق الأنظمة النافذة.',
+        key: 'notice_attestation_chain',
+        title: 'تسلسل التصديق المطلوب',
+        body: 'الجهة التعليمية المانحة ← وزارة خارجية الدولة المانحة ← وزارة الخارجية والمغتربين السورية. أي حلقة ناقصة قد تؤخر منح وثيقة المعادلة.',
         severity: 'info',
+      },
+      {
+        key: 'notice_proxy_submitter',
+        title: 'يمكن لغيرك تقديم الملف',
+        body: 'لا يُشترط حضورك شخصياً؛ يستطيع أي شخص تقديم الطلب نيابةً عنك ما دامت الأوراق مكتملة.',
+        severity: 'info',
+      },
+      {
+        key: 'notice_supplementary_conflict',
+        title: 'معلومات متعارضة حول الامتحانات التكميلية',
+        body: 'إعلان أسبق يذكر احتمال امتحانات استكمال عند نقص مواد أساسية؛ وتوضيح لاحق يذكر إلغاء التكميلي في اللغة العربية والدراسات الاجتماعية لحاملي الشهادات الأجنبية؛ ومصدر ثالث يذكر تعليق الامتحان التكميلي للطلبة السوريين للعامين 2025-2026 و2026-2027. لا تبنِ قرارك على أي منها قبل تأكيد دائرة الامتحانات.',
+        severity: 'warning',
       },
     ],
     guide: {
@@ -717,7 +962,7 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           key: 'certificate_origin',
           questionType: 'single',
           prompt: 'هل شهادتك صادرة عن دولة عربية أم غير عربية؟',
-          helpText: 'يؤثر على شرط الترجمة والتصديق لدى الخارجية السورية.',
+          helpText: 'يؤثر على شرط الترجمة العربية من مترجم محلّف.',
           required: true,
           options: [
             { key: 'arab', label: 'دولة عربية' },
@@ -728,7 +973,7 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           key: 'missing_core_subjects',
           questionType: 'boolean',
           prompt: 'هل تعلم بوجود نقص محتمل في المواد الأساسية للفرع؟',
-          helpText: 'إن لم تكن متأكداً اختر «لا أعلم» عبر ترك الإجابة غير مكتملة ثم راجع الجهة.',
+          helpText: 'إن لم تكن متأكداً اترك السؤال دون إجابة ثم راجع دائرة الامتحانات.',
           required: false,
         },
       ],
@@ -736,12 +981,12 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
         {
           key: 'variant_arab',
           title: 'مسار شهادة من دولة عربية',
-          explanation: 'بدون شرط الترجمة الإضافي المذكور للدول غير العربية في الإعلان.',
+          explanation: 'بدون شرط الترجمة العربية المذكور للشهادات من دول غير عربية.',
         },
         {
           key: 'variant_non_arab',
           title: 'مسار شهادة من دولة غير عربية',
-          explanation: 'يشمل ترجمة عربية مصدّقة من الخارجية السورية.',
+          explanation: 'يشمل ترجمة عربية من مترجم محلّف إضافة إلى تسلسل التصديق.',
         },
       ],
       decisionRules: [
@@ -754,7 +999,9 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
             { type: 'selectVariant', targetKey: 'variant_arab' },
             { type: 'excludeDocument', targetKey: 'doc_translation' },
             { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
-            { type: 'includeNotice', targetKey: 'notice_intake_freshness' },
+            { type: 'includeNotice', targetKey: 'notice_intake_year_round' },
+            { type: 'includeNotice', targetKey: 'notice_attestation_chain' },
+            { type: 'includeNotice', targetKey: 'notice_proxy_submitter' },
           ],
         },
         {
@@ -768,22 +1015,24 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
             { type: 'selectVariant', targetKey: 'variant_non_arab' },
             { type: 'includeDocument', targetKey: 'doc_translation' },
             { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
-            { type: 'includeNotice', targetKey: 'notice_intake_freshness' },
+            { type: 'includeNotice', targetKey: 'notice_intake_year_round' },
+            { type: 'includeNotice', targetKey: 'notice_attestation_chain' },
+            { type: 'includeNotice', targetKey: 'notice_proxy_submitter' },
           ],
         },
         {
           key: 'rule_missing_subjects',
           priority: 20,
-          explanation: 'تنبيه نقص المواد',
+          explanation: 'تنبيه تعارض الامتحانات التكميلية عند نقص المواد',
           when: {
             all: [{ questionKey: 'missing_core_subjects', operator: 'equals', value: 'yes' }],
           },
-          effects: [{ type: 'includeNotice', targetKey: 'notice_supplementary' }],
+          effects: [{ type: 'includeNotice', targetKey: 'notice_supplementary_conflict' }],
         },
       ],
     },
     whySelected:
-      'مرشح Golden Demo سابق؛ إعلان سانا مقروء بالكامل؛ تغطية كافية للقناة والوثائق والمسارات الشرطية مع شفافية حول الرسوم والطزاجة.',
+      'Golden Demo: ثلاثة مصادر مقروءة بالكامل تسمح بنمذجة ادعاء متعارض حقيقي (الامتحانات التكميلية) إلى جانب ادعاءات موثّقة للقناة والوثائق وتسلسل التصديق، مع شفافية تامة حول الرسوم.',
     goldenDemo: true,
   },
   {
@@ -804,8 +1053,16 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
       K.poaDocsBase,
       K.poaDocsConditional,
       K.poaValidity,
+      K.poaDuration,
+      K.poaOutcome,
     ],
     optionalClaimKeys: [K.poaFeeAmount],
+    estimatedDuration: {
+      minimum: 0,
+      maximum: 1,
+      unit: 'calendar_days',
+      note: 'عن صفحة الخدمة: إنجاز في نفس اليوم.',
+    },
     documents: [
       {
         key: 'doc_principal_id',
@@ -835,6 +1092,24 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
         requirementType: 'conditional',
         condition: 'إذا كانت الوكالة خاصة بمركبة.',
       },
+      {
+        key: 'doc_company',
+        docSlug: `${PHASE12_STABLE.txPoaMission}-doc-company`,
+        requirementType: 'conditional',
+        condition: 'إذا كانت الوكالة خاصة بشركة.',
+      },
+      {
+        key: 'doc_minor',
+        docSlug: `${PHASE12_STABLE.txPoaMission}-doc-minor`,
+        requirementType: 'conditional',
+        condition: 'إذا كانت الوكالة تتعلق بقاصر.',
+      },
+      {
+        key: 'doc_guardianship',
+        docSlug: `${PHASE12_STABLE.txPoaMission}-doc-guardianship`,
+        requirementType: 'conditional',
+        condition: 'إذا كانت الوكالة تتعلق بمحجور عليه.',
+      },
     ],
     steps: [
       {
@@ -855,7 +1130,7 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
       {
         key: 'step_receive',
         title: 'استلم الوكالة',
-        description: 'الحصول على نسخة ممهورة بلصاقة الطابع الإلكتروني.',
+        description: 'الحصول على نسخة ممهورة بلصاقة الطابع الإلكتروني، والإنجاز في نفس اليوم وفق صفحة الخدمة.',
       },
     ],
     fees: [],
@@ -871,6 +1146,12 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
         body: 'بعد التصديق من الخارجية احفظ الوكالة لدى الكاتب بالعدل بالسرعة الممكنة.',
         severity: 'info',
       },
+      {
+        key: 'notice_unmodeled_poa',
+        title: 'حالتك غير منمذجة هنا — راجع البعثة',
+        body: 'صفحة الخدمة تذكر وثائق إضافية تختلف باختلاف موضوع الوكالة. إن لم يكن موضوعك ضمن الحالات المعروضة فاعتبر هذه القائمة غير مكتملة لحالتك، وتأكد من البعثة قبل الحضور.',
+        severity: 'warning',
+      },
     ],
     guide: {
       questions: [
@@ -878,21 +1159,20 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           key: 'poa_purpose',
           questionType: 'single',
           prompt: 'ما موضوع الوكالة؟',
+          helpText: 'الوثائق الإضافية تختلف باختلاف الموضوع وفق صفحة الخدمة.',
           required: true,
           options: [
-            { key: 'general', label: 'عامة / أخرى غير الحالات الخاصة أدناه' },
             { key: 'property', label: 'بيع عقار' },
             { key: 'marriage', label: 'زواج' },
             { key: 'vehicle', label: 'مركبة' },
+            { key: 'company', label: 'شركة' },
+            { key: 'minor', label: 'تتعلق بقاصر' },
+            { key: 'guardianship', label: 'تتعلق بمحجور عليه' },
+            { key: 'other_special', label: 'موضوع آخر غير المذكور أعلاه' },
           ],
         },
       ],
       variants: [
-        {
-          key: 'variant_general',
-          title: 'وكالة عامة',
-          explanation: 'الوثائق الأساسية دون مرفقات العقار/الزواج/المركبة.',
-        },
         {
           key: 'variant_property',
           title: 'وكالة عقار',
@@ -908,22 +1188,29 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           title: 'وكالة مركبة',
           explanation: 'يتطلب بيان قيد مركبة حديثاً مصادقاً من الخارجية.',
         },
+        {
+          key: 'variant_company',
+          title: 'وكالة شركة',
+          explanation: 'يتطلب شهادة تسجيل الشركة وفق صفحة الخدمة.',
+        },
+        {
+          key: 'variant_minor',
+          title: 'وكالة تتعلق بقاصر',
+          explanation: 'يتطلب وصاية شرعية وفق صفحة الخدمة.',
+        },
+        {
+          key: 'variant_guardianship',
+          title: 'وكالة تتعلق بمحجور عليه',
+          explanation: 'يتطلب قوامة شرعية وفق صفحة الخدمة.',
+        },
+        {
+          key: 'variant_other_special',
+          title: 'موضوع غير منمذج — تأكيد رسمي مطلوب',
+          explanation:
+            'الوثائق الأساسية وحدها قد لا تكفي لموضوعك. صفحة الخدمة تحيل إلى وثائق إضافية حسب نوع الوكالة، لذلك لا نعتبر هذه القائمة مكتملة قبل مراجعة البعثة.',
+        },
       ],
       decisionRules: [
-        {
-          key: 'rule_general',
-          priority: 10,
-          explanation: 'موضوع عام',
-          when: { all: [{ questionKey: 'poa_purpose', operator: 'equals', value: 'general' }] },
-          effects: [
-            { type: 'selectVariant', targetKey: 'variant_general' },
-            { type: 'excludeDocument', targetKey: 'doc_property' },
-            { type: 'excludeDocument', targetKey: 'doc_marriage_id' },
-            { type: 'excludeDocument', targetKey: 'doc_vehicle' },
-            { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
-            { type: 'includeNotice', targetKey: 'notice_validity' },
-          ],
-        },
         {
           key: 'rule_property',
           priority: 10,
@@ -932,8 +1219,6 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           effects: [
             { type: 'selectVariant', targetKey: 'variant_property' },
             { type: 'includeDocument', targetKey: 'doc_property' },
-            { type: 'excludeDocument', targetKey: 'doc_marriage_id' },
-            { type: 'excludeDocument', targetKey: 'doc_vehicle' },
             { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
             { type: 'includeNotice', targetKey: 'notice_validity' },
           ],
@@ -946,8 +1231,6 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           effects: [
             { type: 'selectVariant', targetKey: 'variant_marriage' },
             { type: 'includeDocument', targetKey: 'doc_marriage_id' },
-            { type: 'excludeDocument', targetKey: 'doc_property' },
-            { type: 'excludeDocument', targetKey: 'doc_vehicle' },
             { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
             { type: 'includeNotice', targetKey: 'notice_validity' },
           ],
@@ -960,15 +1243,66 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
           effects: [
             { type: 'selectVariant', targetKey: 'variant_vehicle' },
             { type: 'includeDocument', targetKey: 'doc_vehicle' },
-            { type: 'excludeDocument', targetKey: 'doc_property' },
-            { type: 'excludeDocument', targetKey: 'doc_marriage_id' },
+            { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
+            { type: 'includeNotice', targetKey: 'notice_validity' },
+          ],
+        },
+        {
+          key: 'rule_company',
+          priority: 10,
+          explanation: 'شركة',
+          when: { all: [{ questionKey: 'poa_purpose', operator: 'equals', value: 'company' }] },
+          effects: [
+            { type: 'selectVariant', targetKey: 'variant_company' },
+            { type: 'includeDocument', targetKey: 'doc_company' },
+            { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
+            { type: 'includeNotice', targetKey: 'notice_validity' },
+          ],
+        },
+        {
+          key: 'rule_minor',
+          priority: 10,
+          explanation: 'تتعلق بقاصر',
+          when: { all: [{ questionKey: 'poa_purpose', operator: 'equals', value: 'minor' }] },
+          effects: [
+            { type: 'selectVariant', targetKey: 'variant_minor' },
+            { type: 'includeDocument', targetKey: 'doc_minor' },
+            { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
+            { type: 'includeNotice', targetKey: 'notice_validity' },
+          ],
+        },
+        {
+          key: 'rule_guardianship',
+          priority: 10,
+          explanation: 'تتعلق بمحجور عليه',
+          when: {
+            all: [{ questionKey: 'poa_purpose', operator: 'equals', value: 'guardianship' }],
+          },
+          effects: [
+            { type: 'selectVariant', targetKey: 'variant_guardianship' },
+            { type: 'includeDocument', targetKey: 'doc_guardianship' },
+            { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
+            { type: 'includeNotice', targetKey: 'notice_validity' },
+          ],
+        },
+        {
+          key: 'rule_other_special',
+          priority: 10,
+          explanation: 'موضوع غير منمذج — لا يمكن تأكيد اكتمال القائمة',
+          when: {
+            all: [{ questionKey: 'poa_purpose', operator: 'equals', value: 'other_special' }],
+          },
+          effects: [
+            { type: 'selectVariant', targetKey: 'variant_other_special' },
+            { type: 'includeNotice', targetKey: 'notice_unmodeled_poa' },
             { type: 'includeNotice', targetKey: 'notice_fee_unknown' },
             { type: 'includeNotice', targetKey: 'notice_validity' },
           ],
         },
       ],
     },
-    whySelected: 'صفحة وزارة رسمية غنية؛ تفرعات وثائق حسب نوع الوكالة؛ مناسبة لإظهار التخصيص.',
+    whySelected:
+      'صفحة وزارة رسمية غنية؛ عائلات وثائق شرطية متعددة (عقار/زواج/مركبة/شركة/قاصر/محجور) مع مسار صريح للحالات غير المنمذجة بدل ادعاء اكتمال زائف.',
   },
   {
     slug: PHASE12_STABLE.txMarriageMission,
@@ -982,8 +1316,22 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
     eligibility: 'السوريون ومن في حكمهم.',
     outcome: 'نسخة من بيان الزواج عليها لصاقة التصديق الإلكترونية من البعثة.',
     sourceSlug: PHASE12_STABLE.sourceMofaMarriage,
-    requiredClaimKeys: [K.marChannel, K.marEligibility, K.marDocs, K.marInstruction],
+    requiredClaimKeys: [
+      K.marChannel,
+      K.marEligibility,
+      K.marDocs,
+      K.marAttendance,
+      K.marInstruction,
+      K.marDuration,
+      K.marOutcome,
+    ],
     optionalClaimKeys: [K.marFeeAmount],
+    estimatedDuration: {
+      minimum: 15,
+      maximum: 25,
+      unit: 'minutes',
+      note: 'عن صفحة الخدمة؛ قد تطول حسب ضغط العمل في البعثة.',
+    },
     documents: [
       {
         key: 'doc_contract',
@@ -1015,8 +1363,9 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
       },
       {
         key: 'step_attend',
-        title: 'قدّم الأوراق',
-        description: 'حضور الزوج أو الزوجة شخصياً وتقديم الثبوتيات في الموعد.',
+        title: 'احضر شخصياً وقدّم الأوراق',
+        description:
+          'يحضر الزوج شخصياً إذا كان سورياً؛ وإذا لم يكن الزوج سورياً تحضر الزوجة السورية شخصياً، مع تقديم الثبوتيات في الموعد.',
       },
       {
         key: 'step_pay',
@@ -1026,7 +1375,8 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
       {
         key: 'step_receive',
         title: 'استلم بيان الزواج',
-        description: 'الحصول على نسخة عليها لصاقة التصديق الإلكترونية.',
+        description:
+          'الحصول على نسخة عليها لصاقة التصديق الإلكترونية؛ مدة الإنجاز على الصفحة بين 15 و25 دقيقة وقد تطول حسب ضغط العمل.',
       },
       {
         key: 'step_syria_register',
@@ -1048,9 +1398,34 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
         body: 'يلزم توكيل شخصين في سورية لإتمام تسجيل الزواج أصولاً داخل الجمهورية.',
         severity: 'warning',
       },
+      {
+        key: 'notice_attendance_husband',
+        title: 'الحضور الشخصي: الزوج',
+        body: 'الزوج سوري — عليه الحضور شخصياً إلى البعثة لتسجيل الواقعة.',
+        severity: 'info',
+      },
+      {
+        key: 'notice_attendance_wife',
+        title: 'الحضور الشخصي: الزوجة السورية',
+        body: 'الزوج غير سوري — تحضر الزوجة السورية شخصياً إلى البعثة لتسجيل الواقعة.',
+        severity: 'info',
+      },
+      {
+        key: 'notice_no_syrian_party',
+        title: 'لا يوجد طرف سوري في الواقعة',
+        body: 'المستفيدون من الخدمة هم السوريون ومن في حكمهم. إذا لم يكن أي من الزوجين سورياً فراجع البعثة قبل الحضور، فالحضور الشخصي المذكور يفترض وجود طرف سوري.',
+        severity: 'warning',
+      },
     ],
     guide: {
       questions: [
+        {
+          key: 'husband_syrian',
+          questionType: 'boolean',
+          prompt: 'هل الزوج سوري؟',
+          helpText: 'يحدد من يجب أن يحضر شخصياً إلى البعثة.',
+          required: true,
+        },
         {
           key: 'wife_syrian',
           questionType: 'boolean',
@@ -1096,9 +1471,36 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
             { type: 'includeNotice', targetKey: 'notice_syria_proxy' },
           ],
         },
+        {
+          key: 'rule_attendance_husband',
+          priority: 20,
+          explanation: 'الزوج سوري — يحضر الزوج شخصياً',
+          when: { all: [{ questionKey: 'husband_syrian', operator: 'equals', value: 'yes' }] },
+          effects: [{ type: 'includeNotice', targetKey: 'notice_attendance_husband' }],
+        },
+        {
+          key: 'rule_attendance_wife',
+          priority: 20,
+          explanation: 'الزوج غير سوري — تحضر الزوجة السورية شخصياً',
+          when: { all: [{ questionKey: 'husband_syrian', operator: 'equals', value: 'no' }] },
+          effects: [{ type: 'includeNotice', targetKey: 'notice_attendance_wife' }],
+        },
+        {
+          key: 'rule_no_syrian_party',
+          priority: 30,
+          explanation: 'لا يوجد طرف سوري — راجع البعثة',
+          when: {
+            all: [
+              { questionKey: 'husband_syrian', operator: 'equals', value: 'no' },
+              { questionKey: 'wife_syrian', operator: 'equals', value: 'no' },
+            ],
+          },
+          effects: [{ type: 'includeNotice', targetKey: 'notice_no_syrian_party' }],
+        },
       ],
     },
-    whySelected: 'صفحة رسمية واضحة؛ شرط الزوجة السورية يوفّر تفرعاً مفيداً دون اختراع.',
+    whySelected:
+      'صفحة رسمية واضحة؛ قاعدة الحضور الشخصي المرتبطة بجنسية الزوج تعطي تفرعاً حقيقياً إلى جانب شرط بيان قيد الزوجة السورية، مع مدة إنجاز منشورة.',
   },
   {
     slug: PHASE12_STABLE.txCivilExtractMission,
@@ -1112,8 +1514,21 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
     eligibility: 'المواطنون السوريون.',
     outcome: 'الوثيقة المطلوبة ممهورة بلصاقة الطابع الإلكتروني.',
     sourceSlug: PHASE12_STABLE.sourceMofaCivilExtract,
-    requiredClaimKeys: [K.civChannel, K.civEligibility, K.civDocs, K.civDocKinds],
+    requiredClaimKeys: [
+      K.civChannel,
+      K.civEligibility,
+      K.civDocs,
+      K.civDocKinds,
+      K.civDuration,
+      K.civOutcome,
+    ],
     optionalClaimKeys: [K.civFeeAmount],
+    estimatedDuration: {
+      minimum: 0,
+      maximum: 1,
+      unit: 'calendar_days',
+      note: 'عن صفحة الخدمة: إنجاز في نفس اليوم.',
+    },
     documents: [
       {
         key: 'doc_id',
@@ -1135,7 +1550,8 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
       {
         key: 'step_receive',
         title: 'استلم الوثيقة',
-        description: 'الحصول على الوثيقة ممهورة بلصاقة الطابع الإلكتروني.',
+        description:
+          'الحصول على الوثيقة ممهورة بلصاقة الطابع الإلكتروني، والإنجاز في نفس اليوم وفق صفحة الخدمة.',
       },
     ],
     fees: [],
@@ -1234,7 +1650,7 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
         },
       ],
     },
-    whySelected: 'صفحة رسمية؛ تغطية أنواع الوثائق؛ دليل بسيط دون تفرعات وهمية للرسوم.',
+    whySelected: 'صفحة رسمية؛ تغطية أنواع الوثائق ومدة إنجاز منشورة؛ دليل بسيط دون تفرعات وهمية للرسوم.',
   },
   {
     slug: PHASE12_STABLE.txPassportRenewMission,
@@ -1248,8 +1664,9 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
     eligibility: 'المواطنون السوريون ومن في حكمهم.',
     outcome: 'تجديد عبر منظومة إصدار الجوازات في البعثة بعد استكمال الإجراءات والرسوم.',
     sourceSlug: PHASE12_STABLE.sourceMofaPassportRenew,
-    requiredClaimKeys: [K.pasChannel, K.pasEligibility, K.pasDocs, K.pasMinorRules],
+    requiredClaimKeys: [K.pasChannel, K.pasEligibility, K.pasDocs, K.pasMinorRules, K.pasOutcome],
     optionalClaimKeys: [K.pasFeeAmount],
+    // No estimatedDuration: the service page publishes no processing time.
     documents: [
       {
         key: 'doc_appointment',
@@ -1315,10 +1732,7 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
     fees: [],
     channelNote: 'صالة التصديقات في البعثة.',
     notices: [
-      feeNotice(
-        'notice_fee_unknown',
-        'تسديد الرسوم مذكور دون مبلغ رقمي في النص المقروء.',
-      ),
+      feeNotice('notice_fee_unknown', 'تسديد الرسوم مذكور دون مبلغ رقمي في النص المقروء.'),
       {
         key: 'notice_fingerprint',
         title: 'بصمة الأصابع',
@@ -1424,7 +1838,7 @@ export const PHASE12_PROCEDURES: Phase12ProcedureDef[] = [
       ],
     },
     whySelected:
-      'صفحة رسمية مفصّلة؛ تفرعات قاصر/رقم وطني/إقامة؛ نوع رحلة مختلف عن المعادلة والأحوال.',
+      'صفحة رسمية مفصّلة؛ تفرعات قاصر/رقم وطني/إقامة؛ ومثال صريح على إجراء بلا مدة منشورة فلا نخترع واحدة.',
   },
 ]
 
@@ -1458,6 +1872,10 @@ export const PHASE12_DEFERRED_CANDIDATES = [
 
 export function getPhase12Procedure(slug: string): Phase12ProcedureDef | undefined {
   return PHASE12_PROCEDURES.find((p) => p.slug === slug)
+}
+
+export function getPhase12Source(slug: string): Phase12SourceDef | undefined {
+  return PHASE12_SOURCES.find((s) => s.slug === slug)
 }
 
 export function countClaimsByStatus(): Record<string, number> {

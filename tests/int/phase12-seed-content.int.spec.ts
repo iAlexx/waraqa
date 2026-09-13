@@ -2,9 +2,18 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
-import { PHASE12_CLAIMS, PHASE12_PROCEDURES, PHASE12_SOURCES } from '@/lib/content/phase12/catalog'
+import {
+  claimEvidenceRows,
+  PHASE12_CLAIMS,
+  PHASE12_PROCEDURES,
+  PHASE12_SOURCES,
+} from '@/lib/content/phase12/catalog'
 import { seedPhase12Content } from '@/lib/content/phase12/seed'
-import { PHASE12_PROCEDURE_SLUGS, PHASE12_STABLE } from '@/lib/content/phase12/markers'
+import {
+  PHASE12_PROCEDURE_SLUGS,
+  PHASE12_REVIEWER_EMAIL,
+  PHASE12_STABLE,
+} from '@/lib/content/phase12/markers'
 import { evaluateClaimTrust } from '@/lib/claims/claim-trust'
 import { getPublicTransactionWhere } from '@/access'
 import { getPubliclyAllowedContentClasses } from '@/lib/content-class/public-content-policy'
@@ -44,11 +53,38 @@ describe('Phase 12 seed content (integration)', () => {
       const tx = res.docs[0] as {
         contentClass?: string
         fees?: unknown[]
-        estimatedDuration?: { minimum?: number | null }
+        estimatedDuration?: { minimum?: number | null; unit?: string | null }
       }
       expect(tx.contentClass).toBe('DEMO')
       expect(tx.fees ?? []).toEqual([])
-      expect(tx.estimatedDuration?.minimum ?? null).toBeNull()
+
+      const expected = PHASE12_PROCEDURES.find((p) => p.slug === slug)?.estimatedDuration
+      if (!expected) {
+        expect(tx.estimatedDuration?.unit ?? null).toBeNull()
+      } else {
+        expect(tx.estimatedDuration?.unit).toBe(expected.unit)
+        expect(tx.estimatedDuration?.minimum ?? null).toBe(expected.minimum ?? null)
+      }
+    }
+  }, 120_000)
+
+  it('carries multi-source evidence on conflicted claims', async () => {
+    const conflicted = PHASE12_CLAIMS.filter((c) => c.status === 'CONFLICTED')
+    expect(conflicted.length).toBeGreaterThan(0)
+
+    for (const claim of conflicted) {
+      const res = await payload.find({
+        collection: 'claims',
+        where: { key: { equals: claim.key } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      const doc = res.docs[0] as { evidence?: Array<{ relationType?: string }> }
+      const rows = doc.evidence ?? []
+      expect(rows.length).toBe(claimEvidenceRows(claim).length)
+      expect(rows.some((r) => r.relationType === 'SUPPORTS')).toBe(true)
+      expect(rows.some((r) => r.relationType === 'CONTRADICTS')).toBe(true)
     }
   }, 120_000)
 
@@ -160,6 +196,85 @@ describe('Phase 12 seed content (integration)', () => {
     expect(prod.totalDocs).toBe(0)
   })
 
+  it('stamps claim verification through reviewer governance, never on create', async () => {
+    const reviewer = await payload.find({
+      collection: 'users',
+      where: { email: { equals: PHASE12_REVIEWER_EMAIL } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const reviewerId = Number(reviewer.docs[0]?.id)
+    expect(reviewerId).toBeGreaterThan(0)
+
+    for (const claim of PHASE12_CLAIMS) {
+      const res = await payload.find({
+        collection: 'claims',
+        where: { key: { equals: claim.key } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      const doc = res.docs[0] as {
+        status?: string
+        publicationPermission?: string
+        reviewedBy?: unknown
+        verifiedAt?: string | null
+        _status?: string
+      }
+      expect(doc.status).toBe(claim.status)
+      expect(doc.publicationPermission).toBe(claim.publicationPermission)
+      expect(doc._status).toBe('published')
+
+      if (claim.status === 'VERIFIED') {
+        expect(Number(doc.reviewedBy)).toBe(reviewerId)
+        expect(doc.verifiedAt).toBeTruthy()
+      } else {
+        // Only VERIFIED earns a verification stamp — warnings must not carry one.
+        expect(doc.verifiedAt ?? null).toBeNull()
+      }
+    }
+  }, 120_000)
+
+  it('publishes procedures through the workflow with an approval fingerprint and audit trail', async () => {
+    for (const slug of PHASE12_PROCEDURE_SLUGS) {
+      const res = await payload.find({
+        collection: 'transactions',
+        where: { slug: { equals: slug } },
+        limit: 1,
+        depth: 0,
+        draft: true,
+        overrideAccess: true,
+      })
+      const tx = res.docs[0] as {
+        id: number | string
+        workflowState?: string
+        _status?: string
+        claimTrustOk?: boolean
+        approvedBy?: unknown
+        approvedContentHash?: string | null
+        publishedBy?: unknown
+      }
+      expect(tx.workflowState).toBe('published')
+      expect(tx._status).toBe('published')
+      expect(tx.claimTrustOk).toBe(true)
+      expect(tx.approvedContentHash).toBeTruthy()
+      expect(tx.approvedBy).toBeTruthy()
+      expect(tx.publishedBy).toBeTruthy()
+
+      const audits = await payload.find({
+        collection: 'audit-events',
+        where: {
+          and: [{ entityId: { equals: String(tx.id) } }, { action: { equals: 'published' } }],
+        },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      expect(audits.totalDocs).toBeGreaterThan(0)
+    }
+  }, 120_000)
+
   it('never seeds QA_TEST class for Phase 12 procedures', async () => {
     const qa = await payload.find({
       collection: 'transactions',
@@ -186,4 +301,137 @@ describe('Phase 12 seed content (integration)', () => {
     })
     expect(prodClass.totalDocs).toBe(0)
   })
+
+  it('canonical P11-B readiness has no evidence/claim blockers for all five', async () => {
+    vi.stubEnv('WARAQA_PUBLIC_CONTENT_MODE', 'demo')
+    const { evaluateTransactionAdminReadiness } = await import(
+      '@/lib/admin/transaction-readiness'
+    )
+    for (const slug of PHASE12_PROCEDURE_SLUGS) {
+      const res = await payload.find({
+        collection: 'transactions',
+        where: { slug: { equals: slug } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      const id = res.docs[0]?.id
+      expect(id).toBeTruthy()
+      const readiness = await evaluateTransactionAdminReadiness(payload, id!)
+      const evidenceClaimBlockers = readiness.actionItems.filter(
+        (i) =>
+          i.severity === 'blocker' &&
+          (i.code === 'SOURCE_COVERAGE' ||
+            i.code === 'SOURCE_NOT_TRUSTED' ||
+            i.code === 'CLAIM_NOT_AUTHORITATIVE' ||
+            i.code === 'CLAIM_MISSING' ||
+            i.code === 'PROCEDURE_INCOMPLETE'),
+      )
+      expect(
+        evidenceClaimBlockers.map((b) => `${b.code}:${b.messageAr}`),
+        `${slug} evidence/claim blockers`,
+      ).toEqual([])
+      expect(readiness.workflow.status).toBe('READY')
+      expect(readiness.publicEligibility.status).not.toBe('BLOCKED')
+      expect(readiness.publicEligibility.liveClaimTrustOk).toBe(true)
+    }
+  }, 120_000)
+
+  it('cannot forge VERIFIED/Public claim without canonical reviewer governance', async () => {
+    const key = `claim_p12_forge_probe_${Date.now()}`
+    const src = await payload.find({
+      collection: 'sources',
+      where: { slug: { equals: PHASE12_SOURCES[0]!.slug } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const sourceId = Number(src.docs[0]!.id)
+
+    const created = await payload.create({
+      collection: 'claims',
+      locale: 'ar',
+      draft: true,
+      data: {
+        key,
+        statement: 'ادعاء فحص تزوير — يجب ألا يصبح موثقاً عبر البذرة وحدها.',
+        status: 'DRAFT',
+        publicationPermission: 'INTERNAL_ONLY',
+        contentClass: 'DEMO',
+        evidence: [{ source: sourceId, relationType: 'SUPPORTS' }],
+        active: true,
+        reviewedBy: null,
+        verifiedAt: null,
+      },
+      overrideAccess: true,
+      context: { seed: true },
+    })
+
+    // Without seed context and without an authenticated reviewer, forging
+    // VERIFIED/PUBLIC must be rejected by claim governance.
+    await expect(
+      payload.update({
+        collection: 'claims',
+        id: created.id,
+        draft: false,
+        data: {
+          status: 'VERIFIED',
+          publicationPermission: 'PUBLIC',
+          reviewedBy: 1,
+          verifiedAt: '1999-01-01T00:00:00.000Z',
+        },
+        overrideAccess: true,
+      }),
+    ).rejects.toThrow()
+
+    const stillDraft = (await payload.findByID({
+      collection: 'claims',
+      id: created.id,
+      depth: 0,
+      draft: true,
+      overrideAccess: true,
+    })) as { status?: string; publicationPermission?: string; reviewedBy?: unknown; verifiedAt?: unknown }
+    expect(stillDraft.status).toBe('DRAFT')
+    expect(stillDraft.publicationPermission).toBe('INTERNAL_ONLY')
+    expect(stillDraft.reviewedBy).toBeFalsy()
+    expect(stillDraft.verifiedAt).toBeFalsy()
+
+    // Phase 12 catalog claims must carry governance stamps from the dedicated
+    // reviewer — never a forged fixed timestamp — proving the importer used
+    // verifyPhase12ClaimAsReviewer rather than writing trusted fields under seed.
+    const reviewer = await payload.find({
+      collection: 'users',
+      where: { email: { equals: PHASE12_REVIEWER_EMAIL } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const reviewerId = Number(reviewer.docs[0]?.id)
+    expect(reviewerId).toBeGreaterThan(0)
+
+    for (const claim of PHASE12_CLAIMS.filter((c) => c.status === 'VERIFIED')) {
+      const res = await payload.find({
+        collection: 'claims',
+        where: { key: { equals: claim.key } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      const doc = res.docs[0] as { reviewedBy?: unknown; verifiedAt?: string }
+      const stampedBy =
+        typeof doc.reviewedBy === 'object' && doc.reviewedBy && 'id' in (doc.reviewedBy as object)
+          ? Number((doc.reviewedBy as { id: number }).id)
+          : Number(doc.reviewedBy)
+      expect(stampedBy).toBe(reviewerId)
+      expect(doc.verifiedAt).toBeTruthy()
+      expect(doc.verifiedAt).not.toBe('1999-01-01T00:00:00.000Z')
+    }
+
+    await payload.delete({
+      collection: 'claims',
+      id: created.id,
+      overrideAccess: true,
+      context: { seed: true },
+    })
+  }, 120_000)
 })

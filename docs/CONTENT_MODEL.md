@@ -385,7 +385,7 @@ users ← audit fields on all content collections
 - Full Site Settings surface beyond the minimal global above (social links, search examples, home sections, analytics)
 - Public consumption of Site Settings (Phase 5)
 - Reports / Audit event collections
-- Public search APIs (Phase 7+). Interactive guide engine = **Phase 8**. **Phase 12 DEMO seed** of five procedures: `src/lib/content/phase12/` + `scripts/phase12-seed-content.ts` (opt-in `WARAQA_ALLOW_PHASE12_SEED=1`; never auto-PRODUCTION)
+- Public search APIs (Phase 7+). Interactive guide engine = **Phase 8**. **Phase 12 DEMO seed** of five procedures: `src/lib/content/phase12/` + `scripts/phase12-seed-content.ts` (opt-in `WARAQA_ALLOW_PHASE12_SEED=1` + `ALLOW_QA_FIXTURE=1`; claims verified by a reviewer and procedures published through the workflow; never auto-PRODUCTION)
 - Media / file uploads
 - Phase 4 workflow features (blocks, audit events collection, scheduled review, preview, approval invalidation) — **not started**; schema already in Phase 3 per Outcome A
 - Phase 4 Admin UI polish debt (non-blocking): mixed EN/AR Admin chrome; empty parent category label; boolean نعم/لا badges; Admin login branding — see [PHASE_CHECKLIST.md](./PHASE_CHECKLIST.md)

@@ -16,7 +16,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview → Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
 | 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
 | 11 | Admin UX Refinement | Complete (P11-A/B/C + dashboard + review-due + assignment + delete safety + tablet smoke) | See CONTENT_MODEL / PHASE_CHECKLIST |
-| 12 | Seeds and Five Procedures | Complete (DEMO seed) | Five READY_FOR_DEMO; all contentClass=DEMO; see docs/content/PHASE_12_* |
+| 12 | Seeds and Five Procedures | Complete (DEMO seed) | Five READY_FOR_DEMO; all contentClass=DEMO; governance path + forensic closure; see docs/content/PHASE_12_* |
 | 13 | Hardening, A11y, Performance | Not started | Full test matrix |
 | 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
 
@@ -280,12 +280,15 @@ See [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md), [SECURITY.md](
 ## Phase 12 — Seed Content — COMPLETE (DEMO)
 
 - [x] Research five procedures from opened primary/near-primary sources (no fabrication)
-- [x] Source audit: `docs/content/PHASE_12_SOURCE_AUDIT.md`
-- [x] Content review matrix: `docs/content/PHASE_12_CONTENT_REVIEW.md` — five READY_FOR_DEMO
+- [x] Source audit: `docs/content/PHASE_12_SOURCE_AUDIT.md` (7 sources incl. SANA 2542861 + 2425127; forensic pass 2026-09-14)
+- [x] Content review matrix: `docs/content/PHASE_12_CONTENT_REVIEW.md` — five READY_FOR_DEMO; CONFLICTED supplementary claim retained; not PRODUCTION
 - [x] Claim-first model: Sources → Claims → DEMO Transactions + guides
 - [x] All Phase 12 content `contentClass=DEMO` (not PRODUCTION / not QA_TEST)
-- [x] No invented fees/durations/addresses; fee amounts = NEEDS_OFFICIAL_CONFIRMATION
-- [x] Idempotent seed: `scripts/phase12-seed-content.ts` (`WARAQA_ALLOW_PHASE12_SEED=1`, rejects production)
+- [x] No invented fees/addresses; fee amounts = NEEDS_OFFICIAL_CONFIRMATION; MFA durations only where page states them (POA/civil same day; marriage 15–25 min + workload); passport + equivalency processing duration absent
+- [x] Equivalency: year-round intake + attestation chain (Anan); supplementary exams CONFLICTED across three SANA items
+- [x] Idempotent seed: `scripts/phase12-seed-content.ts` (`WARAQA_ALLOW_PHASE12_SEED=1` + `ALLOW_QA_FIXTURE=1`, rejects production)
+- [x] Governance path: seed never forges trust — claims scaffolded DRAFT/INTERNAL_ONLY then reviewer-verified; procedures publish via submitForReview → approve → publish (`claimTrustOk` / fingerprint computed by workflow)
+- [x] Forensic closure: POA branches include company/minor/guardianship/other_special; marriage attendance nationality-dependent; deferred candidates still listed
 - [x] Guide path matrices unit-tested; int/e2e coverage for DEMO isolation
 - [x] Golden Demo practical case: معادلة شهادة ثانوية غير سورية
 - [x] Independence disclaimer preserved; no officiality claims

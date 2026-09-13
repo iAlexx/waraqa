@@ -3,6 +3,8 @@
  *
  * Gates:
  * - WARAQA_ALLOW_PHASE12_SEED=1
+ * - ALLOW_QA_FIXTURE=1 — draft scaffolding bypass (the Phase 12 flag alone does
+ *   not unlock seed writes; claims and procedures still go through governance)
  * - Rejects NODE_ENV=production and VERCEL_ENV=production
  * - Reviewer password via WARAQA_PHASE12_SEED_REVIEWER_PASSWORD (not committed)
  */
@@ -25,6 +27,13 @@ try {
   process.exit(1)
 }
 
+if (process.env.ALLOW_QA_FIXTURE !== '1') {
+  console.error(
+    'Refusing: set ALLOW_QA_FIXTURE=1 as well — draft scaffolding needs the QA fixture bypass. Use `pnpm seed:phase12`.',
+  )
+  process.exit(1)
+}
+
 const password = process.env.WARAQA_PHASE12_SEED_REVIEWER_PASSWORD
 if (!password || password.length < 12) {
   console.error('Refusing: set WARAQA_PHASE12_SEED_REVIEWER_PASSWORD (min 12 chars). Never commit it.')
@@ -44,9 +53,12 @@ async function main() {
         procedureSlugs: result.procedureSlugs,
         sourceCount: result.sourceCount,
         claimCount: result.claimCount,
+        verifiedClaimCount: result.verifiedClaimCount,
+        publishedProcedureCount: result.publishedProcedureCount,
         created: result.created,
         updated: result.updated,
         contentClass: 'DEMO',
+        governance: 'claims verified by reviewer; procedures published via workflow',
         note: 'Public visibility requires WARAQA_PUBLIC_CONTENT_MODE=demo',
       },
       null,

@@ -70,6 +70,10 @@ export async function loadPublicCategories(): Promise<{
         procedureCount = null
       }
 
+      // Hide taxonomy that has no publicly-eligible transactions under the
+      // active content mode (prevents empty DEMO-only category leakage in production).
+      if (procedureCount === 0) continue
+
       categories.push({
         id: doc.id,
         name,

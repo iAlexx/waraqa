@@ -5,8 +5,12 @@
  *
  * Allowed only when:
  * - NODE_ENV=test / Vitest, OR
- * - ALLOW_QA_FIXTURE=1 or WARAQA_ALLOW_PHASE12_SEED=1 in non-production
+ * - ALLOW_QA_FIXTURE=1 in non-production
  * AND req.context.seed === true
+ *
+ * Content-seed flags (e.g. WARAQA_ALLOW_PHASE12_SEED) gate which seed script may
+ * run; they do not unlock governance bypass on their own. A seed that needs draft
+ * scaffolding must also be run with ALLOW_QA_FIXTURE=1.
  */
 export function allowSeedBypass(req: { context?: Record<string, unknown> }): boolean {
   if (process.env.VERCEL_ENV === 'production') return false
@@ -17,8 +21,7 @@ export function allowSeedBypass(req: { context?: Record<string, unknown> }): boo
     process.env.VITEST === 'true' ||
     process.env.VITEST === '1'
 
-  const allowExplicitSeed =
-    process.env.ALLOW_QA_FIXTURE === '1' || process.env.WARAQA_ALLOW_PHASE12_SEED === '1'
+  const allowExplicitSeed = process.env.ALLOW_QA_FIXTURE === '1'
 
   if (!isTestRuntime && !allowExplicitSeed) {
     return false

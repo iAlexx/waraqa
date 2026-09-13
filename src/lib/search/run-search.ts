@@ -81,6 +81,55 @@ async function resolvePublishedBySlug(
 
 async function loadFilterOptions(): Promise<SearchPageResult['filterOptions']> {
   const payload = await getPayload({ config })
+  const publicWhere = getPublicTransactionWhere()
+
+  // Only expose taxonomy that has at least one publicly-eligible transaction
+  // under the active content mode (blocks empty DEMO-only filter leakage).
+  const publicTxs = await payload.find({
+    collection: 'transactions',
+    depth: 0,
+    limit: 500,
+    overrideAccess: false,
+    where: publicWhere,
+  })
+  const liveTxs = await filterDocsByLivePublicClaimTrust(
+    payload,
+    publicTxs.docs as unknown as Array<Record<string, unknown>>,
+  )
+  const allowedCategoryIds = new Set<string>()
+  const allowedAgencyIds = new Set<string>()
+  const allowedCenterIds = new Set<string>()
+  for (const tx of liveTxs) {
+    const cat = tx.category
+    const ag = tx.agency
+    const centers = tx.serviceCenters
+    const catId =
+      typeof cat === 'object' && cat && 'id' in cat
+        ? String((cat as { id: unknown }).id)
+        : cat != null
+          ? String(cat)
+          : null
+    const agId =
+      typeof ag === 'object' && ag && 'id' in ag
+        ? String((ag as { id: unknown }).id)
+        : ag != null
+          ? String(ag)
+          : null
+    if (catId) allowedCategoryIds.add(catId)
+    if (agId) allowedAgencyIds.add(agId)
+    if (Array.isArray(centers)) {
+      for (const c of centers) {
+        const id =
+          typeof c === 'object' && c && 'id' in c
+            ? String((c as { id: unknown }).id)
+            : c != null
+              ? String(c)
+              : null
+        if (id) allowedCenterIds.add(id)
+      }
+    }
+  }
+
   const [cats, agencies, centers] = await Promise.all([
     payload.find({
       collection: 'categories',
@@ -111,8 +160,12 @@ async function loadFilterOptions(): Promise<SearchPageResult['filterOptions']> {
     }),
   ])
 
-  const mapDocs = (docs: Array<{ slug?: string; name?: string }>): PublicFilterOption[] =>
+  const mapDocs = (
+    docs: Array<{ id?: number | string; slug?: string; name?: string }>,
+    allowed: Set<string>,
+  ): PublicFilterOption[] =>
     docs
+      .filter((d) => d.id != null && allowed.has(String(d.id)))
       .map((d) => ({
         slug: typeof d.slug === 'string' ? d.slug : '',
         label: typeof d.name === 'string' ? d.name : '',
@@ -120,9 +173,15 @@ async function loadFilterOptions(): Promise<SearchPageResult['filterOptions']> {
       .filter((d) => d.slug && d.label)
 
   return {
-    categories: mapDocs(cats.docs as Array<{ slug?: string; name?: string }>),
-    agencies: mapDocs(agencies.docs as Array<{ slug?: string; name?: string }>),
-    serviceCenters: mapDocs(centers.docs as Array<{ slug?: string; name?: string }>),
+    categories: mapDocs(cats.docs as Array<{ id?: number | string; slug?: string; name?: string }>, allowedCategoryIds),
+    agencies: mapDocs(
+      agencies.docs as Array<{ id?: number | string; slug?: string; name?: string }>,
+      allowedAgencyIds,
+    ),
+    serviceCenters: mapDocs(
+      centers.docs as Array<{ id?: number | string; slug?: string; name?: string }>,
+      allowedCenterIds,
+    ),
   }
 }
 

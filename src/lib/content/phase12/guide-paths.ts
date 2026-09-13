@@ -5,6 +5,7 @@ import { evaluateGuide } from '@/lib/guide/evaluate'
 import type { GuideAnswers } from '@/lib/guide/types'
 
 import { PHASE12_PROCEDURES, type Phase12ProcedureDef } from './catalog'
+import { PHASE12_STABLE } from './markers'
 
 export type Phase12GuidePath = {
   procedureSlug: string
@@ -15,6 +16,7 @@ export type Phase12GuidePath = {
   expectDocsInclude?: string[]
   expectDocsExclude?: string[]
   expectNoticesInclude?: string[]
+  expectNoticesExclude?: string[]
 }
 
 function toGuideInput(proc: Phase12ProcedureDef) {
@@ -72,96 +74,163 @@ function toGuideInput(proc: Phase12ProcedureDef) {
   }
 }
 
+const EQUIVALENCY_BASE_NOTICES = [
+  'notice_fee_unknown',
+  'notice_intake_year_round',
+  'notice_attestation_chain',
+  'notice_proxy_submitter',
+]
+
+/** All conditional POA documents — every purpose keeps exactly its own. */
+const POA_CONDITIONAL_DOCS = [
+  'doc_property',
+  'doc_marriage_id',
+  'doc_vehicle',
+  'doc_company',
+  'doc_minor',
+  'doc_guardianship',
+] as const
+
+const POA_PURPOSE_DOC: Record<string, (typeof POA_CONDITIONAL_DOCS)[number] | null> = {
+  property: 'doc_property',
+  marriage: 'doc_marriage_id',
+  vehicle: 'doc_vehicle',
+  company: 'doc_company',
+  minor: 'doc_minor',
+  guardianship: 'doc_guardianship',
+  other_special: null,
+}
+
 /** All meaningful finite paths for procedures with guides. */
 export function buildPhase12GuidePaths(): Phase12GuidePath[] {
   const paths: Phase12GuidePath[] = []
 
   paths.push(
     {
-      procedureSlug: 'p12-demo-tx-secondary-equivalency',
+      procedureSlug: PHASE12_STABLE.txSecondaryEquivalency,
       pathKey: 'arab_complete',
       answers: { certificate_origin: 'arab' },
       expectVariant: 'variant_arab',
       expectDocsExclude: ['doc_translation'],
       expectDocsInclude: ['doc_certificate', 'doc_transcript', 'doc_id', 'doc_pdf'],
-      expectNoticesInclude: ['notice_fee_unknown', 'notice_intake_freshness'],
+      expectNoticesInclude: EQUIVALENCY_BASE_NOTICES,
+      expectNoticesExclude: ['notice_supplementary_conflict'],
     },
     {
-      procedureSlug: 'p12-demo-tx-secondary-equivalency',
+      procedureSlug: PHASE12_STABLE.txSecondaryEquivalency,
       pathKey: 'non_arab_complete',
       answers: { certificate_origin: 'non_arab' },
       expectVariant: 'variant_non_arab',
       expectDocsInclude: ['doc_translation', 'doc_certificate'],
-      expectNoticesInclude: ['notice_fee_unknown', 'notice_intake_freshness'],
+      expectNoticesInclude: EQUIVALENCY_BASE_NOTICES,
+      expectNoticesExclude: ['notice_supplementary_conflict'],
     },
     {
-      procedureSlug: 'p12-demo-tx-secondary-equivalency',
+      procedureSlug: PHASE12_STABLE.txSecondaryEquivalency,
+      pathKey: 'arab_missing_subjects',
+      answers: { certificate_origin: 'arab', missing_core_subjects: 'yes' },
+      expectVariant: 'variant_arab',
+      expectDocsExclude: ['doc_translation'],
+      expectNoticesInclude: [...EQUIVALENCY_BASE_NOTICES, 'notice_supplementary_conflict'],
+    },
+    {
+      procedureSlug: PHASE12_STABLE.txSecondaryEquivalency,
       pathKey: 'non_arab_missing_subjects',
       answers: { certificate_origin: 'non_arab', missing_core_subjects: 'yes' },
       expectVariant: 'variant_non_arab',
       expectDocsInclude: ['doc_translation'],
-      expectNoticesInclude: ['notice_supplementary', 'notice_fee_unknown'],
+      expectNoticesInclude: [...EQUIVALENCY_BASE_NOTICES, 'notice_supplementary_conflict'],
     },
     {
-      procedureSlug: 'p12-demo-tx-secondary-equivalency',
+      procedureSlug: PHASE12_STABLE.txSecondaryEquivalency,
+      pathKey: 'non_arab_no_missing_subjects',
+      answers: { certificate_origin: 'non_arab', missing_core_subjects: 'no' },
+      expectVariant: 'variant_non_arab',
+      expectDocsInclude: ['doc_translation'],
+      expectNoticesInclude: EQUIVALENCY_BASE_NOTICES,
+      expectNoticesExclude: ['notice_supplementary_conflict'],
+    },
+    {
+      procedureSlug: PHASE12_STABLE.txSecondaryEquivalency,
       pathKey: 'origin_unknown',
       answers: {},
       expectIncomplete: true,
     },
   )
 
-  for (const purpose of ['general', 'property', 'marriage', 'vehicle'] as const) {
-    const include =
-      purpose === 'property'
-        ? ['doc_property']
-        : purpose === 'marriage'
-          ? ['doc_marriage_id']
-          : purpose === 'vehicle'
-            ? ['doc_vehicle']
-            : []
-    const exclude = (['doc_property', 'doc_marriage_id', 'doc_vehicle'] as const).filter(
-      (k) => !include.includes(k),
-    )
+  for (const purpose of Object.keys(POA_PURPOSE_DOC)) {
+    const own = POA_PURPOSE_DOC[purpose]
+    const exclude = POA_CONDITIONAL_DOCS.filter((k) => k !== own)
     paths.push({
-      procedureSlug: 'p12-demo-tx-poa-mission',
+      procedureSlug: PHASE12_STABLE.txPoaMission,
       pathKey: `purpose_${purpose}`,
       answers: { poa_purpose: purpose },
       expectVariant: `variant_${purpose}`,
-      expectDocsInclude: ['doc_principal_id', 'doc_agent_id', ...include],
+      expectDocsInclude: ['doc_principal_id', 'doc_agent_id', ...(own ? [own] : [])],
       expectDocsExclude: [...exclude],
-      expectNoticesInclude: ['notice_fee_unknown', 'notice_validity'],
+      expectNoticesInclude: [
+        'notice_fee_unknown',
+        'notice_validity',
+        ...(purpose === 'other_special' ? ['notice_unmodeled_poa'] : []),
+      ],
+      expectNoticesExclude: purpose === 'other_special' ? [] : ['notice_unmodeled_poa'],
     })
+  }
+
+  paths.push({
+    procedureSlug: PHASE12_STABLE.txPoaMission,
+    pathKey: 'purpose_unanswered',
+    answers: {},
+    expectIncomplete: true,
+  })
+
+  for (const husbandSyrian of ['yes', 'no'] as const) {
+    for (const wifeSyrian of ['yes', 'no'] as const) {
+      const neitherSyrian = husbandSyrian === 'no' && wifeSyrian === 'no'
+      paths.push({
+        procedureSlug: PHASE12_STABLE.txMarriageMission,
+        pathKey: `husband_${husbandSyrian}_wife_${wifeSyrian}`,
+        answers: { husband_syrian: husbandSyrian, wife_syrian: wifeSyrian },
+        expectVariant: wifeSyrian === 'yes' ? 'variant_wife_syrian' : 'variant_wife_non_syrian',
+        expectDocsInclude: [
+          'doc_contract',
+          'doc_husband_id',
+          'doc_wife_id',
+          ...(wifeSyrian === 'yes' ? ['doc_wife_extract'] : []),
+        ],
+        expectDocsExclude: wifeSyrian === 'yes' ? [] : ['doc_wife_extract'],
+        expectNoticesInclude: [
+          'notice_fee_unknown',
+          'notice_syria_proxy',
+          husbandSyrian === 'yes' ? 'notice_attendance_husband' : 'notice_attendance_wife',
+          ...(neitherSyrian ? ['notice_no_syrian_party'] : []),
+        ],
+        expectNoticesExclude: [
+          husbandSyrian === 'yes' ? 'notice_attendance_wife' : 'notice_attendance_husband',
+          ...(neitherSyrian ? [] : ['notice_no_syrian_party']),
+        ],
+      })
+    }
   }
 
   paths.push(
     {
-      procedureSlug: 'p12-demo-tx-marriage-mission',
-      pathKey: 'wife_syrian',
-      answers: { wife_syrian: 'yes' },
-      expectVariant: 'variant_wife_syrian',
-      expectDocsInclude: ['doc_wife_extract', 'doc_contract'],
-      expectNoticesInclude: ['notice_fee_unknown', 'notice_syria_proxy'],
-    },
-    {
-      procedureSlug: 'p12-demo-tx-marriage-mission',
-      pathKey: 'wife_non_syrian',
-      answers: { wife_syrian: 'no' },
-      expectVariant: 'variant_wife_non_syrian',
-      expectDocsExclude: ['doc_wife_extract'],
-      expectDocsInclude: ['doc_contract'],
-      expectNoticesInclude: ['notice_fee_unknown', 'notice_syria_proxy'],
-    },
-    {
-      procedureSlug: 'p12-demo-tx-marriage-mission',
-      pathKey: 'wife_unanswered',
+      procedureSlug: PHASE12_STABLE.txMarriageMission,
+      pathKey: 'marriage_unanswered',
       answers: {},
+      expectIncomplete: true,
+    },
+    {
+      procedureSlug: PHASE12_STABLE.txMarriageMission,
+      pathKey: 'marriage_husband_only',
+      answers: { husband_syrian: 'yes' },
       expectIncomplete: true,
     },
   )
 
   for (const kind of ['individual', 'family', 'marriage', 'divorce', 'birth', 'death'] as const) {
     paths.push({
-      procedureSlug: 'p12-demo-tx-civil-extract-mission',
+      procedureSlug: PHASE12_STABLE.txCivilExtractMission,
       pathKey: `kind_${kind}`,
       answers: { doc_kind: kind },
       expectVariant: 'variant_selected_kind',
@@ -174,7 +243,7 @@ export function buildPhase12GuidePaths(): Phase12GuidePath[] {
     for (const missingId of ['yes', 'no'] as const) {
       for (const longVal of ['yes', 'no'] as const) {
         paths.push({
-          procedureSlug: 'p12-demo-tx-passport-renew-mission',
+          procedureSlug: PHASE12_STABLE.txPassportRenewMission,
           pathKey: `minor_${isMinor}_id_${missingId}_long_${longVal}`,
           answers: {
             is_minor: isMinor,
@@ -243,6 +312,9 @@ export function assertPhase12GuidePath(path: Phase12GuidePath): void {
   const noticeKeys = new Set(result.notices.map((n) => n.key))
   for (const k of path.expectNoticesInclude ?? []) {
     if (!noticeKeys.has(k)) throw new Error(`${path.pathKey}: missing notice ${k}`)
+  }
+  for (const k of path.expectNoticesExclude ?? []) {
+    if (noticeKeys.has(k)) throw new Error(`${path.pathKey}: unexpected notice ${k}`)
   }
 
   if (result.fees.length > 0) {
