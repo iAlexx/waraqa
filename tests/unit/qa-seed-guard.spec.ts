@@ -45,6 +45,7 @@ describe('allowSeedBypass', () => {
   it('blocks in development without fixture flag or test runtime', () => {
     vi.stubEnv('NODE_ENV', 'development')
     vi.stubEnv('ALLOW_QA_FIXTURE', '')
+    vi.stubEnv('WARAQA_ALLOW_PHASE12_SEED', '')
     vi.stubEnv('VITEST', '')
     vi.stubEnv('VERCEL_ENV', '')
     expect(allowSeedBypass({ context: { seed: true } })).toBe(false)

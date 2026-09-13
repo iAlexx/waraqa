@@ -1,12 +1,12 @@
 ﻿# Waraqa Content Model (Phase 3)
 
-**Status:** Phase 3–7 COMPLETE — OWNER APPROVED
+**Status:** Phase 3–12 COMPLETE (Phase 12 = DEMO seed content; not PRODUCTION certification)
 
-**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` + P0-05A `20260721_051000_p0_05a_claims_foundation` + P0-06 `20260722_100000_p0_06_content_class_isolation`
+**Migrations:** Phase 3 + Phase 4–6 + Phase 8 `20260720_041000_phase_8_interactive_guide` + P0-05A `20260721_051000_p0_05a_claims_foundation` + P0-06 `20260722_100000_p0_06_content_class_isolation` (+ Phase 11 reviewDueAt indexes). Phase 12 adds **no schema migration** — content via Payload seed APIs.
 
-**Last updated:** 2026-09-11
+**Last updated:** 2026-09-13
 
-**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md)
+**Related:** [RBAC.md](./RBAC.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [EDITORIAL_WORKFLOW.md](./EDITORIAL_WORKFLOW.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [CONTENT_ISOLATION.md](./CONTENT_ISOLATION.md), [content/PHASE_12_SOURCE_AUDIT.md](./content/PHASE_12_SOURCE_AUDIT.md), [content/PHASE_12_CONTENT_REVIEW.md](./content/PHASE_12_CONTENT_REVIEW.md)
 
 ## Naming / scope decisions (documented)
 
@@ -385,7 +385,7 @@ users ← audit fields on all content collections
 - Full Site Settings surface beyond the minimal global above (social links, search examples, home sections, analytics)
 - Public consumption of Site Settings (Phase 5)
 - Reports / Audit event collections
-- Public search APIs, seeds of five procedures (guide engine = **Phase 8**, see [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md))
+- Public search APIs (Phase 7+). Interactive guide engine = **Phase 8**. **Phase 12 DEMO seed** of five procedures: `src/lib/content/phase12/` + `scripts/phase12-seed-content.ts` (opt-in `WARAQA_ALLOW_PHASE12_SEED=1`; never auto-PRODUCTION)
 - Media / file uploads
 - Phase 4 workflow features (blocks, audit events collection, scheduled review, preview, approval invalidation) — **not started**; schema already in Phase 3 per Outcome A
 - Phase 4 Admin UI polish debt (non-blocking): mixed EN/AR Admin chrome; empty parent category label; boolean نعم/لا badges; Admin login branding — see [PHASE_CHECKLIST.md](./PHASE_CHECKLIST.md)
