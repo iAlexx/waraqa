@@ -3,7 +3,7 @@
  * Indexed Payload finds only.
  */
 
-import type { Payload, PayloadRequest } from 'payload'
+import type { Payload, PayloadRequest, Where } from 'payload'
 
 export type EditorialDashboardCard = {
   key: string
@@ -21,6 +21,32 @@ export type EditorialDashboardStats = {
 function listHref(collection: string, query: Record<string, string>): string {
   const params = new URLSearchParams(query)
   return `/admin/collections/${collection}?${params.toString()}`
+}
+
+/**
+ * Single definition of “review due” for dashboard count + Admin list link.
+ * Keep count `where` and href filters aligned.
+ */
+export function buildReviewDuePredicate(nowIso: string): {
+  where: Where
+  hrefQuery: Record<string, string>
+} {
+  return {
+    where: {
+      and: [
+        { reviewDueAt: { exists: true } },
+        { reviewDueAt: { less_than_equal: nowIso } },
+        { workflowState: { not_equals: 'archived' } },
+        { markedOutdated: { not_equals: true } },
+      ],
+    },
+    hrefQuery: {
+      'where[and][0][reviewDueAt][exists]': 'true',
+      'where[and][1][reviewDueAt][less_than_equal]': nowIso,
+      'where[and][2][workflowState][not_equals]': 'archived',
+      'where[and][3][markedOutdated][not_equals]': 'true',
+    },
+  }
 }
 
 async function countCollection(
@@ -57,17 +83,11 @@ export async function loadEditorialDashboardStats(
     req,
   )
 
+  const reviewDuePred = buildReviewDuePredicate(nowIso)
   const reviewDue = await countCollection(
     payload,
     'transactions',
-    {
-      and: [
-        { reviewDueAt: { exists: true } },
-        { reviewDueAt: { less_than_equal: nowIso } },
-        { workflowState: { not_equals: 'archived' } },
-        { markedOutdated: { not_equals: true } },
-      ],
-    },
+    reviewDuePred.where as Record<string, unknown>,
     req,
   )
 
@@ -106,10 +126,7 @@ export async function loadEditorialDashboardStats(
       key: 'tx_review_due',
       labelAr: 'معاملات حان موعد مراجعتها',
       count: reviewDue,
-      href: listHref('transactions', {
-        'where[and][0][reviewDueAt][less_than_equal]': nowIso,
-        'where[and][1][workflowState][not_equals]': 'archived',
-      }),
+      href: listHref('transactions', reviewDuePred.hrefQuery),
       hintAr: 'موعد المراجعة ≤ الآن (منفصل عن جاهزية النشر)',
     },
     {

@@ -8,6 +8,7 @@ type MockReq = {
   payload: {
     count: ReturnType<typeof vi.fn>
     findByID: ReturnType<typeof vi.fn>
+    find: ReturnType<typeof vi.fn>
   }
 }
 
@@ -17,6 +18,7 @@ function mockReq(overrides: Partial<MockReq> = {}): MockReq {
     payload: {
       count: vi.fn(),
       findByID: vi.fn(),
+      find: vi.fn().mockResolvedValue({ totalDocs: 0, docs: [] }),
     },
     ...overrides,
   }
@@ -44,7 +46,7 @@ describe('Phase 11 transaction hard-delete guard', () => {
     ).rejects.toMatchObject({ status: 409 })
   })
 
-  it('blocks previously published / approved / archived content', async () => {
+  it('blocks previously published / approved / archived content from live row', async () => {
     const req = mockReq()
     req.payload.count.mockResolvedValue({ totalDocs: 0 })
     req.payload.findByID.mockResolvedValue({
@@ -57,7 +59,7 @@ describe('Phase 11 transaction hard-delete guard', () => {
     ).rejects.toBeInstanceOf(APIError)
   })
 
-  it('allows never-published draft hard delete', async () => {
+  it('blocks draft that looks never-published when audit history has published', async () => {
     const req = mockReq()
     req.payload.count.mockResolvedValue({ totalDocs: 0 })
     req.payload.findByID.mockResolvedValue({
@@ -66,6 +68,22 @@ describe('Phase 11 transaction hard-delete guard', () => {
       publishedAt: null,
       archivedAt: null,
     })
+    req.payload.find.mockResolvedValue({ totalDocs: 1, docs: [{ id: 1 }] })
+    await expect(
+      preventUnsafeTransactionHardDelete({ req, id: 5 } as never),
+    ).rejects.toBeInstanceOf(APIError)
+  })
+
+  it('allows never-published draft hard delete when audit history is empty', async () => {
+    const req = mockReq()
+    req.payload.count.mockResolvedValue({ totalDocs: 0 })
+    req.payload.findByID.mockResolvedValue({
+      workflowState: 'draft',
+      _status: 'draft',
+      publishedAt: null,
+      archivedAt: null,
+    })
+    req.payload.find.mockResolvedValue({ totalDocs: 0, docs: [] })
     await expect(
       preventUnsafeTransactionHardDelete({ req, id: 4 } as never),
     ).resolves.toBeUndefined()

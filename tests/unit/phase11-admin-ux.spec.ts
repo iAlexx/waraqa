@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { EditorialDashboardView } from '@/components/admin/EditorialDashboard'
 import {
+  buildReviewDuePredicate,
   classifyReviewDueAt,
   reviewDueBucketLabelAr,
 } from '@/lib/admin/editorial-dashboard'
@@ -109,5 +110,29 @@ describe('Phase 11 editorial dashboard view', () => {
     )
     expect(err).toContain('role="alert"')
     expect(err).toContain('تعذّر تحميل لوحة التحرير.')
+  })
+})
+
+describe('Phase 11 review-due card count/link alignment', () => {
+  it('href filters match count where (incl. markedOutdated + exists)', () => {
+    const nowIso = '2026-09-13T12:00:00.000Z'
+    const { where, hrefQuery } = buildReviewDuePredicate(nowIso)
+    const and = where.and as Array<Record<string, Record<string, unknown>>>
+    expect(and).toHaveLength(4)
+    expect(and[0]).toEqual({ reviewDueAt: { exists: true } })
+    expect(and[1]).toEqual({ reviewDueAt: { less_than_equal: nowIso } })
+    expect(and[2]).toEqual({ workflowState: { not_equals: 'archived' } })
+    expect(and[3]).toEqual({ markedOutdated: { not_equals: true } })
+
+    expect(hrefQuery['where[and][0][reviewDueAt][exists]']).toBe('true')
+    expect(hrefQuery['where[and][1][reviewDueAt][less_than_equal]']).toBe(nowIso)
+    expect(hrefQuery['where[and][2][workflowState][not_equals]']).toBe('archived')
+    expect(hrefQuery['where[and][3][markedOutdated][not_equals]']).toBe('true')
+
+    // markedOutdated rows must be excluded by the same predicate used for the card link
+    const href = `/admin/collections/transactions?${new URLSearchParams(hrefQuery).toString()}`
+    expect(href).toContain('markedOutdated')
+    expect(href).toContain('not_equals')
+    expect(href).toContain('true')
   })
 })

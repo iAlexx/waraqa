@@ -101,15 +101,29 @@ export const enforceUserReportTriage: CollectionBeforeChangeHook = async ({
   }
 
   const prevAssignee = reportRelationId(originalDoc?.assignedTo)
-  const nextAssigneeRaw =
-    data.assignedTo === undefined ? originalDoc?.assignedTo : data.assignedTo
-  const nextAssignee = await assertAssignableReportUser(
-    req.payload,
-    nextAssigneeRaw === undefined ? null : nextAssigneeRaw,
-    req,
-  )
-  data.assignedTo = nextAssignee
-  const assignmentChanged = (prevAssignee ?? null) !== (nextAssignee ?? null)
+  const assignmentTouched = Object.prototype.hasOwnProperty.call(data, 'assignedTo')
+
+  let assignmentChanged = false
+  let nextAssigneeForAudit: number | null = prevAssignee
+  if (assignmentTouched) {
+    const proposedId = reportRelationId(data.assignedTo)
+    if ((proposedId ?? null) === (prevAssignee ?? null)) {
+      // No-op assignment write — preserve existing (including stale) assignee.
+      delete data.assignedTo
+    } else {
+      const nextAssignee = await assertAssignableReportUser(
+        req.payload,
+        data.assignedTo === undefined ? null : data.assignedTo,
+        req,
+      )
+      data.assignedTo = nextAssignee
+      nextAssigneeForAudit = nextAssignee
+      assignmentChanged = true
+    }
+  } else {
+    // Preserve stale assignment until explicitly changed — do not revalidate.
+    delete data.assignedTo
+  }
 
   if (statusChanged) {
     const allowed = REPORT_STATUS_TRANSITIONS[prev]
@@ -189,7 +203,7 @@ export const enforceUserReportTriage: CollectionBeforeChangeHook = async ({
         reportId: originalDoc?.id ?? 'unknown',
         transactionId: relationId(data.transaction ?? originalDoc?.transaction),
         fromAssigneeId: prevAssignee,
-        toAssigneeId: nextAssignee,
+        toAssigneeId: nextAssigneeForAudit,
       })
     } catch {
       throw new APIError('تعذّر تسجيل حدث تعيين البلاغ — لم يُحفظ التغيير.', 503)

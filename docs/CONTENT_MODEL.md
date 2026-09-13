@@ -298,7 +298,8 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 
 - **Dashboard:** `BeforeDashboard` + `GET /api/admin-ops/dashboard` — active `admin`/`reviewer` only. Cheap indexed `payload.count` cards (in_review txs, reviewDueAt ≤ now, open/in_review reports, changes_requested, assigned-to-me). No Claim-graph / readiness walks. Arabic labels; links to Admin list filters.
 - **reviewDueAt:** List default column + cell labels متأخر / قريب / قادم (text + color). Separate from P11-B publication readiness. Filter via native Payload `reviewDueAt <= now`.
-- **Transaction hard delete:** Server `beforeDelete` blocks previously published/approved/archived content and txs with linked reports (Arabic errors). Prefer archive. Never-published drafts may hard-delete. Seed/test cleanup only via `context.seed` + non-prod `allowSeedBypass`.
+- **Transaction hard delete:** Server `beforeDelete` blocks previously published/approved/archived content **and** any Transaction with immutable `audit-events` actions `approved` | `published` | `archived` (so `restoreRevision` / `restoreArchived` cannot make historically published content hard-deletable). Linked reports blocked. Prefer archive. Never-published drafts may hard-delete. Seed/test cleanup only via `context.seed` + non-prod `allowSeedBypass`.
+- **Report assignment:** Optional `assignedTo` validated only when the field is **changed**; stale inactive/demoted assignees are preserved until explicitly reassigned (new assignment still requires active admin/reviewer).
 
 ---
 
