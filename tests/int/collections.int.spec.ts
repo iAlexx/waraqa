@@ -31,7 +31,12 @@ async function cleanup() {
     for (const item of [...created].reverse()) {
       if (item.collection !== collection) continue
       try {
-        await payload.delete({ collection: collection as 'users', id: item.id, overrideAccess: true })
+        await payload.delete({
+          collection: collection as 'users',
+          id: item.id,
+          overrideAccess: true,
+          context: { seed: true },
+        })
       } catch {
         /* ignore */
       }
@@ -428,6 +433,7 @@ describe('Phase 3 collections', () => {
       id: Number(cat.id),
       locale: 'ar',
       overrideAccess: true,
+      context: { seed: true },
     })
     const en = await payload.findByID({
       collection: 'categories',
@@ -435,6 +441,7 @@ describe('Phase 3 collections', () => {
       locale: 'en',
       fallbackLocale: 'ar',
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(ar.name).toContain('عربي')
     expect(en.name).toBeTruthy()

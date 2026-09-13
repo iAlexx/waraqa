@@ -83,6 +83,15 @@ function parseOptionalCenterId(raw: unknown): number | null {
 export function validatePublicReportSubmit(
   body: unknown,
 ): ReportValidationSuccess | ReportValidationFailure {
+  if (body && typeof body === 'object' && 'assignedTo' in (body as Record<string, unknown>)) {
+    return {
+      ok: false,
+      code: 'validation',
+      message: 'لا يمكن تعيين المسؤول من النموذج العام.',
+      fields: { assignedTo: 'الحقل غير مسموح في الإرسال العام.' },
+    }
+  }
+
   const parsed = publicReportSubmitSchema.safeParse(body)
   if (!parsed.success) {
     const fields: Record<string, string> = {}

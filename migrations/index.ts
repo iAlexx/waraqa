@@ -9,6 +9,8 @@ import * as migration_20260721_120000_p0_05b1_claim_trust_publication from './20
 import * as migration_20260722_100000_p0_06_content_class_isolation from './20260722_100000_p0_06_content_class_isolation';
 import * as migration_20260912_220000_phase_10_user_reports from './20260912_220000_phase_10_user_reports';
 import * as migration_20260912_233000_phase_10_report_hardening from './20260912_233000_phase_10_report_hardening';
+import * as migration_20260913_010000_phase_11_report_assignment from './20260913_010000_phase_11_report_assignment';
+import * as migration_20260913_140000_phase_11_review_due_at_index from './20260913_140000_phase_11_review_due_at_index';
 
 export const migrations = [
   {
@@ -65,5 +67,15 @@ export const migrations = [
     up: migration_20260912_233000_phase_10_report_hardening.up,
     down: migration_20260912_233000_phase_10_report_hardening.down,
     name: '20260912_233000_phase_10_report_hardening',
+  },
+  {
+    up: migration_20260913_010000_phase_11_report_assignment.up,
+    down: migration_20260913_010000_phase_11_report_assignment.down,
+    name: '20260913_010000_phase_11_report_assignment',
+  },
+  {
+    up: migration_20260913_140000_phase_11_review_due_at_index.up,
+    down: migration_20260913_140000_phase_11_review_due_at_index.down,
+    name: '20260913_140000_phase_11_review_due_at_index',
   },
 ]

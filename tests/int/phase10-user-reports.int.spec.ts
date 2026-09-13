@@ -48,6 +48,7 @@ afterAll(async () => {
           collection: collection as 'users',
           id: item.id,
           overrideAccess: true,
+          context: { seed: true },
         })
       } catch {
         /* ignore */
@@ -354,6 +355,7 @@ describe('Phase 10 user reports integration', () => {
       where: { transaction: { equals: productionTxId } },
       limit: 5,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(listed.docs.length).toBeGreaterThan(0)
     const report = listed.docs[0] as {
@@ -421,6 +423,7 @@ describe('Phase 10 user reports integration', () => {
       },
       limit: 5,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(found.docs.length).toBeGreaterThan(0)
   })
@@ -455,6 +458,7 @@ describe('Phase 10 user reports integration', () => {
       where: { transaction: { equals: productionTxId } },
       limit: 100,
       overrideAccess: true,
+      context: { seed: true },
     })
     const validated = validatePublicReportSubmit({
       transactionSlug: productionSlug,
@@ -484,6 +488,7 @@ describe('Phase 10 user reports integration', () => {
       where: { transaction: { equals: productionTxId } },
       limit: 100,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(after.docs.length).toBe(before.docs.length)
   })
@@ -531,6 +536,7 @@ describe('Phase 10 user reports integration', () => {
       where: { transaction: { equals: productionTxId } },
       limit: 1,
       overrideAccess: true,
+      context: { seed: true },
     })
     const reportId = existing.docs[0]?.id
     expect(reportId).toBeTruthy()
@@ -570,6 +576,7 @@ describe('Phase 10 user reports integration', () => {
       where: { transaction: { equals: productionTxId } },
       limit: 1,
       overrideAccess: true,
+      context: { seed: true },
     })
     const reportId = existing.docs[0]?.id
     expect(reportId).toBeTruthy()
@@ -578,6 +585,7 @@ describe('Phase 10 user reports integration', () => {
       collection: 'users',
       id: inactiveId,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(hasActiveRole(inactiveUser as UserLike, 'reviewer')).toBe(false)
 
@@ -600,6 +608,7 @@ describe('Phase 10 user reports integration', () => {
       collection: 'users',
       id: researcherId,
       overrideAccess: true,
+      context: { seed: true },
     })
     const researcherReq = (await createLocalReq(
       { user: researcher as NonNullable<PayloadRequest['user']> },
@@ -619,6 +628,7 @@ describe('Phase 10 user reports integration', () => {
       collection: 'users',
       id: reviewerId,
       overrideAccess: true,
+      context: { seed: true },
     })
     const reviewerReq = (await createLocalReq(
       { user: reviewer as NonNullable<PayloadRequest['user']> },
@@ -638,6 +648,7 @@ describe('Phase 10 user reports integration', () => {
       collection: 'users',
       id: reviewerId,
       overrideAccess: true,
+      context: { seed: true },
     })
     const reviewerReq2 = (await createLocalReq(
       { user: reviewerFresh as NonNullable<PayloadRequest['user']> },
@@ -741,6 +752,7 @@ describe('Phase 10 user reports integration', () => {
       },
       limit: 20,
       overrideAccess: true,
+      context: { seed: true },
     })
     for (const a of audits2.docs) {
       if (!created.some((c) => c.collection === 'audit-events' && c.id === a.id)) {
@@ -787,6 +799,7 @@ describe('Phase 10 user reports integration', () => {
       limit: 20,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
     const target = withContact.docs.find(
       (d) => (d as { contactEmail?: string | null }).contactEmail === 'followup@example.test',
@@ -797,6 +810,7 @@ describe('Phase 10 user reports integration', () => {
       collection: 'users',
       id: adminId,
       overrideAccess: true,
+      context: { seed: true },
     })
     const adminReq = (await createLocalReq(
       { user: admin as NonNullable<PayloadRequest['user']> },

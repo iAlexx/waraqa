@@ -22,6 +22,7 @@ export type AuditAction =
   | 'report_rejected'
   | 'report_marked_spam'
   | 'report_status_changed'
+  | 'report_assigned'
 
 const SAFE_META_KEYS = new Set([
   'fromState',
@@ -33,6 +34,8 @@ const SAFE_META_KEYS = new Set([
   'hashPrefix',
   'reviewDueAt',
   'actorLabel',
+  'fromAssigneeId',
+  'toAssigneeId',
 ])
 
 export function sanitizeAuditSummary(text: string): string {

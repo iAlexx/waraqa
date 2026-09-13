@@ -43,6 +43,7 @@ export async function cleanupPhase6QaFixture(payload: Payload): Promise<{ delete
         collection,
         id: doc.id,
         overrideAccess: true,
+        context: { seed: true },
       })
       deleted += 1
     }

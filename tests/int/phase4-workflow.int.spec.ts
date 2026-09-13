@@ -43,6 +43,7 @@ afterAll(async () => {
           collection: collection as 'users',
           id: item.id,
           overrideAccess: true,
+          context: { seed: true },
         })
       } catch {
         /* ignore */
@@ -257,6 +258,7 @@ describe('Phase 4 editorial workflow', () => {
         ],
       },
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(audits.totalDocs).toBeGreaterThanOrEqual(1)
     created.push(...audits.docs.map((d) => ({ collection: 'audit-events', id: d.id })))
@@ -363,6 +365,7 @@ describe('Phase 4 editorial workflow', () => {
       id: txId,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     if (doc.workflowState !== 'approved') {
       await runTransactionWorkflowAction({
@@ -401,6 +404,7 @@ describe('Phase 4 editorial workflow', () => {
       id: txId,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(afterNote.workflowState).toBe('approved')
 
@@ -418,6 +422,7 @@ describe('Phase 4 editorial workflow', () => {
       id: txId,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(afterNote.workflowState).toBe('draft')
     expect(afterNote.approvedContentHash).toBeFalsy()
@@ -437,6 +442,7 @@ describe('Phase 4 editorial workflow', () => {
       id: txId,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(doc.workflowState).not.toBe('published')
   })
@@ -499,6 +505,7 @@ describe('Phase 4 editorial workflow', () => {
         and: [{ entityId: { equals: String(txId) } }, { action: { equals: 'published' } }],
       },
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(pubAudits.totalDocs).toBeGreaterThanOrEqual(1)
     created.push(...pubAudits.docs.map((d) => ({ collection: 'audit-events', id: d.id })))
@@ -531,6 +538,7 @@ describe('Phase 4 editorial workflow', () => {
       collection: 'audit-events',
       limit: 1,
       overrideAccess: true,
+      context: { seed: true },
     })
     if (list.docs[0]) {
       await expect(

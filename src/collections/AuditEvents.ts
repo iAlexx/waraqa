@@ -67,6 +67,7 @@ export const AuditEvents: CollectionConfig = {
         { label: 'رفض بلاغ', value: 'report_rejected' },
         { label: 'بلاغ مزعج', value: 'report_marked_spam' },
         { label: 'تغيير حالة بلاغ', value: 'report_status_changed' },
+        { label: 'تعيين بلاغ', value: 'report_assigned' },
       ],
     },
     {

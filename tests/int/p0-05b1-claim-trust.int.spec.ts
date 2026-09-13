@@ -43,6 +43,7 @@ afterAll(async () => {
           collection: collection as 'users',
           id: item.id,
           overrideAccess: true,
+          context: { seed: true },
         })
       } catch {
         /* ignore */
@@ -331,6 +332,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
       id: tx.id,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(refreshed.claimTrustOk).toBe(false)
 
@@ -429,6 +431,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
       id: tx.id,
       draft: true,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(refreshed.claimTrustOk).toBe(false)
 
@@ -640,6 +643,7 @@ describe('P0-05B1 claim trust publication + dynamic revalidation', () => {
       collection: 'claims',
       id: doomed.id,
       overrideAccess: true,
+      context: { seed: true },
     })
 
     expect(

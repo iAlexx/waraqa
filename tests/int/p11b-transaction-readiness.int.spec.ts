@@ -77,6 +77,7 @@ afterAll(async () => {
           collection: collection as 'users',
           id: item.id,
           overrideAccess: true,
+          context: { seed: true },
         })
       } catch {
         /* ignore */
@@ -298,6 +299,7 @@ describe('P11-B transaction readiness integration', () => {
       id: inactiveUserId,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(inactiveDoc.isActive).toBe(false)
     let inactiveDenied = false
@@ -319,6 +321,7 @@ describe('P11-B transaction readiness integration', () => {
       id: reviewerId,
       depth: 0,
       overrideAccess: true,
+      context: { seed: true },
     })
     expect(reviewerDoc.isActive).toBe(true)
     const allowed = await invokeReadinessEndpoint({

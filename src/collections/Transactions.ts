@@ -50,6 +50,7 @@ import {
   loadTransactionGuidePreviewCatalog,
 } from '@/lib/admin/guide-preview'
 import { evaluateTransactionAdminReadiness } from '@/lib/admin/transaction-readiness'
+import { preventUnsafeTransactionHardDelete } from '@/lib/admin/transaction-delete-guard'
 import { hasActiveRole, type UserLike } from '@/access/roles'
 
 const WORKFLOW_ACTIONS = new Set<WorkflowAction>([
@@ -184,6 +185,7 @@ export const Transactions: CollectionConfig = {
       'slug',
       'workflowState',
       'contentClass',
+      'reviewDueAt',
       'category',
       'agency',
       'publicationStatus',
@@ -192,7 +194,7 @@ export const Transactions: CollectionConfig = {
     ],
     group: 'المحتوى',
     description:
-      'المعاملات الإدارية — نظّم المحتوى عبر التبويبات. التصنيف والنشر وسير العمل في الشريط الجانبي. المحتوى المعبّأ ليس موثّقاً تلقائياً.',
+      'المعاملات الإدارية — نظّم المحتوى عبر التبويبات. التصنيف والنشر وسير العمل في الشريط الجانبي. المحتوى المعبّأ ليس موثّقاً تلقائياً. لا تستخدم الحذف النهائي للمعاملات المنشورة — الأرشفة هي المسار الآمن.',
     components: {
       edit: {
         beforeDocumentControls: ['/components/admin/WorkflowActions#WorkflowActions'],
@@ -246,6 +248,7 @@ export const Transactions: CollectionConfig = {
       populateAuditFields,
       populateSearchText,
     ],
+    beforeDelete: [preventUnsafeTransactionHardDelete],
     afterRead: [attachPublicationStatusLabel, stripPrivateEditorialFields],
   },
   fields: [

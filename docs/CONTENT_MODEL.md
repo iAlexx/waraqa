@@ -294,6 +294,13 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 - Preview does **not** mutate content, workflow, claims, or `contentClass`.
 - Per-condition UNKNOWN detail is limited to rule keys whose `when` group is UNKNOWN (deeper condition diagnostics deferred).
 
+#### Admin editorial dashboard + review-due (Phase 11 closure)
+
+- **Dashboard:** `BeforeDashboard` + `GET /api/admin-ops/dashboard` — active `admin`/`reviewer` only. Cheap indexed `payload.count` cards (in_review txs, reviewDueAt ≤ now, open/in_review reports, changes_requested, assigned-to-me). No Claim-graph / readiness walks. Arabic labels; links to Admin list filters.
+- **reviewDueAt:** List default column + cell labels متأخر / قريب / قادم (text + color). Separate from P11-B publication readiness. Filter via native Payload `reviewDueAt <= now`.
+- **Transaction hard delete:** Server `beforeDelete` blocks previously published/approved/archived content **and** any Transaction with immutable `audit-events` actions `approved` | `published` | `archived` (so `restoreRevision` / `restoreArchived` cannot make historically published content hard-deletable). Linked reports blocked. Prefer archive. Never-published drafts may hard-delete. Seed/test cleanup only via `context.seed` + non-prod `allowSeedBypass`.
+- **Report assignment:** Optional `assignedTo` validated only when the field is **changed**; stale inactive/demoted assignees are preserved until explicitly reassigned (new assignment still requires active admin/reviewer).
+
 ---
 
 ## Collection: `user-reports` — بلاغات المواطنين (Phase 10)
@@ -311,6 +318,7 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 | `contactEmail` / `contactPhone` | Optional; **field-level read only for admin/reviewer** |
 | `consentAccepted` | Required at submit |
 | `status` | `open` \| `in_review` \| `resolved` \| `rejected` \| `spam` |
+| `assignedTo` | Optional relationship → active `admin`/`reviewer` (Phase 11) |
 | `reviewNotes` | Internal editorial notes |
 | `resolutionSummary` | Authoritative closing reason; stamped only on transition into resolved/rejected |
 | `lastResolutionSummary` | Preserved after reopen for editorial continuity (immutable detail also in audit-events) |
@@ -324,11 +332,15 @@ Informational panel **معاينة قواعد الدليل** at the top of tab `
 
 **Spam controls:** Invisible honeypot (`website`); filled honeypot → HTTP success without persistence. PostgreSQL fixed-window rate limit on **IP-only** HMAC identity hash (User-Agent excluded; raw IP never stored). Buckets table `report_rate_buckets`; retain ~7 days. Vercel: trust `x-forwarded-for` / `x-real-ip`; missing/malformed IP → fail closed (503).
 
-**Audit:** Editorial status transitions write `audit-events` **before** persist; failure aborts the update. Metadata includes recoverable `resolutionReason` (sanitized, capped). Citizen `report_received` remains best-effort so submit stays resilient. `assignedTo` deferred to Phase 11.
+**Audit:** Editorial status transitions write `audit-events` **before** persist; failure aborts the update. Metadata includes recoverable `resolutionReason` (sanitized, capped). Citizen `report_received` remains best-effort so submit stays resilient. Assignment / reassignment writes `report_assigned` with `fromAssigneeId` / `toAssigneeId` only (no contact/message PII); audit write failure aborts the assignment change.
+
+**Assignment (Phase 11):** Optional `assignedTo` → active `admin` \| `reviewer` only. Public submit rejects / strips `assignedTo`. Researchers and inactive users are not assignable and cannot triage. List column + filters support unassigned / assigned workflows. No notification system.
+
+**Hard delete policy:** Admin-only. Prefer terminal status over delete for routine triage. Audit events remain by `entityId` after deletion.
 
 **Notifications:** Deferred — no email adapter configured; Admin triage is sufficient.
 
-**Out of scope / MVP schema decisions:** attachments; national ID; `reportedValue`/`suggestedValue` collapsed into `message`+`encountered`; `assignedTo` → Phase 11.
+**Out of scope / MVP schema decisions:** attachments; national ID; `reportedValue`/`suggestedValue` collapsed into `message`+`encountered`.
 
 ---
 

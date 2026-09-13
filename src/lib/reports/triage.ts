@@ -5,6 +5,11 @@ import { canReviewContent } from '@/access'
 import { hasActiveRole, type UserLike } from '@/access/roles'
 import { writeAuditEvent } from '@/lib/workflow/audit'
 
+import {
+  assertAssignableReportUser,
+  reportRelationId,
+  writeReportAssignmentAudit,
+} from './assignment'
 import { sanitizeResolutionNote } from './sanitize'
 import {
   REPORT_LIMITS,
@@ -26,11 +31,9 @@ function asStatus(v: unknown): ReportStatus | null {
 }
 
 function relationId(v: unknown): number | string | null {
-  if (typeof v === 'number' || typeof v === 'string') return v
-  if (v && typeof v === 'object' && 'id' in v) {
-    const id = (v as { id: unknown }).id
-    if (typeof id === 'number' || typeof id === 'string') return id
-  }
+  const n = reportRelationId(v)
+  if (n != null) return n
+  if (typeof v === 'string' && v.trim() !== '') return v
   return null
 }
 
@@ -51,6 +54,9 @@ function isClosed(s: ReportStatus): boolean {
  * Editorial status transitions write audit-events here (before persist).
  * If audit write fails, the update is aborted — no silent unlogged terminal state.
  * Citizen `report_received` remains resilient in submit.ts (documented separately).
+ *
+ * Phase 11: `assignedTo` set/cleared by active admin/reviewer only; public submit
+ * cannot control assignment.
  */
 export const enforceUserReportTriage: CollectionBeforeChangeHook = async ({
   data,
@@ -60,6 +66,7 @@ export const enforceUserReportTriage: CollectionBeforeChangeHook = async ({
   context,
 }) => {
   if (context?.publicReportSubmit === true) {
+    delete data.assignedTo
     return data
   }
 
@@ -91,6 +98,31 @@ export const enforceUserReportTriage: CollectionBeforeChangeHook = async ({
     data.serviceCenter = originalDoc.serviceCenter
     data.consentAccepted = originalDoc.consentAccepted
     data.transaction = originalDoc.transaction
+  }
+
+  const prevAssignee = reportRelationId(originalDoc?.assignedTo)
+  const assignmentTouched = Object.prototype.hasOwnProperty.call(data, 'assignedTo')
+
+  let assignmentChanged = false
+  let nextAssigneeForAudit: number | null = prevAssignee
+  if (assignmentTouched) {
+    const proposedId = reportRelationId(data.assignedTo)
+    if ((proposedId ?? null) === (prevAssignee ?? null)) {
+      // No-op assignment write — preserve existing (including stale) assignee.
+      delete data.assignedTo
+    } else {
+      const nextAssignee = await assertAssignableReportUser(
+        req.payload,
+        data.assignedTo === undefined ? null : data.assignedTo,
+        req,
+      )
+      data.assignedTo = nextAssignee
+      nextAssigneeForAudit = nextAssignee
+      assignmentChanged = true
+    }
+  } else {
+    // Preserve stale assignment until explicitly changed — do not revalidate.
+    delete data.assignedTo
   }
 
   if (statusChanged) {
@@ -164,11 +196,25 @@ export const enforceUserReportTriage: CollectionBeforeChangeHook = async ({
     }
   }
 
+  if (assignmentChanged) {
+    try {
+      await writeReportAssignmentAudit({
+        req,
+        reportId: originalDoc?.id ?? 'unknown',
+        transactionId: relationId(data.transaction ?? originalDoc?.transaction),
+        fromAssigneeId: prevAssignee,
+        toAssigneeId: nextAssigneeForAudit,
+      })
+    } catch {
+      throw new APIError('تعذّر تسجيل حدث تعيين البلاغ — لم يُحفظ التغيير.', 503)
+    }
+  }
+
   ;(req as PayloadRequest & { context: Record<string, unknown> }).context = {
     ...((req.context as Record<string, unknown>) || {}),
     reportStatusFrom: prev,
     reportStatusTo: next,
-    reportAuditWritten: statusChanged,
+    reportAuditWritten: statusChanged || assignmentChanged,
   }
 
   return data
