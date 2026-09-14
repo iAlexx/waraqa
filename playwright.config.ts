@@ -7,6 +7,7 @@ loadEnv({ path: path.resolve(process.cwd(), '.env') })
 
 const port = process.env.PORT || '3000'
 const baseURL = `http://localhost:${port}`
+const isCi = process.env.CI === 'true' || process.env.CI === '1'
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -14,6 +15,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'list' : 'html',
+  timeout: 60_000,
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -25,18 +27,20 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `corepack pnpm@11.14.0 dev --port ${port}`,
-    // Prefer a fresh Phase-aware server; set PLAYWRIGHT_REUSE_SERVER=1 to attach to an existing one.
+    // CI runs after `pnpm build` — prefer production server for stability.
+    command: isCi
+      ? `corepack pnpm@11.14.0 start`
+      : `corepack pnpm@11.14.0 dev --port ${port}`,
     reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1',
     url: baseURL,
     timeout: 180_000,
-    // Forward explicitly so Next/Payload do not silently bind a different local DB/mode.
     env: {
       ...process.env,
       PORT: port,
       DATABASE_URL: process.env.DATABASE_URL || '',
       DATABASE_URL_DIRECT: process.env.DATABASE_URL_DIRECT || process.env.DATABASE_URL || '',
       WARAQA_PUBLIC_CONTENT_MODE: process.env.WARAQA_PUBLIC_CONTENT_MODE || 'production',
+      WARAQA_PHASE13_CI: process.env.WARAQA_PHASE13_CI || '',
     },
   },
 })

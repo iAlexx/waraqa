@@ -2437,6 +2437,10 @@ Artifacts:
 - privacy and legal copy review;
 - visual regression captures.
 
+### Status (2026-09-14)
+
+Automated / ops gates implemented on `phase-13-quality-hardening` (CI E2E, audits, backup/restore, fresh clone, source health, legal copy). **Owner OS Print Preview** remains the Phase 13 completion blocker — see `docs/qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md`.
+
 ### Acceptance criteria
 
 All commands pass:
@@ -2458,7 +2462,8 @@ And:
 - no broken public route;
 - no horizontal mobile overflow;
 - no critical source missing;
-- recovery from API/database failure is understandable.
+- recovery from API/database failure is understandable;
+- **real OS/browser Print Preview signed off**.
 
 ## Phase 14 — Deployment and Demo
 

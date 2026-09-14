@@ -1,10 +1,10 @@
 # Waraqa Security Baseline
 
-**Status:** Phase 4–7 COMPLETE — OWNER APPROVED; Phase 8 guide TECHNICAL PASS (awaiting owner visual)
+**Status:** Phase 4–12 delivered; Phase 13 quality hardening in progress
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-09-14
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [.env.example](../.env.example)
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md), [qa/phase-13/DEPENDENCY_AUDIT.md](./qa/phase-13/DEPENDENCY_AUDIT.md), [.env.example](../.env.example)
 
 ## 1. Secret management
 
@@ -106,8 +106,9 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 ## 9. Backups
 
 - Free Supabase: **no** automatic backups on Free plan (per Supabase pricing). Manual export is mandatory before important production migrations and before major demos: https://supabase.com/pricing
-- Document restore steps before production launch (Phase 14+).
-- Keep migration files in git so schema can be rebuilt.
+- **Phase 13 runbook:** [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md) — `pg_dump`, restore into a **new** disposable DB, verify, retention, pre-migration backup, incident restore. Local Docker smoke: `pnpm phase13:backup-restore-smoke` (`ALLOW_QA_FIXTURE=1` only; never production data; never commit dumps).
+- Rollback strategy (enums, forward-fix): [ops/MIGRATION_ROLLBACK.md](./ops/MIGRATION_ROLLBACK.md).
+- Keep migration files in git so schema can be rebuilt; **do not rewrite** historical applied migrations.
 
 ## 10. Safe demo-data labeling
 
@@ -116,3 +117,20 @@ Any unverified or placeholder procedure content must be visibly labeled in Arabi
 > بيانات تجريبية للعرض — ليست معلومات رسمية
 
 Never present invented fees, requirements, or official claims as verified.
+
+## 11. Phase 13 — dependency audit
+
+- Run `pnpm audit` / `pnpm audit:deps` during hardening.
+- Current baseline (2026-09-14): **0 critical**, **5 high** on **dev paths** (brace-expansion via ESLint; undici via jsdom/vitest). Citizen UI production runtime is not on those paths; mitigate with pnpm overrides — see [qa/phase-13/DEPENDENCY_AUDIT.md](./qa/phase-13/DEPENDENCY_AUDIT.md).
+
+## 12. Phase 13 — seed bypass (production locked)
+
+- `allowSeedBypass` (`src/lib/qa-seed-guard.ts`) returns **false** when `NODE_ENV=production` or `VERCEL_ENV=production`. `ALLOW_QA_FIXTURE` / Phase 12 seed flags **cannot** unlock bypass on production runtimes.
+- Seed still requires `req.context.seed === true` plus test runtime or `ALLOW_QA_FIXTURE=1` in non-production.
+- Phase 12 / Phase 13 CI prepare scripts refuse production and never log passwords.
+
+## 13. Phase 13 — secret scan
+
+- Tracked-file scanner: `pnpm scan:secrets` → `scripts/secret-scan.ts`.
+- Exit non-zero on likely secrets; values are redacted in output. Placeholders in `.env.example` and disposable local Docker credentials are allowed.
+- Never commit `.env*`, dumps, or `docs/qa/**/.local-credentials`.

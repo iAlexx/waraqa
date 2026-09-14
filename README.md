@@ -5,7 +5,7 @@ Independent Syrian administrative-procedure guidance platform.
 > **ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً.**  
 > Waraqa is an independent guidance platform and is not a government website.
 
-**Current phase:** Phase 6 — Arabic Search (**COMPLETE — OWNER APPROVED**). Phase 7 not started.
+**Current phase:** Phase 13 — Quality hardening (**in progress**). Phases 0–12 delivered through DEMO seed content; production deploy is Phase 14.
 
 ## Requirements
 
@@ -125,9 +125,16 @@ corepack pnpm@11.14.0 check
 corepack pnpm@11.14.0 db:migrate
 corepack pnpm@11.14.0 db:migrate:create
 corepack pnpm@11.14.0 db:migrate:status
+
+# Phase 13 quality tooling
+corepack pnpm@11.14.0 seed:phase13:ci              # disposable CI/local DEMO + editorial users (non-prod)
+corepack pnpm@11.14.0 test:e2e:ci                  # critical Playwright closure suite
+corepack pnpm@11.14.0 scan:secrets
+corepack pnpm@11.14.0 phase13:backup-restore-smoke # ALLOW_QA_FIXTURE=1 + local Docker only
 ```
 
-Phase 3 migrations: `20260718_052746_phase_3_core_collections`, `20260718_163635_phase_3_site_settings`.
+Phase 3 migrations: `20260718_052746_phase_3_core_collections`, `20260718_163635_phase_3_site_settings`.  
+Ops: [docs/ops/BACKUP_RESTORE.md](./docs/ops/BACKUP_RESTORE.md), [docs/qa/PHASE_13_QUALITY_REPORT.md](./docs/qa/PHASE_13_QUALITY_REPORT.md).
 
 ## Security notes
 
@@ -145,3 +152,6 @@ Phase 3 migrations: `20260718_052746_phase_3_core_collections`, `20260718_163635
 - [Stack ADR](./docs/ADR/0001-stack.md)
 - [Security](./docs/SECURITY.md)
 - [Phase checklist](./docs/PHASE_CHECKLIST.md)
+- [Backup / restore](./docs/ops/BACKUP_RESTORE.md)
+- [Migration rollback](./docs/ops/MIGRATION_ROLLBACK.md)
+- [Phase 13 quality report](./docs/qa/PHASE_13_QUALITY_REPORT.md)
