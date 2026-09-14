@@ -80,6 +80,9 @@ function isAllowedSecretishValue(raw: string): boolean {
   const v = raw.trim().replace(/^["'`]|["'`]$/g, '')
   if (!v) return true
   if (/^process\.env\./i.test(v)) return true
+  // Variable / property references — not literal secrets
+  if (/^(?:opts|args|creds|config|user|data)\.[A-Za-z_][\w.]*$/i.test(v)) return true
+  if (/^[A-Za-z_][\w]*Password$/i.test(v)) return true
   if (/\[redacted/i.test(v)) return true
   if (/^(undefined|null)$/i.test(v)) return true
 
