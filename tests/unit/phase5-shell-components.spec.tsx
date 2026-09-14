@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
+
+afterEach(() => {
+  cleanup()
+})
 
 import { HomeHero } from '@/components/home/home-hero'
 import { HomeCategories } from '@/components/home/home-categories'

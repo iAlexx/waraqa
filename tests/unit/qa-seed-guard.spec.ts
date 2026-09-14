@@ -35,6 +35,15 @@ describe('allowSeedBypass', () => {
     expect(allowSeedBypass({ context: { seed: true } })).toBe(false)
   })
 
+  it('blocks when only a content-seed flag is set', () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('ALLOW_QA_FIXTURE', '')
+    vi.stubEnv('WARAQA_ALLOW_PHASE12_SEED', '1')
+    vi.stubEnv('VITEST', '')
+    vi.stubEnv('VERCEL_ENV', '')
+    expect(allowSeedBypass({ context: { seed: true } })).toBe(false)
+  })
+
   it('allows with ALLOW_QA_FIXTURE=1 in development', () => {
     vi.stubEnv('NODE_ENV', 'development')
     vi.stubEnv('ALLOW_QA_FIXTURE', '1')
@@ -45,6 +54,7 @@ describe('allowSeedBypass', () => {
   it('blocks in development without fixture flag or test runtime', () => {
     vi.stubEnv('NODE_ENV', 'development')
     vi.stubEnv('ALLOW_QA_FIXTURE', '')
+    vi.stubEnv('WARAQA_ALLOW_PHASE12_SEED', '')
     vi.stubEnv('VITEST', '')
     vi.stubEnv('VERCEL_ENV', '')
     expect(allowSeedBypass({ context: { seed: true } })).toBe(false)

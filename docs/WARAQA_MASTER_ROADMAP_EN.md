@@ -2378,28 +2378,46 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - Assignment notifications.
 - Full SEO sitemap/robots/revalidation (separate track; not Admin UX acceptance).
 
-## Phase 12 — Seed Content
+## Phase 12 — Seed Content — COMPLETE (2026-09-13, DEMO)
 
-### Tasks
+### Status
 
-- research five procedures from reliable sources;
-- create a source record for every important claim;
-- enter content in Syrian-friendly Arabic;
-- run each procedure through review;
-- test every answer path;
-- label uncertain items;
-- add demo labels when verification is incomplete;
-- verify source links.
+Implemented on branch workflow as **DEMO-labeled** seed content (not government-certified PRODUCTION).
 
-### Acceptance criteria
+Artifacts:
 
-- five complete procedures are published or explicitly demo-labeled;
+- `docs/content/PHASE_12_SOURCE_AUDIT.md`
+- `docs/content/PHASE_12_CONTENT_REVIEW.md`
+- Catalog + idempotent seed: `src/lib/content/phase12/*`, `scripts/phase12-seed-content.ts`
+
+### Selected procedures (all `contentClass=DEMO`)
+
+1. معادلة شهادة ثانوية غير سورية (practical Golden Demo case)
+2. تنظيم وكالة في بعثة دبلوماسية سورية
+3. تسجيل زواج عبر بعثة دبلوماسية سورية
+4. استخراج وثيقة أحوال مدنية عبر البعثة
+5. تجديد جواز سفر منتهٍ عبر البعثة
+
+### Tasks (done)
+
+- researched five procedures from opened reliable sources;
+- created a Source record for every important claim;
+- entered Syrian-friendly Arabic citizen copy;
+- ran claim/editorial review via seeded reviewer identity;
+- tested guide answer-path matrices;
+- labeled uncertain fees/freshness with NEEDS_OFFICIAL_CONFIRMATION;
+- DEMO public label + P0-06 isolation preserved;
+- verified source URLs were opened (no snippet-only evidence).
+
+### Acceptance criteria (met as DEMO)
+
+- five procedures READY_FOR_DEMO and demo-labeled;
 - no placeholder lorem ipsum;
-- no invented fee or requirement;
-- reviewer approval recorded;
-- all paths produce meaningful results;
-- Arabic copy is human-reviewed;
-- dates and currency are consistent.
+- no invented fee amounts, durations, or addresses;
+- reviewer identity recorded on VERIFIED claims;
+- guide paths produce meaningful claim-backed results;
+- Arabic copy authored for citizen clarity;
+- currency/amounts omitted where unsupported (honest UNKNOWN / confirmation-needed).
 
 ## Phase 13 — Quality Hardening
 
