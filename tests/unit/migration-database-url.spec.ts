@@ -8,8 +8,8 @@ import {
 describe('resolveMigrationDatabaseUrl', () => {
   it('prefers DATABASE_URL_DIRECT when set', () => {
     const r = resolveMigrationDatabaseUrl({
-      DATABASE_URL: 'postgresql://app:pool@host:6543/db',
-      DATABASE_URL_DIRECT: 'postgresql://app:direct@host:5432/db',
+      DATABASE_URL: 'postgresql://app:waraqa_ci_only@host:6543/db',
+      DATABASE_URL_DIRECT: 'postgresql://app:waraqa_ci_only@host:5432/db',
     })
     expect(r.source).toBe('DATABASE_URL_DIRECT')
     expect(r.url).toContain(':5432/')
@@ -17,7 +17,7 @@ describe('resolveMigrationDatabaseUrl', () => {
 
   it('falls back to DATABASE_URL when direct is absent', () => {
     const r = resolveMigrationDatabaseUrl({
-      DATABASE_URL: 'postgresql://app:pool@host:6543/db',
+      DATABASE_URL: 'postgresql://app:waraqa_ci_only@host:6543/db',
     })
     expect(r.source).toBe('DATABASE_URL')
     expect(r.url).toContain(':6543/')
@@ -29,12 +29,12 @@ describe('resolveMigrationDatabaseUrl', () => {
 
   it('buildMigrationChildEnv sets DATABASE_URL to the resolved migration URL', () => {
     const child = buildMigrationChildEnv({
-      DATABASE_URL: 'postgresql://app:pool@host:6543/db',
-      DATABASE_URL_DIRECT: 'postgresql://app:direct@host:5432/db',
+      DATABASE_URL: 'postgresql://app:waraqa_ci_only@host:6543/db',
+      DATABASE_URL_DIRECT: 'postgresql://app:waraqa_ci_only@host:5432/db',
       OTHER: 'keep',
     })
-    expect(child.DATABASE_URL).toBe('postgresql://app:direct@host:5432/db')
-    expect(child.DATABASE_URL_DIRECT).toBe('postgresql://app:direct@host:5432/db')
+    expect(child.DATABASE_URL).toBe('postgresql://app:waraqa_ci_only@host:5432/db')
+    expect(child.DATABASE_URL_DIRECT).toBe('postgresql://app:waraqa_ci_only@host:5432/db')
     expect(child.OTHER).toBe('keep')
   })
 })
