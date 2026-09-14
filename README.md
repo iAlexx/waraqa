@@ -95,7 +95,7 @@ If you prefer a dedicated **non-production** Supabase project:
 
 - Runtime `DATABASE_URL`: transaction pooler `:6543` (Vercel-like)
 - Local Docker may use direct `:5432` for both URLs
-- Migrations tooling: `DATABASE_URL_DIRECT` = direct or session `:5432`
+- Migrations: set `DATABASE_URL_DIRECT` to direct/session `:5432`; `pnpm db:migrate*` wraps Payload so it uses that URL (Payload adapter still reads `DATABASE_URL` under the hood)
 - Never point local/preview at production
 
 ## Docker commands (local Postgres only)
@@ -122,6 +122,7 @@ corepack pnpm@11.14.0 build
 corepack pnpm@11.14.0 check
 
 # Migrations (Payload; repo-root migrations/)
+# Wrapper prefers DATABASE_URL_DIRECT → temporarily sets DATABASE_URL for the Payload CLI.
 corepack pnpm@11.14.0 db:migrate
 corepack pnpm@11.14.0 db:migrate:create
 corepack pnpm@11.14.0 db:migrate:status

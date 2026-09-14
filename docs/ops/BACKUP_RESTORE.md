@@ -103,7 +103,7 @@ Before any production (or shared) migration:
 
 1. Take a dump or provider snapshot.
 2. Confirm the artifact is readable (quick restore to disposable DB, or provider “download OK”).
-3. Apply migration via controlled CI/deploy with `DATABASE_URL_DIRECT`.
+3. Apply migration via controlled CI/deploy using `pnpm db:migrate` (wrapper prefers `DATABASE_URL_DIRECT` by temporarily assigning it to `DATABASE_URL` for the Payload process).
 4. Re-check `pnpm db:migrate:status` / app health.
 
 Local disposable DBs may skip long-term retention; still practice the dump → new DB → verify loop before trusting a new migration.

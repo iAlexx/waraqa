@@ -59,7 +59,8 @@ corepack pnpm@11.14.0 db:migrate:status   # list applied / pending
 corepack pnpm@11.14.0 db:migrate:create   # scaffold new migration
 ```
 
-- Runtime app connections use `DATABASE_URL` (pooler-friendly). Migrations/tooling use `DATABASE_URL_DIRECT`.
+- Runtime app connections use `DATABASE_URL` (pooler-friendly). Payload’s `postgresAdapter` in `src/payload.config.ts` reads **`DATABASE_URL` only**.
+- Migration scripts (`pnpm db:migrate`, `db:migrate:status`, `db:migrate:create`) run through `scripts/payload-with-direct-db.ts`, which **temporarily sets `DATABASE_URL` to `DATABASE_URL_DIRECT` when that variable is present** (otherwise keeps `DATABASE_URL`). Credentials are never printed.
 - Do **not** enable schema push against shared/production DBs; controlled migrations only.
 - Preview/CI must never migrate the production database.
 - Integration tests use a sibling DB name (`*_int`) so they do not mutate the primary local `waraqa` database.

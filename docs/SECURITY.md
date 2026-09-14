@@ -19,7 +19,7 @@
 | Variable | Exposure | MVP contract |
 | --- | --- | --- |
 | `DATABASE_URL` | Server-only | **Required** — transaction pooler `:6543` for Vercel runtime |
-| `DATABASE_URL_DIRECT` | Server-only | **Required for migrations** — direct or session `:5432` |
+| `DATABASE_URL_DIRECT` | Server-only | **Required for migrations** — direct or session `:5432`. `pnpm db:migrate*` temporarily maps this onto `DATABASE_URL` for the Payload CLI (adapter reads `DATABASE_URL` only). |
 | `PAYLOAD_SECRET` | Server-only | **Required** |
 | `NEXT_PUBLIC_SERVER_URL` | Public | **Required** — canonical base URL (includes protocol) |
 | `PREVIEW_SECRET` | Server-only | **Only when draft preview is implemented** — not in the initial contract |
@@ -97,7 +97,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 - Bootstrap with `create-payload-app@3.86.0` — never `@latest` for the audited MVP.
 - Do not disable ESLint/TypeScript to “pass” CI.
 - Apply schema changes via Payload migrations—not manual production DDL.
-- Migrations use `DATABASE_URL_DIRECT` only; production migrations run only in controlled CI/deploy steps.
+- Migrations: `pnpm db:migrate*` prefers `DATABASE_URL_DIRECT` by mapping it onto `DATABASE_URL` for the Payload CLI (adapter reads `DATABASE_URL` only); production migrations run only in controlled CI/deploy steps.
 - Preview must never migrate the production database.
 - Do not run production migrations at application runtime.
 - On Supabase Free: perform a **manual backup/export** before important production migrations.
