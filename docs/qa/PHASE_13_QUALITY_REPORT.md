@@ -2,7 +2,7 @@
 
 **Status:** AWAITING OWNER MANUAL PRINT PREVIEW (all other Phase 13 gates green locally)  
 **Branch:** `phase-13-quality-hardening`  
-**Tested commit:** fill after push (local pre-push evidence below)  
+**Tested commit:** `87c8b2ffc9a164dce2f070df7c37ef1a911aa15a`  
 **Report date:** 2026-09-14  
 
 ---
