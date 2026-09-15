@@ -27,7 +27,14 @@ jobs:
       DATABASE_URL: postgresql://waraqa:waraqa_ci_only@localhost:5432/waraqa
       DATABASE_URL_DIRECT: postgresql://waraqa:waraqa_ci_only@localhost:5432/waraqa
       PAYLOAD_SECRET: ci-only-payload-secret-not-for-production-use-32
+      PREVIEW_SECRET: ci-only-preview-secret-not-for-production-use-32
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      # Phase 13 critical E2E gate (demo content + hard-fail missing seeded procedures)
+      WARAQA_PUBLIC_CONTENT_MODE: demo
+      WARAQA_PHASE13_CI: "1"
+      # CI-only disposable passwords — not production secrets
+      WARAQA_PHASE13_CI_PASSWORD: CiOnly-Phase13-Reviewer-Pass!
+      WARAQA_PHASE12_SEED_REVIEWER_PASSWORD: CiOnly-Phase13-Reviewer-Pass!
 
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +52,12 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Secret scan
+        run: pnpm scan:secrets
+
+      - name: Dependency audit (high+)
+        run: pnpm audit:deps
 
       - name: Apply migrations
         run: pnpm db:migrate
@@ -66,7 +79,15 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Playwright E2E is deferred in CI until browser install + long-running webServer
-      # is verified stable in this repo. Run locally with: pnpm test:e2e
-      - name: Note E2E limitation
-        run: echo "Playwright E2E runs locally in Phase 1; CI E2E deferred (documented limitation)."
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare Phase 13 CI seed (DEMO + disposable admin)
+        run: pnpm seed:phase13:ci
+
+      - name: Critical E2E gate
+        run: pnpm test:e2e:ci
+        env:
+          # Prefer production `next start` for stability; Playwright still starts webServer via config.
+          # Demo mode + Phase13 CI already set at job env.
+          CI: "true"

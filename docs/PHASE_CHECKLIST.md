@@ -17,7 +17,7 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
 | 11 | Admin UX Refinement | Complete (P11-A/B/C + dashboard + review-due + assignment + delete safety + tablet smoke) | See CONTENT_MODEL / PHASE_CHECKLIST |
 | 12 | Seeds and Five Procedures | Complete (DEMO seed) | Five READY_FOR_DEMO; all contentClass=DEMO; governance path + forensic closure; see docs/content/PHASE_12_* |
-| 13 | Hardening, A11y, Performance | Not started | Full test matrix |
+| 13 | Hardening, A11y, Performance | **In progress** | Full test matrix; see Phase 13 section below |
 | 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
 
 ## Phase 0 / 1
@@ -240,15 +240,15 @@ See [CONTENT_MODEL.md](./CONTENT_MODEL.md) § `user-reports`, [SECURITY.md](./SE
 - [x] P9-A: interactive local documents checklist + clear-all (in `GuideClient`)
 - [x] P9-B: schema-versioned `localStorage` for answers + checklist (`waraqa:guide:<slug>`)
 - [x] P9-C: browser-native A4 RTL print (`window.print` + `@media print`; preparation sheet only)
-  - Accepted: **PASS WITH PRINT-PREVIEW LIMITATION** — real OS/browser Print Preview not manually inspected (not a commit blocker).
-  - **Required Phase 13 / pre-production:** manual Print Preview QA (A4 RTL, margins, page breaks, checklist marks, DEMO/disclaimer/sources).
+  - At Phase 9 accept: **PASS WITH PRINT-PREVIEW LIMITATION** (automated only).
+  - **Phase 13 owner manual Print Preview:** **PASS** 2026-09-15 — see [qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md](./qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md).
 - [x] P9-D: client-side WhatsApp share (`wa.me` text; public transaction URL only; no answers/checklist state)
 - [x] P9-E: answer summary (**إجاباتك**) + per-answer **تعديل** + recalc / prune inapplicable answers
 - [ ] Share permalinks / tokens (explicitly out of Phase 9 acceptance; deferred)
 
 See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md) §2.1–§2.4.
 
-Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit answers) is implemented. Remaining known limitation: **OS Print Preview** → Phase 13.
+Phase 9 citizen acceptance (checklist, local progress, print, WhatsApp, edit answers) is implemented. **OS Print Preview** carry-over closed in Phase 13 (owner PASS 2026-09-15).
 
 ## Phase 11 — Admin UX Refinement — COMPLETE
 
@@ -296,7 +296,29 @@ See [CONTENT_MODEL.md](./CONTENT_MODEL.md), [RBAC.md](./RBAC.md), [SECURITY.md](
 ### Out of scope / deferred
 - PRODUCTION promotion or ministry certification
 - Numeric fee schedules (دليل الرسوم not transcribed)
-- Phase 13 OS print-preview QA
+- Phase 13 OS print-preview QA — **COMPLETE** (owner PASS 2026-09-15)
+
+## Phase 13 — Quality hardening — COMPLETE
+
+Branch `phase-13-quality-hardening`. Closure report: [qa/PHASE_13_QUALITY_REPORT.md](./qa/PHASE_13_QUALITY_REPORT.md).
+
+- [x] Ops runbooks: [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md), [ops/MIGRATION_ROLLBACK.md](./ops/MIGRATION_ROLLBACK.md)
+- [x] `scripts/secret-scan.ts` + `scripts/phase13-backup-restore-smoke.ts` + `scripts/phase13-ci-prepare.ts`
+- [x] Security / dependency / source-health docs under `docs/qa/phase-13/`
+- [x] Privacy / terms / methodology public Arabic copy (product-aligned; not formal legal opinion)
+- [x] SECURITY.md Phase 13 sections; README current phase
+- [x] Unit / integration suites green
+- [x] E2E critical CI gate (`pnpm seed:phase13:ci`, `pnpm test:e2e:ci` = 14) + GitHub workflow Playwright job
+- [x] Accessibility (axe critical = 0 on gated routes)
+- [x] RTL audit + viewport overflow gates
+- [x] **Manual OS/browser Print Preview** (P9-C) — [PRINT_PREVIEW_MANUAL_CHECKLIST.md](./qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md) — owner PASS 2026-09-15
+- [x] Empty DB + fresh clone evidence
+- [x] Backup/restore smoke executed locally
+- [x] Dependency overrides / re-audit (0 high)
+- [x] Source health live-fetch recorded (7/7 HTTP 200; no silent claim rewrites)
+- [x] Homepage query-batching performance hardening + owner TTFB validation ([HOME_QUERY_SHAPE.md](./qa/phase-13/HOME_QUERY_SHAPE.md))
+- [x] Quality report filled — Phase 13 **PASS / COMPLETE**
+- [x] PR #4 open against main (do not merge until final human merge decision)
 
 ## Phase 4 — Admin UI polish debt
 
