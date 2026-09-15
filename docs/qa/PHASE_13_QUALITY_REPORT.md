@@ -1,9 +1,10 @@
 # Phase 13 — Quality Hardening Report
 
-**Status:** AWAITING OWNER MANUAL PRINT PREVIEW (all other Phase 13 gates green locally)  
+**Status:** PASS / COMPLETE  
 **Branch:** `phase-13-quality-hardening`  
-**Tested commit:** `87c8b2ffc9a164dce2f070df7c37ef1a911aa15a`  
-**Report date:** 2026-09-14  
+**Performance hardening commit:** `53ec75e9fc6f3953e7b7c48456bd7df96819f4f5`  
+**Docs closure:** this report + Print Preview sign-off on the same PR tip after that commit  
+**Report updated:** 2026-09-15  
 
 ---
 
@@ -13,7 +14,7 @@
 | --- | --- |
 | Node | 24.18.0 |
 | pnpm | 11.14.0 |
-| Postgres | Docker `waraqa` / `waraqa_p13fresh` on host **5433** |
+| Postgres | Docker `waraqa` / disposable int DB on host **5433** |
 | Content mode (E2E) | `WARAQA_PUBLIC_CONTENT_MODE=demo` + `WARAQA_PHASE13_CI=1` |
 | CI secrets | CI-only placeholders only (see workflow) |
 
@@ -25,25 +26,27 @@
 | --- | --- |
 | `pnpm lint` | PASS |
 | `pnpm typecheck` | PASS |
-| `pnpm test` | PASS — **387** |
-| `pnpm test:int` | PASS — **143** |
+| `pnpm test` | PASS — see closure run counts |
+| `pnpm test:int` | PASS — see closure run counts |
 | `pnpm test:e2e:ci` | PASS — **14** (critical + Phase 12) |
 | `pnpm build` | PASS |
 | `pnpm audit:deps` | PASS — 0 high / 0 critical after overrides |
 | `pnpm scan:secrets` | PASS |
-| Backup/restore smoke | PASS (`payload_migrations` = 14) |
+| Backup/restore smoke | PASS |
 | Empty DB / empty UI | PASS (int + unit) |
-| Fresh clone | PASS (install → migrate → lint → typecheck → test → int → build) |
+| Fresh clone | PASS |
 
 ---
 
-## 3. Counts
+## 3. Counts (closure gate re-run 2026-09-15)
+
+Local re-run on Docker Postgres `5433` after Print Preview owner sign-off (same product tip `53ec75e`):
 
 | Suite | Passing |
 | --- | ---: |
-| Unit | 387 |
-| Integration | 143 |
-| E2E critical closure | 14 |
+| Unit | 407 |
+| Integration | 144 |
+| E2E critical closure (`pnpm test:e2e:ci`) | 14 |
 
 ---
 
@@ -80,9 +83,22 @@
 | Check | Result |
 | --- | --- |
 | Playwright print DOM | PASS (automated) |
-| **Real OS/browser Print Preview** | **PENDING OWNER** — see [PRINT_PREVIEW_MANUAL_CHECKLIST.md](./phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md) |
+| **Real OS/browser Print Preview** | **PASS** — owner manual sign-off 2026-09-15 |
 
-Agent opened Golden Demo result in Edge and IDE browser; **could not inspect the OS Print Preview dialog** (print UI blocked/non-observable in automation). Do not mark Phase 13 COMPLETE until the manual checklist passes.
+Owner evidence (Chrome / Windows Print Preview, A4 Portrait):
+
+- Arabic RTL correct
+- Browser headers/footers disabled
+- No navigation/header/footer clutter
+- No checklist/card split mid-item
+- Checklist marks readable
+- Title, selected answers/situation, requirements, steps, notes, sources visible
+- DEMO warning visible
+- Independence disclaimer visible
+- Review/generated date visible
+- 3-page PDF visually reviewed by owner
+
+Checklist: [PRINT_PREVIEW_MANUAL_CHECKLIST.md](./phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md)
 
 ---
 
@@ -110,11 +126,21 @@ See [SOURCE_HEALTH.md](./phase-13/SOURCE_HEALTH.md). All **7** Phase 12 source U
 
 ---
 
-## 12. Performance notes
+## 12. Performance
 
-- Critical public flows exercised under Playwright + production `next start` path in CI config.
-- No Lighthouse score gate (roadmap does not define numeric thresholds).
-- Bundle build completed without failure; further perf work deferred as non-blocker.
+Query-shape hardening shipped in `53ec75e9fc6f3953e7b7c48456bd7df96819f4f5` (batched claim/source graph; no category N+1; batched featured). Shape notes: [HOME_QUERY_SHAPE.md](./phase-13/HOME_QUERY_SHAPE.md).
+
+**Deployed / preview real-browser TTFB (owner-measured, not a CI wall-clock gate):**
+
+| Measurement | TTFB |
+| --- | ---: |
+| Before batching (prior production/preview) | ≈ **8.92 s** |
+| After `53ec75e` — reload 1 | **61 ms** |
+| After `53ec75e` — reload 2 | **74 ms** |
+| After `53ec75e` — reload 3 | **43 ms** |
+| After average (3 reloads) | ≈ **59 ms** |
+
+No invented CI wall-clock benchmarks. Automated evidence remains query-count / unit+int assertions only.
 
 ---
 
@@ -147,7 +173,6 @@ Privacy, terms, methodology updated to match **actual** product behavior (indepe
 
 ## 17. Known limitations / deferred
 
-- Real OS Print Preview owner sign-off (blocker for COMPLETE)
 - Full offline PWA intentionally **not** implemented; guide localStorage survives reload
 - Category detail still ComingSoon (pre-existing); category→tx deep E2E not expanded
 - Remaining moderate npm advisories (non-blocking)
@@ -157,4 +182,6 @@ Privacy, terms, methodology updated to match **actual** product behavior (indepe
 
 ## 18. Verdict
 
-**PHASE 13 NOT COMPLETE — MANUAL PRINT PREVIEW REQUIRED** until [PRINT_PREVIEW_MANUAL_CHECKLIST.md](./phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md) is signed off.
+**PHASE 13 PASS / COMPLETE**
+
+All automated gates green; owner manual Print Preview signed off; homepage performance hardening validated on the deployed tip after `53ec75e`.

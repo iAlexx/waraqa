@@ -1,6 +1,6 @@
 # Interactive Guide Architecture (Phase 8–9)
 
-**Status:** Phase 8–9 complete (P9-A…P9-E). OS Print Preview remains Phase 13 manual QA.
+**Status:** Phase 8–9 complete (P9-A…P9-E). OS Print Preview owner-signed in Phase 13 (PASS 2026-09-15).
 
 **Last updated:** 2026-09-12
 
@@ -52,7 +52,7 @@ Implementation: `src/lib/guide/guide-local-storage.ts` + `GuideClient` post-moun
 | Checklist | Print uses `[✓]` / `[ ]` via `::before` on `[data-checklist-item]`; native checkboxes hidden in print |
 | Trust | DEMO warning + independence disclaimer print with the sheet; public eligibility unchanged (no QA_TEST on public routes) |
 | Non-goals | No PDF backend, no letterhead/seal imitation, no WhatsApp/share |
-| Known limitation | **OS/browser Print Preview** was not manually inspected at P9-C accept (`PASS WITH PRINT-PREVIEW LIMITATION`). Automated coverage uses Playwright `emulateMedia({ media: 'print' })` only. **Required manual QA** before production: Phase 13 / pre-production hardening — inspect real Print Preview (A4, RTL, margins, page breaks, checklist marks, DEMO/disclaimer/sources). |
+| Known limitation | **OS/browser Print Preview** was not manually inspected at P9-C accept (`PASS WITH PRINT-PREVIEW LIMITATION`). Automated coverage uses Playwright `emulateMedia({ media: 'print' })` only. **Phase 13 owner manual Print Preview:** PASS 2026-09-15 — see [qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md](./qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md). |
 
 ## 2.3 WhatsApp share (P9-D)
 
@@ -168,7 +168,7 @@ See [SECURITY.md](./SECURITY.md).
 - Phase 11: sitemap/structured data for guide paths
 - AI inference, arbitrary expressions, admin live rule preview (deferred)
 - Media uploads, citizen accounts, server-side citizen state / PDF export service
-- OS Print Preview (required Phase 13 / pre-production manual QA — P9-C limitation)
+- OS Print Preview — Phase 13 owner manual QA **PASS** (2026-09-15)
 
 ## 11. QA
 

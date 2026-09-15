@@ -1,34 +1,36 @@
 # Phase 13 — Owner manual Print Preview checklist (P9-C)
 
-**Status:** REQUIRED — agent could not inspect a real OS/browser Print Preview dialog in this environment (IDE browser blocks `window.print()`; Playwright `emulateMedia('print')` is explicitly insufficient).
+**Status:** PASS — owner completed 2026-09-15  
+**Environment:** Chrome / Windows · A4 Portrait · browser headers/footers disabled  
+**Procedure:** Golden Demo guide result (معادلة شهادة ثانوية غير سورية / Phase 12 seed)
 
-**Setup**
+**Setup used**
 1. `WARAQA_PUBLIC_CONTENT_MODE=demo`
-2. `pnpm seed:phase13:ci` (or `pnpm seed:phase12`) with healthy Postgres
-3. Open a **desktop** Chrome or Edge (not Playwright headless)
-4. Complete Golden Demo guide: non-Arab certificate → result (`/transactions/p12-demo-tx-secondary-equivalency/guide`)
-5. Click **طباعة النتيجة**, then open the browser/OS **Print Preview** (Ctrl+P if needed)
-6. Choose **A4 portrait**
+2. Seeded DEMO content available
+3. Desktop Chrome (not Playwright headless)
+4. Guide result → **طباعة النتيجة** → OS/browser Print Preview
+5. A4 portrait
 
-**Verify in Print Preview (pass/fail each)**
-- [ ] A4 portrait layout
-- [ ] Arabic RTL reading order
-- [ ] Sane margins (content not clipped)
-- [ ] No public header/nav chrome
-- [ ] No footer menus / decorative clutter
-- [ ] No broken page splits mid-checklist item
-- [ ] Checklist marks `[✓]` / `[ ]` (or equivalent) readable
-- [ ] Title present
-- [ ] Selected situation / answers summary present
-- [ ] Requirements (documents) present
-- [ ] Steps present
-- [ ] Durations/fees only if applicable (equivalency may omit duration)
-- [ ] Sources listed
-- [ ] Verification / last-review date present
-- [ ] DEMO warning visible
-- [ ] Independence disclaimer visible
-- [ ] Generated/print date present
+**Verify in Print Preview**
+- [x] A4 portrait layout
+- [x] Arabic RTL reading order
+- [x] Sane margins (content not clipped)
+- [x] No public header/nav chrome
+- [x] No footer menus / decorative clutter
+- [x] No broken page splits mid-checklist item
+- [x] Checklist marks `[✓]` / `[ ]` (or equivalent) readable
+- [x] Title present
+- [x] Selected situation / answers summary present
+- [x] Requirements (documents) present
+- [x] Steps present
+- [x] Notes visible where applicable
+- [x] Sources listed
+- [x] Verification / last-review date present
+- [x] DEMO warning visible
+- [x] Independence disclaimer visible
+- [x] Generated/print date present
 
-**Evidence:** optional screenshot of Print Preview only (no credentials / no citizen contact).
+**Evidence:** Owner visually reviewed a 3-page PDF from Print Preview (no credentials / no citizen contact stored in repo).
 
-When all boxes pass, update `docs/qa/PHASE_13_QUALITY_REPORT.md` Print Preview section to **PASS** and re-run Phase 13 closure.
+**Sign-off:** Owner — 2026-09-15 — Print Preview gate **PASS**.  
+`docs/qa/PHASE_13_QUALITY_REPORT.md` updated to Phase 13 **PASS / COMPLETE**.

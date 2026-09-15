@@ -2255,7 +2255,7 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 
 > **Owner decision (2026-07-20):** Phase 8 ships **in-memory answers only** and an **in-session result checklist**. Roadmap items below for “save local progress”, “browser refresh preserves safe progress”, and “schema-version mismatch in local storage” are **deferred to Phase 9+**. WhatsApp share, print, and persistent checklists remain Phase 9 scope. See [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md).
 >
-> **Update (2026-09-12):** Phase 9 delivered P9-A…P9-E (checklist, `localStorage`, A4 print, WhatsApp share, edit answers). OS Print Preview remains Phase 13 manual QA. Share permalinks/tokens remain deferred.
+> **Update (2026-09-15):** Phase 9 delivered P9-A…P9-E. Phase 13 owner manual OS Print Preview is **PASS**. Share permalinks/tokens remain deferred.
 
 ### Tasks
 
@@ -2318,7 +2318,7 @@ See [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md).
 - no sensitive data is placed in a share URL;
 - result works on small screens.
 
-**Status (2026-09-12):** Implemented as P9-A…P9-E. Known carry-over: real OS/browser Print Preview is Phase 13 manual QA (P9-C limitation). Share permalinks/tokens not in scope.
+**Status (2026-09-15):** Implemented as P9-A…P9-E. Phase 13 owner manual OS/browser Print Preview: **PASS**. Share permalinks/tokens not in scope.
 
 ## Phase 10 — User Reports
 
@@ -2419,7 +2419,7 @@ Artifacts:
 - Arabic copy authored for citizen clarity;
 - currency/amounts omitted where unsupported (honest UNKNOWN / confirmation-needed).
 
-## Phase 13 — Quality Hardening
+## Phase 13 — Quality Hardening — PASS / COMPLETE (2026-09-15)
 
 ### Tasks
 
@@ -2437,9 +2437,9 @@ Artifacts:
 - privacy and legal copy review;
 - visual regression captures.
 
-### Status (2026-09-14)
+### Status (2026-09-15) — PASS / COMPLETE
 
-Automated / ops gates implemented on `phase-13-quality-hardening` (CI E2E, audits, backup/restore, fresh clone, source health, legal copy). **Owner OS Print Preview** remains the Phase 13 completion blocker — see `docs/qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md`.
+Automated / ops gates green on `phase-13-quality-hardening` (CI E2E, audits, backup/restore, fresh clone, source health, legal copy). **Owner OS Print Preview** signed off 2026-09-15 — see `docs/qa/phase-13/PRINT_PREVIEW_MANUAL_CHECKLIST.md` and `docs/qa/PHASE_13_QUALITY_REPORT.md`. Homepage query-batching performance hardening validated with owner-measured deployed TTFB after `53ec75e` (not a CI wall-clock claim).
 
 ### Acceptance criteria
 
