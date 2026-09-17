@@ -1,25 +1,30 @@
 /**
  * Recompute denormalized claimTrustOk for transactions after claim/source changes.
+ *
+ * Single-binding-set resolution keeps published-row findByID (draft:false) for
+ * admin recompute / hooks. Multi-doc public paths use resolveClaimGraphBatch.
  */
 import type { Payload, PayloadRequest } from 'payload'
 
 import type { ClaimDocLike } from '@/lib/claims/claim-trust'
+import { relationId } from '@/lib/claims/claim-graph-batch'
 import { evaluateTransactionClaimTrustOk } from '@/lib/claims/validate-claim-publication'
 import type { SourceDocLike } from '@/lib/workflow/source-evidence'
 
-function relationId(value: unknown): string | null {
-  if (value == null || value === '') return null
-  if (typeof value === 'number' || typeof value === 'string') return String(value)
-  if (typeof value === 'object' && value !== null && 'id' in value) {
-    const id = (value as { id: unknown }).id
-    if (typeof id === 'number' || typeof id === 'string') return String(id)
-  }
-  return null
-}
+export {
+  createClaimGraphBatchStats,
+  relationId,
+  resolveClaimGraphBatch,
+  type ClaimGraphBatchStats,
+} from '@/lib/claims/claim-graph-batch'
 
+/**
+ * Resolve Claim/Source graph for a single binding set via published findByID.
+ * Prefer resolveClaimGraphBatch when evaluating many transactions in one request.
+ */
 export async function resolveClaimGraph(
   payload: Payload,
-  bindings: Array<{ claim?: unknown }> | null | undefined,
+  bindings: Array<{ claim?: unknown; required?: boolean | null }> | null | undefined,
   req?: PayloadRequest,
 ): Promise<{
   claims: Map<string, ClaimDocLike>
@@ -32,6 +37,7 @@ export async function resolveClaimGraph(
     // Always re-fetch by id — never trust in-memory/populated snapshots for trust decisions.
     const id = relationId(row.claim)
     if (!id) continue
+    if (claims.has(id)) continue
     let claim: ClaimDocLike | null = null
     try {
       claim = (await payload.findByID({

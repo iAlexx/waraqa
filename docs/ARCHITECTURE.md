@@ -147,9 +147,9 @@ Rules:
 
 1. **Local:** develop with disposable DB; optional `PAYLOAD_DATABASE_PUSH=1` for push-only local iteration.
 2. **Create migration:** `pnpm db:migrate:create` when a feature is ready.
-3. **Apply / status:** `pnpm db:migrate` / `pnpm db:migrate:status` (uses Payload migrate against `DATABASE_URL_DIRECT` as configured).
-4. **Preview:** if migrations are needed, run them only against the **preview** database using that environment’s `DATABASE_URL_DIRECT`.
-5. **Production:** after manual export, run migrate in the production CI/deploy pipeline with production `DATABASE_URL_DIRECT`, then build/deploy the app. Runtime uses `DATABASE_URL` (transaction pooler) only.
+3. **Apply / status:** `pnpm db:migrate` / `pnpm db:migrate:status` — wrappers set `DATABASE_URL` from `DATABASE_URL_DIRECT` when present so Payload (which reads `DATABASE_URL`) uses the direct/session connection for tooling.
+4. **Preview:** if migrations are needed, run them only against the **preview** database (set that environment’s `DATABASE_URL_DIRECT`, then `pnpm db:migrate`).
+5. **Production:** after manual export, run migrate in the production CI/deploy pipeline with production `DATABASE_URL_DIRECT` set; then build/deploy the app. Runtime uses `DATABASE_URL` (transaction pooler) only.
 
 ## 9. Local development workflow
 
