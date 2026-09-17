@@ -4,11 +4,10 @@
  * robots.txt / Metadata robots are NOT access control — they only signal crawlers.
  * Preview deployments still need real Vercel Deployment Protection (owner ops).
  *
- * Rules:
- * - Vercel Preview → never index
- * - WARAQA_PUBLIC_CONTENT_MODE=demo → never index as authoritative public info
- * - WARAQA_FORCE_NOINDEX=1 → never index (ops kill-switch)
- * - Otherwise allow index (PRODUCTION content mode on a production deploy)
+ * Fail closed: indexing is opt-in only when ALL of:
+ * - VERCEL_ENV === 'production' (missing / development / unexpected → noindex)
+ * - WARAQA_PUBLIC_CONTENT_MODE resolves to 'production'
+ * - WARAQA_FORCE_NOINDEX is not '1'
  */
 import { getPublicContentMode } from '@/lib/content-class/public-content-policy'
 
@@ -30,8 +29,21 @@ export function resolveIndexingDecision(input?: {
   const reasons: string[] = []
 
   if (force) reasons.push('WARAQA_FORCE_NOINDEX=1')
-  if (vercelEnv === 'preview') reasons.push('VERCEL_ENV=preview')
-  if (contentMode === 'demo') reasons.push('WARAQA_PUBLIC_CONTENT_MODE=demo')
+
+  if (vercelEnv !== 'production') {
+    if (!vercelEnv) reasons.push('VERCEL_ENV=missing')
+    else if (vercelEnv === 'preview') reasons.push('VERCEL_ENV=preview')
+    else if (vercelEnv === 'development') reasons.push('VERCEL_ENV=development')
+    else reasons.push(`VERCEL_ENV=unexpected:${vercelEnv}`)
+  }
+
+  if (contentMode !== 'production') {
+    reasons.push(
+      contentMode === 'demo'
+        ? 'WARAQA_PUBLIC_CONTENT_MODE=demo'
+        : `WARAQA_PUBLIC_CONTENT_MODE=${contentMode}`,
+    )
+  }
 
   return {
     allowIndexing: reasons.length === 0,

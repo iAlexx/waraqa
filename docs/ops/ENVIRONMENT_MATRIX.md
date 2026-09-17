@@ -18,7 +18,7 @@ Related: [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md), [SECURITY.md](.
 | `NEXT_PUBLIC_SERVER_URL` | `http://localhost:3000` | Preview deployment origin | Canonical public origin |
 | `WARAQA_PUBLIC_CONTENT_MODE` | Usually unset → fail-closed `production`, or explicit `demo` for local DEMO QA | Explicitly permitted `demo` for private demos | Owner decision: keep `demo` only while DEMO content is intentional; switch to `production` only after PRODUCTION content exists |
 | QA / seed fixtures | Only with `ALLOW_QA_FIXTURE=1` (blocked when `NODE_ENV`/`VERCEL_ENV`=production) | Never use production DB; never enable seed against Production | Seed bypass **hard-blocked** on production runtime |
-| Search indexing | Irrelevant locally | **noindex** (`VERCEL_ENV=preview`) | Index only when mode ≠ `demo` and force-noindex unset |
+| Search indexing | Irrelevant locally | **noindex** (`VERCEL_ENV` ≠ `production`) | Index **only** when `VERCEL_ENV=production` **and** content mode=`production` **and** force-noindex unset |
 | Access protection | Local machine | **Required:** Vercel Deployment Protection / SSO / password (robots alone are insufficient) | Public citizen site + Payload Admin auth |
 
 ---

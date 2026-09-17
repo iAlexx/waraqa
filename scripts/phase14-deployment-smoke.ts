@@ -3,22 +3,35 @@
  *
  * Usage:
  *   WARAQA_SMOKE_BASE_URL=https://waraqa-eta.vercel.app pnpm smoke:deploy
+ *   WARAQA_SMOKE_EXPECT_DEMO=1   # when the target intentionally serves DEMO public content
  *
  * Never writes to the database. Never embeds credentials.
  * Does not assert admin login success (owner tests that manually).
+ *
+ * Requires explicit WARAQA_SMOKE_BASE_URL (never falls back to .env.local).
  */
-import { config as loadEnv } from 'dotenv'
-
-loadEnv({ path: '.env.local' })
-
 type Check = { name: string; ok: boolean; detail?: string }
 
-const base = (process.env.WARAQA_SMOKE_BASE_URL || process.env.NEXT_PUBLIC_SERVER_URL || '')
-  .trim()
-  .replace(/\/$/, '')
+function parseSmokeBaseUrl(raw: string | undefined): string | null {
+  const value = (raw || '').trim().replace(/\/$/, '')
+  if (!value) return null
+  try {
+    const u = new URL(value)
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null
+    if (!u.hostname) return null
+    return `${u.protocol}//${u.host}`
+  } catch {
+    return null
+  }
+}
+
+const base = parseSmokeBaseUrl(process.env.WARAQA_SMOKE_BASE_URL)
+const expectDemo = (process.env.WARAQA_SMOKE_EXPECT_DEMO || '').trim() === '1'
 
 if (!base) {
-  console.error('ABORT: set WARAQA_SMOKE_BASE_URL (or NEXT_PUBLIC_SERVER_URL) to the site origin.')
+  console.error(
+    'ABORT: set an explicit valid WARAQA_SMOKE_BASE_URL (https://… origin). Refusing .env.local fallback.',
+  )
   process.exit(2)
 }
 
@@ -32,10 +45,6 @@ async function get(path: string): Promise<{ status: number; text: string; header
   return { status: res.status, text, headers: res.headers }
 }
 
-function includesAll(hay: string, needles: string[]): boolean {
-  return needles.every((n) => hay.includes(n))
-}
-
 const checks: Check[] = []
 
 function record(name: string, ok: boolean, detail?: string) {
@@ -46,7 +55,7 @@ function record(name: string, ok: boolean, detail?: string) {
 
 async function main() {
   console.log(`WARAQA deploy smoke (read-only) against ${base}`)
-  console.log('(No credentials; no DB writes.)')
+  console.log(`expectDemo=${expectDemo} (No credentials; no DB writes.)`)
 
   {
     const home = await get('/')
@@ -55,7 +64,9 @@ async function main() {
       'homepage Arabic RTL / independence signal',
       home.status === 200 &&
         (home.text.includes('dir="rtl"') || home.text.includes("dir='rtl'")) &&
-        (home.text.includes('مستقل') || home.text.includes('ليست موقعاً حكوميا') || home.text.includes('ورقة')),
+        (home.text.includes('مستقل') ||
+          home.text.includes('ليست موقعاً حكوميا') ||
+          home.text.includes('ورقة')),
     )
     record(
       'security header x-content-type-options',
@@ -71,21 +82,35 @@ async function main() {
 
   {
     const golden = await get('/transactions/p12-demo-tx-secondary-equivalency')
-    // In production content mode this may 404 — that is still a valid isolation outcome.
-    const okStatus = golden.status === 200 || golden.status === 404
-    record('Golden Demo detail reachable or correctly hidden', okStatus, `status=${golden.status}`)
-    if (golden.status === 200) {
+    if (expectDemo) {
+      record('Golden Demo detail HTTP 200 (DEMO mode expected)', golden.status === 200, `status=${golden.status}`)
+      if (golden.status === 200) {
+        record(
+          'DEMO label visible on Golden Demo detail',
+          golden.text.includes('بيانات تجريبية') || golden.text.includes('تجريب'),
+        )
+      }
+    } else {
       record(
-        'DEMO label visible when DEMO procedure is public',
-        includesAll(golden.text, ['بيانات تجريبية']) || golden.text.includes('تجريب'),
+        'Golden Demo detail HTTP 404 (production mode — DEMO not public)',
+        golden.status === 404,
+        `status=${golden.status}`,
       )
     }
   }
 
   {
     const health = await get('/api/health')
-    record('health endpoint responds', health.status === 200 || health.status === 503, `status=${health.status}`)
-    if (health.status === 200 || health.status === 503) {
+    if (health.status === 503) {
+      record(
+        'health endpoint operational (HTTP 200)',
+        false,
+        'HTTP 503 — database/runtime unhealthy; diagnose separately (not a deploy smoke PASS)',
+      )
+    } else {
+      record('health endpoint operational (HTTP 200)', health.status === 200, `status=${health.status}`)
+    }
+    if (health.status === 200) {
       const safe =
         !/postgres(ql)?:\/\//i.test(health.text) &&
         !/"password"/i.test(health.text) &&
@@ -97,7 +122,19 @@ async function main() {
   {
     const robots = await get('/robots.txt')
     record('robots.txt HTTP 200', robots.status === 200, `status=${robots.status}`)
-    record('robots.txt is non-empty', robots.status === 200 && robots.text.trim().length > 0)
+    if (robots.status === 200) {
+      const body = robots.text.toLowerCase()
+      if (expectDemo) {
+        // DEMO / non-indexable deploys should disallow crawling.
+        record(
+          'robots.txt disallows indexing in DEMO expectation',
+          body.includes('disallow: /') || /disallow:\s*\//.test(body),
+          'expected Disallow: / when DEMO public surface is intentional',
+        )
+      } else {
+        record('robots.txt is non-empty', robots.text.trim().length > 0)
+      }
+    }
   }
 
   {
@@ -108,6 +145,13 @@ async function main() {
         'sitemap excludes /admin and /preview',
         !sitemap.text.includes('/admin') && !sitemap.text.includes('/preview/'),
       )
+      if (expectDemo) {
+        // When indexing is disabled, sitemap should not advertise DEMO procedures.
+        record(
+          'sitemap has no DEMO procedure URLs under DEMO noindex policy',
+          !sitemap.text.includes('/transactions/p12-demo-'),
+        )
+      }
     }
   }
 
@@ -122,7 +166,7 @@ async function main() {
 
   {
     const missing = await get('/transactions/does-not-exist-phase14-smoke')
-    record('unknown transaction does not 500', missing.status === 404 || missing.status === 200, `status=${missing.status}`)
+    record('unknown transaction HTTP 404', missing.status === 404, `status=${missing.status}`)
   }
 
   const failed = checks.filter((c) => !c.ok)

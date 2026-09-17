@@ -56,7 +56,8 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       siteName: title,
     },
-    // DEMO mode / Vercel Preview → noindex. PRODUCTION content pages may still set page-level noindex when demoLabeled.
+    // Indexing is opt-in: VERCEL_ENV=production + content mode=production + no force-noindex.
+    // DEMO pages may still set page-level noindex when demoLabeled.
     robots: publicRobotsMetadata(),
   }
 }

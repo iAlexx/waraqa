@@ -79,13 +79,13 @@
 | --- | --- |
 | `pnpm lint` | **PASS** |
 | `pnpm typecheck` | **PASS** |
-| `pnpm test` | **PASS** — 413 |
+| `pnpm test` | **PASS** — 422 |
 | `pnpm test:int` | **PASS** — 144 (local Docker `5433` only) |
-| `pnpm build` | **PASS** (`/robots.txt`, `/sitemap.xml` present) |
+| `pnpm build` | **PASS** (`/robots.txt` static; `/sitemap.xml` dynamic) |
 | `pnpm test:e2e:ci` | **PASS** — 14 |
 | `pnpm scan:secrets` | **PASS** |
 | `pnpm audit:deps` | **PASS** — 0 high / 0 critical |
-| `pnpm smoke:deploy` | Optional against public URL; not required for ENGINEERING READY |
+| `pnpm smoke:deploy` | Optional against public URL; requires explicit `WARAQA_SMOKE_BASE_URL` |
 
 ---
 

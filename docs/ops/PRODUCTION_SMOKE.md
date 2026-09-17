@@ -7,8 +7,12 @@ Automated helper:
 
 ```powershell
 $env:WARAQA_SMOKE_BASE_URL = "https://waraqa-eta.vercel.app"
+# When the target intentionally serves DEMO public content:
+# $env:WARAQA_SMOKE_EXPECT_DEMO = "1"
 pnpm smoke:deploy
 ```
+
+`WARAQA_SMOKE_BASE_URL` is **required** (no `.env.local` fallback). Health must be HTTP **200** (503 is a diagnosed failure). Missing transaction slugs must return HTTP **404**.
 
 ---
 
@@ -18,13 +22,13 @@ pnpm smoke:deploy
 | --- | --- |
 | Homepage | HTTP 200; RTL; independence / brand signal |
 | Arabic search | HTTP 200 |
-| Transaction detail | 200 if publicly eligible, or 404 if mode hides DEMO |
-| `/api/health` | 200 or 503; no secrets in body |
-| `/robots.txt` | 200 |
-| `/sitemap.xml` | 200; no `/admin` or `/preview/` URLs |
+| Transaction detail | DEMO mode (`WARAQA_SMOKE_EXPECT_DEMO=1`): Golden Demo **200** + DEMO label; production mode: Golden Demo **404** |
+| `/api/health` | **200 only** (503 = unhealthy — fail + diagnose) |
+| `/robots.txt` | 200; under DEMO expectation, Disallow:/ present |
+| `/sitemap.xml` | 200; no `/admin` or `/preview/`; under DEMO expectation, no `p12-demo` procedure URLs |
 | `/admin` | Responds with auth UI (no login attempt) |
-| Security header | `X-Content-Type-Options: nosniff` (when Phase 14-A headers shipped) |
-| Unknown slug | Not HTTP 500 |
+| Security header | `X-Content-Type-Options: nosniff` |
+| Unknown slug | **HTTP 404** (200 is a failure) |
 
 ---
 

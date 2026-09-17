@@ -2,14 +2,17 @@ import type { MetadataRoute } from 'next'
 
 import { listPublicSitemapEntries } from '@/lib/seo/public-sitemap'
 
+/** Revalidate against live CMS eligibility (trust / publish / archive changes). */
+export const dynamic = 'force-dynamic'
+
 function siteOrigin(): string {
   const raw = (process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').trim()
   return raw.replace(/\/$/, '')
 }
 
 /**
- * Public sitemap. Empty when indexing is disabled (Preview / DEMO mode).
- * Entries use getPublicTransactionWhere() — never drafts, QA_TEST, or blocked rows.
+ * Public sitemap. Empty when indexing is disabled (non-production env / DEMO mode).
+ * Procedure URLs require live claim trust; guide URLs only when a public guide exists.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = siteOrigin()
