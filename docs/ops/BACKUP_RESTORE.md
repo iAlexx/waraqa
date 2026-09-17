@@ -1,7 +1,7 @@
 # Backup and restore runbook
 
 **Audience:** operators / Phase 13+  
-**Last updated:** 2026-09-14  
+**Last updated:** 2026-09-17  
 **Scope:** PostgreSQL used by Payload. Prefer restore into a **new disposable database**, never overwrite production in place without an explicit incident plan.
 
 **Hard rules**
@@ -10,7 +10,8 @@
 - Never use production data in local smoke tests.
 - Never point local/preview tooling at production credentials for “practice restore”.
 
-Related smoke: `pnpm phase13:backup-restore-smoke` (disposable local Docker only).
+Related smoke: `pnpm phase13:backup-restore-smoke` (disposable local Docker only).  
+Deployment cutover: [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md) · [ENVIRONMENT_MATRIX.md](./ENVIRONMENT_MATRIX.md).
 
 ---
 

@@ -96,3 +96,7 @@ docs/qa/phase-13/**/*.local.*
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/settings.json
+
+# Accidental local Node binary/shim drop
+/node
+

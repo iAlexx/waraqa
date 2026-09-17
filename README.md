@@ -5,7 +5,7 @@ Independent Syrian administrative-procedure guidance platform.
 > **ورقة منصة إرشادية مستقلة وليست موقعاً حكومياً.**  
 > Waraqa is an independent guidance platform and is not a government website.
 
-**Current phase:** Phase 13 — Quality hardening (**in progress**). Phases 0–12 delivered through DEMO seed content; production deploy is Phase 14.
+**Current phase:** Phase 14-A — Deployment readiness (**ENGINEERING READY** target; not PRODUCTION LAUNCHED). Phase 13 quality hardening is **COMPLETE**. Phases 0–12 delivered through DEMO seed content.
 
 ## Requirements
 

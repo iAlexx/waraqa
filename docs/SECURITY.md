@@ -1,10 +1,10 @@
 # Waraqa Security Baseline
 
-**Status:** Phase 4–12 delivered; Phase 13 quality hardening in progress
+**Status:** Phase 4–13 delivered; Phase 14-A deployment readiness (ENGINEERING READY docs/gates — not PRODUCTION LAUNCHED)
 
-**Last updated:** 2026-09-14
+**Last updated:** 2026-09-17
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md), [qa/phase-13/DEPENDENCY_AUDIT.md](./qa/phase-13/DEPENDENCY_AUDIT.md), [.env.example](../.env.example)
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md), [RBAC.md](./RBAC.md), [PREVIEW_SECURITY.md](./PREVIEW_SECURITY.md), [TRANSACTION_DETAIL_ARCHITECTURE.md](./TRANSACTION_DETAIL_ARCHITECTURE.md), [INTERACTIVE_GUIDE_ARCHITECTURE.md](./INTERACTIVE_GUIDE_ARCHITECTURE.md), [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md), [ops/ENVIRONMENT_MATRIX.md](./ops/ENVIRONMENT_MATRIX.md), [ops/PRODUCTION_DEPLOYMENT.md](./ops/PRODUCTION_DEPLOYMENT.md), [qa/phase-13/DEPENDENCY_AUDIT.md](./qa/phase-13/DEPENDENCY_AUDIT.md), [.env.example](../.env.example)
 
 ## 1. Secret management
 
@@ -77,7 +77,7 @@ Roles (roadmap): `admin` | `reviewer` | `researcher` | `viewer`.
 | Rate limiting | Public report POSTs: PostgreSQL `report_rate_buckets` + **IP-only** HMAC identity (User-Agent excluded; Vercel `x-forwarded-for`/`x-real-ip`; fail-closed if IP untrustworthy); no raw IP stored |
 | Secure cookies | HTTPS-only in production; secure admin cookies |
 | Input validation | Zod at all custom input boundaries |
-| CSP | Plan and test before production demo (Phase later) |
+| CSP | Plan and test before PRODUCTION LAUNCHED (full CSP still deferred; Phase 14-A ships baseline nosniff / referrer / frame / permissions headers) |
 | User reports | Never publicly readable; plain text; honeypot; contact field ACL (admin/reviewer); no attachments; `assignedTo` editorial-only (Phase 11); public API rejects assignment |
 | Transaction hard delete | Previously published/approved/archived blocked server-side; linked reports RESTRICT; seed bypass only `context.seed` + non-prod |
 | Editorial dashboard | Internal `/api/admin-ops/dashboard` — active admin/reviewer; cheap counts only; no public exposure |

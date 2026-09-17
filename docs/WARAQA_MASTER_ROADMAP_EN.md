@@ -2467,6 +2467,10 @@ And:
 
 ## Phase 14 — Deployment and Demo
 
+### Status (2026-09-17) — Phase 14-A ENGINEERING READY (not launched)
+
+Phase 14-A documents environment isolation policy, robots/sitemap indexing rules, deployment/smoke runbooks, and TechTown demo honesty. **DEPLOYMENT READY** and **PRODUCTION LAUNCHED** require owner env verification and explicit cutover approval — see `docs/qa/PHASE_14_A_READINESS_REPORT.md`.
+
 ### Tasks
 
 - create production PostgreSQL project;

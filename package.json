@@ -50,6 +50,7 @@
     "audit:deps": "pnpm audit --audit-level high",
     "scan:secrets": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/secret-scan.ts",
     "phase13:backup-restore-smoke": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/phase13-backup-restore-smoke.ts",
+    "smoke:deploy": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/phase14-deployment-smoke.ts",
     "test:workflow": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.int.config.mts tests/int/phase4-workflow.int.spec.ts"
   },
   "dependencies": {
