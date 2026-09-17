@@ -14,6 +14,10 @@ pnpm smoke:deploy
 
 `WARAQA_SMOKE_BASE_URL` is **required** (no `.env.local` fallback). Health must be HTTP **200** (503 is a diagnosed failure). Missing transaction slugs must return HTTP **404**.
 
+**Robots / noindex (parsed, not substring):**
+- DEMO expectation: wildcard `User-agent: *` with exact `Disallow: /` (not `/admin`); homepage HTML must include robots **noindex**.
+- PRODUCTION expectation: must **not** full-site `Disallow: /`; homepage must **not** signal noindex.
+
 ---
 
 ## Automated (read-only)
@@ -24,8 +28,9 @@ pnpm smoke:deploy
 | Arabic search | HTTP 200 |
 | Transaction detail | DEMO mode (`WARAQA_SMOKE_EXPECT_DEMO=1`): Golden Demo **200** + DEMO label; production mode: Golden Demo **404** |
 | `/api/health` | **200 only** (503 = unhealthy — fail + diagnose) |
-| `/robots.txt` | 200; under DEMO expectation, Disallow:/ present |
-| `/sitemap.xml` | 200; no `/admin` or `/preview/`; under DEMO expectation, no `p12-demo` procedure URLs |
+| `/robots.txt` | 200; DEMO: exact wildcard `Disallow: /`; PRODUCTION: not full-site disallow |
+| Homepage robots meta | DEMO: HTML `noindex`; PRODUCTION: no `noindex` |
+| `/sitemap.xml` | 200; no `/admin` or `/preview/`; under DEMO expectation, no `p12-demo` procedure URLs. Pagination ceiling overflow fail-closes to empty (never a silently truncated procedure catalog). |
 | `/admin` | Responds with auth UI (no login attempt) |
 | Security header | `X-Content-Type-Options: nosniff` |
 | Unknown slug | **HTTP 404** (200 is a failure) |

@@ -10,6 +10,13 @@
  *
  * Requires explicit WARAQA_SMOKE_BASE_URL (never falls back to .env.local).
  */
+import {
+  assertProductionRobotsAllowsCrawl,
+  hasWildcardFullSiteDisallow,
+  htmlSignalsNoindex,
+  parseRobotsTxt,
+} from '../src/lib/seo/robots-parse.ts'
+
 type Check = { name: string; ok: boolean; detail?: string }
 
 function parseSmokeBaseUrl(raw: string | undefined): string | null {
@@ -57,8 +64,11 @@ async function main() {
   console.log(`WARAQA deploy smoke (read-only) against ${base}`)
   console.log(`expectDemo=${expectDemo} (No credentials; no DB writes.)`)
 
+  let homeHtml = ''
+
   {
     const home = await get('/')
+    homeHtml = home.text
     record('homepage HTTP 200', home.status === 200, `status=${home.status}`)
     record(
       'homepage Arabic RTL / independence signal',
@@ -83,7 +93,11 @@ async function main() {
   {
     const golden = await get('/transactions/p12-demo-tx-secondary-equivalency')
     if (expectDemo) {
-      record('Golden Demo detail HTTP 200 (DEMO mode expected)', golden.status === 200, `status=${golden.status}`)
+      record(
+        'Golden Demo detail HTTP 200 (DEMO mode expected)',
+        golden.status === 200,
+        `status=${golden.status}`,
+      )
       if (golden.status === 200) {
         record(
           'DEMO label visible on Golden Demo detail',
@@ -123,16 +137,26 @@ async function main() {
     const robots = await get('/robots.txt')
     record('robots.txt HTTP 200', robots.status === 200, `status=${robots.status}`)
     if (robots.status === 200) {
-      const body = robots.text.toLowerCase()
+      const groups = parseRobotsTxt(robots.text)
       if (expectDemo) {
-        // DEMO / non-indexable deploys should disallow crawling.
         record(
-          'robots.txt disallows indexing in DEMO expectation',
-          body.includes('disallow: /') || /disallow:\s*\//.test(body),
-          'expected Disallow: / when DEMO public surface is intentional',
+          'robots.txt wildcard User-agent has exact Disallow: /',
+          hasWildcardFullSiteDisallow(groups),
+          'rejects Disallow: /admin-style partials',
+        )
+        record(
+          'homepage HTML robots meta signals noindex (DEMO expectation)',
+          htmlSignalsNoindex(homeHtml),
         )
       } else {
-        record('robots.txt is non-empty', robots.text.trim().length > 0)
+        record(
+          'robots.txt does not full-site Disallow under wildcard (PRODUCTION expectation)',
+          assertProductionRobotsAllowsCrawl(groups),
+        )
+        record(
+          'homepage HTML does not signal noindex (PRODUCTION expectation)',
+          !htmlSignalsNoindex(homeHtml),
+        )
       }
     }
   }
@@ -146,7 +170,6 @@ async function main() {
         !sitemap.text.includes('/admin') && !sitemap.text.includes('/preview/'),
       )
       if (expectDemo) {
-        // When indexing is disabled, sitemap should not advertise DEMO procedures.
         record(
           'sitemap has no DEMO procedure URLs under DEMO noindex policy',
           !sitemap.text.includes('/transactions/p12-demo-'),

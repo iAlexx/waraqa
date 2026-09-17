@@ -7,7 +7,8 @@
  * - guide URL only when `isPublicGuideAvailable` / mapPublicGuide would succeed
  *
  * When indexing is disabled, return an empty URL list (robots already disallow).
- * Pages through the collection — never silently truncate past a single page.
+ * Pagination is bounded. Hitting the page ceiling with more rows remaining is an
+ * explicit overflow failure — never silently emit a partial procedure catalog.
  */
 import { getPayload, type Payload } from 'payload'
 
@@ -22,10 +23,10 @@ export type SitemapUrlEntry = {
   lastModified?: Date
 }
 
-/** Page size for sitemap collection walks (bounded; no silent single-page truncation). */
+/** Page size for sitemap collection walks (bounded). */
 export const SITEMAP_PAGE_SIZE = 100
 
-/** Soft ceiling to avoid unbounded crawls on pathological catalogs. */
+/** Hard ceiling — overflow when hasNextPage remains true after this many pages. */
 export const SITEMAP_MAX_PAGES = 50
 
 const STATIC_PUBLIC_PATHS = [
@@ -46,6 +47,25 @@ export function staticPublicSitemapPaths(): readonly string[] {
 /** True when the public guide route would be available for this transaction doc. */
 export function isSitemapGuideEligible(doc: Record<string, unknown>): boolean {
   return isPublicGuideAvailable(doc)
+}
+
+/**
+ * Thrown when the bounded page walk still has more public rows.
+ * Contains no private slugs — only aggregate pagination diagnostics.
+ */
+export class SitemapPaginationCeilingError extends Error {
+  readonly pagesFetched: number
+  readonly pageSize: number
+  readonly hasMore = true as const
+
+  constructor(pagesFetched: number, pageSize: number) {
+    super(
+      `Sitemap pagination ceiling reached (${pagesFetched}×${pageSize}) with additional public pages remaining; refusing incomplete procedure sitemap.`,
+    )
+    this.name = 'SitemapPaginationCeilingError'
+    this.pagesFetched = pagesFetched
+    this.pageSize = pageSize
+  }
 }
 
 /**
@@ -73,53 +93,104 @@ export function buildSitemapEntriesFromTrustedDocs(
   return entries
 }
 
-async function collectTrustedTransactionEntries(payload: Payload): Promise<SitemapUrlEntry[]> {
+export type SitemapPageResult = {
+  docs: Array<Record<string, unknown>>
+  hasNextPage: boolean
+}
+
+/**
+ * Walk public transaction pages with live trust filtering.
+ * Throws {@link SitemapPaginationCeilingError} if more pages remain after the ceiling
+ * (fail closed — caller must not emit a partial procedure list as complete).
+ */
+export async function walkTrustedTransactionPages(opts: {
+  pageSize: number
+  maxPages: number
+  fetchPage: (page: number) => Promise<SitemapPageResult>
+  evaluateTrust: (docs: Array<Record<string, unknown>>) => Promise<boolean[]>
+}): Promise<SitemapUrlEntry[]> {
   const entries: SitemapUrlEntry[] = []
   let page = 1
   let hasNext = true
 
-  while (hasNext && page <= SITEMAP_MAX_PAGES) {
-    const found = await payload.find({
-      collection: 'transactions',
-      locale: 'ar',
-      depth: 2,
-      limit: SITEMAP_PAGE_SIZE,
-      page,
-      pagination: true,
-      overrideAccess: false,
-      where: getPublicTransactionWhere(),
-    })
+  while (hasNext && page <= opts.maxPages) {
+    const found = await opts.fetchPage(page)
+    const docs = found.docs
+    if (docs.length === 0) {
+      hasNext = false
+      break
+    }
 
-    const docs = found.docs as unknown as Array<Record<string, unknown>>
-    if (docs.length === 0) break
-
-    const trustedFlags = await liveEvaluatePublicTransactionsClaimTrust(payload, docs)
+    const trustedFlags = await opts.evaluateTrust(docs)
     entries.push(...buildSitemapEntriesFromTrustedDocs(docs, trustedFlags))
 
     hasNext = Boolean(found.hasNextPage)
+    if (hasNext && page >= opts.maxPages) {
+      throw new SitemapPaginationCeilingError(page, opts.pageSize)
+    }
     page += 1
   }
 
   return entries
 }
 
+async function collectTrustedTransactionEntries(payload: Payload): Promise<SitemapUrlEntry[]> {
+  return walkTrustedTransactionPages({
+    pageSize: SITEMAP_PAGE_SIZE,
+    maxPages: SITEMAP_MAX_PAGES,
+    fetchPage: async (page) => {
+      const found = await payload.find({
+        collection: 'transactions',
+        locale: 'ar',
+        depth: 2,
+        limit: SITEMAP_PAGE_SIZE,
+        page,
+        pagination: true,
+        overrideAccess: false,
+        where: getPublicTransactionWhere(),
+      })
+      return {
+        docs: found.docs as unknown as Array<Record<string, unknown>>,
+        hasNextPage: Boolean(found.hasNextPage),
+      }
+    },
+    evaluateTrust: (docs) => liveEvaluatePublicTransactionsClaimTrust(payload, docs),
+  })
+}
+
 /**
  * Build sitemap URL paths for the active public content mode.
  * Never includes admin, preview, API, draft, QA_TEST, or trust-blocked procedures.
+ *
+ * On pagination ceiling overflow: fail closed to an empty list (do not advertise a
+ * truncated procedure catalog as complete). Static shells are also omitted so the
+ * response is not a false “full” sitemap.
  */
 export async function listPublicSitemapEntries(): Promise<SitemapUrlEntry[]> {
   if (!shouldAllowPublicIndexing()) {
     return []
   }
 
-  const entries: SitemapUrlEntry[] = STATIC_PUBLIC_PATHS.map((path) => ({ path }))
-
   try {
     const payload = await getPayload({ config })
-    entries.push(...(await collectTrustedTransactionEntries(payload)))
-  } catch {
-    // Fail closed for procedures: static public shells only.
+    const procedureEntries = await collectTrustedTransactionEntries(payload)
+    const staticEntries: SitemapUrlEntry[] = STATIC_PUBLIC_PATHS.map((path) => ({ path }))
+    return [...staticEntries, ...procedureEntries]
+  } catch (err) {
+    if (err instanceof SitemapPaginationCeilingError) {
+      // Explicit fail-closed: incomplete catalog must not be published as complete.
+      console.error(
+        JSON.stringify({
+          event: 'sitemap_pagination_ceiling',
+          pagesFetched: err.pagesFetched,
+          pageSize: err.pageSize,
+          hasMore: true,
+          policy: 'fail_closed_empty_sitemap',
+        }),
+      )
+      return []
+    }
+    // Other errors: fail closed for procedures — also empty (no false-complete static-only claim).
+    return []
   }
-
-  return entries
 }

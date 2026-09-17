@@ -79,7 +79,7 @@
 | --- | --- |
 | `pnpm lint` | **PASS** |
 | `pnpm typecheck` | **PASS** |
-| `pnpm test` | **PASS** — 422 |
+| `pnpm test` | **PASS** — 430 |
 | `pnpm test:int` | **PASS** — 144 (local Docker `5433` only) |
 | `pnpm build` | **PASS** (`/robots.txt` static; `/sitemap.xml` dynamic) |
 | `pnpm test:e2e:ci` | **PASS** — 14 |
