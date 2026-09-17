@@ -11,14 +11,14 @@ Track roadmap phases. Mark gates only when acceptance criteria are actually met.
 | 4 | Transactions Schema and Workflow | **COMPLETE — OWNER APPROVED** | Editorial workflow, audit, preview, access gates; Admin UX; QA Rounds 02–04 approved; tag `phase-4-complete` |
 | 5 | Public Shell and Home Page | **COMPLETE — OWNER APPROVED** | Public shell, Site Settings consumption, home, states, a11y; QA Rounds 01–03 approved; tag `phase-5-complete` |
 | 6 | Search and Categories | **COMPLETE — OWNER APPROVED** | Arabic search, ranking, filters, pagination, unique results; QA Rounds 01–03 approved; tag `phase-6-complete` |
-| 7 | Transaction Page | Not started | Sources + verification dates |
-| 8 | Interactive Guide Engine | Not started | Pure domain logic + tests |
-| 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview → Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
-| 10 | Reporting Changed Information | Not started | Rate limit; no file uploads |
+| 7 | Transaction Page | **COMPLETE — OWNER APPROVED** | Sources + verification dates |
+| 8 | Interactive Guide Engine | **TECHNICAL PASS** (owner visual may remain open) | Pure domain logic + tests |
+| 9 | Guide and Result UX | Done (P9-A…P9-E; OS Print Preview **PASS** in Phase 13) | Checklist, persistence, print, WhatsApp, edit answers |
+| 10 | Reporting Changed Information | **COMPLETE** (closure hardened) | Rate limit; no file uploads |
 | 11 | Admin UX Refinement | Complete (P11-A/B/C + dashboard + review-due + assignment + delete safety + tablet smoke) | See CONTENT_MODEL / PHASE_CHECKLIST |
 | 12 | Seeds and Five Procedures | Complete (DEMO seed) | Five READY_FOR_DEMO; all contentClass=DEMO; governance path + forensic closure; see docs/content/PHASE_12_* |
-| 13 | Hardening, A11y, Performance | **In progress** | Full test matrix; see Phase 13 section below |
-| 14 | Production Deploy and Demo | Not started | Prod URL; secrets safe; smoke tests |
+| 13 | Hardening, A11y, Performance | **COMPLETE** | Full test matrix; Print Preview owner PASS; see Phase 13 section |
+| 14 | Production Deploy and Demo | **14-A ENGINEERING READY** (not launched) | Env matrix + robots/sitemap + deploy docs; see Phase 14-A |
 
 ## Phase 0 / 1
 
@@ -318,7 +318,25 @@ Branch `phase-13-quality-hardening`. Closure report: [qa/PHASE_13_QUALITY_REPORT
 - [x] Source health live-fetch recorded (7/7 HTTP 200; no silent claim rewrites)
 - [x] Homepage query-batching performance hardening + owner TTFB validation ([HOME_QUERY_SHAPE.md](./qa/phase-13/HOME_QUERY_SHAPE.md))
 - [x] Quality report filled — Phase 13 **PASS / COMPLETE**
-- [x] PR #4 open against main (do not merge until final human merge decision)
+- [x] PR #4 merged into main
+
+## Phase 14-A — Deployment readiness — ENGINEERING READY (not launched)
+
+Branch `phase-14-deployment-readiness`. Report: [qa/PHASE_14_A_READINESS_REPORT.md](./qa/PHASE_14_A_READINESS_REPORT.md).
+
+- [x] Environment matrix documented — [ops/ENVIRONMENT_MATRIX.md](./ops/ENVIRONMENT_MATRIX.md) (live Preview≠Prod DB **not** claimed verified)
+- [x] Production deployment runbook — [ops/PRODUCTION_DEPLOYMENT.md](./ops/PRODUCTION_DEPLOYMENT.md)
+- [x] Smoke checklist + `pnpm smoke:deploy` — [ops/PRODUCTION_SMOKE.md](./ops/PRODUCTION_SMOKE.md)
+- [x] Robots / sitemap / indexing policy (Preview + DEMO mode noindex)
+- [x] Baseline security headers (nosniff / referrer / frame / permissions)
+- [x] TechTown demo outline — [qa/TECHTOWN_DEMO_SCRIPT.md](./qa/TECHTOWN_DEMO_SCRIPT.md)
+- [ ] Owner verifies Preview DB ≠ Production DB
+- [ ] Owner enables/verifies Vercel Preview Deployment Protection
+- [ ] Owner decides Production content mode flip (`demo` → `production`) when ready
+- [ ] Controlled Production migrate/redeploy (later milestone — explicit approval)
+- [ ] DEMO → PRODUCTION editorial promotions (per procedure — explicit approval)
+
+**Labels:** ENGINEERING READY = this milestone · DEPLOYMENT READY = after owner env checklist · PRODUCTION LAUNCHED = owner go-live only.
 
 ## Phase 4 — Admin UI polish debt
 

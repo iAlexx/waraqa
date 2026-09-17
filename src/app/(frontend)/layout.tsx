@@ -10,6 +10,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { Toaster } from '@/components/ui/toast'
 import { loadPublicSiteSettings } from '@/lib/public/site-settings'
+import { publicRobotsMetadata } from '@/lib/seo/indexing-policy'
 
 import './globals.css'
 
@@ -39,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = settings.siteName || 'ورقة'
   const description =
     settings.tagline ||
-    'ورقة منصة إرشادية بتساعدك تعرف شو المطلوب لمعاملتك، خطوة بخطوة.'
+    'ورقة منصة إرشادية مستقلة بتساعدك تعرف شو المطلوب لمعاملتك، خطوة بخطوة. ليست موقعاً حكومياً.'
 
   return {
     title: {
@@ -55,10 +56,8 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       siteName: title,
     },
-    robots: {
-      index: true,
-      follow: true,
-    },
+    // DEMO mode / Vercel Preview → noindex. PRODUCTION content pages may still set page-level noindex when demoLabeled.
+    robots: publicRobotsMetadata(),
   }
 }
 

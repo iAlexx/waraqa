@@ -34,8 +34,8 @@ Env: `WARAQA_PUBLIC_CONTENT_MODE=production|demo` (optional; default **productio
 - Separate demo hostname / CDN purge rules
 - Admin bulk promote/demote tooling
 - Category-level `contentClass` (categories stay unlabeled)
-- Owner-approved Golden Demo content pack
-- Deploy of this migration to production
+- Verified Vercel Preview DB ≠ Production DB (ops — see [ops/ENVIRONMENT_MATRIX.md](./ops/ENVIRONMENT_MATRIX.md))
+- Automatic DEMO → PRODUCTION promotion (forbidden by policy)
 
 ## Fail-safe defaults
 
